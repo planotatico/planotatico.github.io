@@ -47,6 +47,8 @@ header.top{background:linear-gradient(160deg,var(--navy) 0%,var(--navy2) 100%);c
 .top .sub{font-size:13px;opacity:.85;margin-top:2px}
 .bar{height:8px;border-radius:4px;background:rgba(255,255,255,.25);margin-top:10px;overflow:hidden}
 .bar>i{display:block;height:100%;background:var(--ouro)}
+.card .bar{background:var(--line);margin-top:6px}
+.card input+input,.card input+.row,.card textarea{margin-top:8px}
 .top .stats{display:flex;gap:16px;font-size:13px;margin-top:6px;font-variant-numeric:tabular-nums}
 main{flex:1;overflow-y:auto;padding:16px;padding-bottom:96px}
 .wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
@@ -75,7 +77,7 @@ nav.tabs svg{width:22px;height:22px}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:14px}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--surface);border-color:var(--accent)}
-input[type=search],input[type=date],input[type=number],input[type=url],input[type=text],textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:9px 10px}
+input[type=search],input[type=date],input[type=number],input[type=url],input[type=text],input[type=password],textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:9px 10px}
 details.mat{background:var(--surface);border:1px solid var(--line);border-radius:10px}
 details.mat>summary{list-style:none;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:600}
 details.mat>summary::-webkit-details-marker{display:none}
@@ -112,7 +114,7 @@ a.btn{text-decoration:none;display:inline-block}
 .pjl{display:flex;flex-direction:column;border-top:1px solid var(--line);padding-top:6px}
 .pjrow{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
 .pjlinks{display:flex;gap:10px;white-space:nowrap}
-nav.tabs button{font-size:12px}
+nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
 </style>
 </head>
 <body>
@@ -135,6 +137,7 @@ nav.tabs button{font-size:12px}
   <button role="tab" data-tab="horas" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>Horas</button>
   <button role="tab" data-tab="crono" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v16h16"/><path d="M8 14l3-3 3 2 5-6"/></svg>Cronograma</button>
   <button role="tab" data-tab="rotina" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 12h16M4 19h10"/></svg>Rotina</button>
+  <button role="tab" data-tab="grupo" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c3 .2 5.5 2.3 5.5 5.8"/></svg>Grupo</button>
 </nav>
 
 <div class="dlg" id="dlg" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
@@ -329,16 +332,25 @@ function keep(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){
 function save(){ S.u = Date.now(); keep(); syncSoon(); }
 
 /* ---------- sincronização (Google Apps Script) ---------- */
-const SYNC_DEF = {url:"__SYNC_URL__", k:"__SYNC_KEY__"};
-const SKEY = KEY + ".sync";
-(function(){
+const SYNC_URL = "https://script.google.com/macros/s/AKfycbzuDgI8GnDJx0n_sX8FIx3QiAbfsIBmLqwCGFSvxJmEz2WbqsT8eQtsmOnXN4HD84_NwA/exec";
+const SKEY = KEY + ".conta";
+try { if (/cfg=/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search); } catch(e){}
+function syncCfg(){ let c = null; try { c = JSON.parse(localStorage.getItem(SKEY)||"null"); } catch(e){} return (c && c.t) ? {url:SYNC_URL, t:c.t, u:c.u} : null; }
+function setConta(c){ try { if (c) localStorage.setItem(SKEY, JSON.stringify(c)); else localStorage.removeItem(SKEY); } catch(e){} }
+async function api(body){ const r = await fetch(SYNC_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body), redirect:"follow"}); return r.json(); }
+async function entrar(acao, u, senha){
+  if (!navigator.onLine){ toast("Sem internet"); return; }
+  const btns = document.querySelectorAll("#lgIn,#lgNew"); btns.forEach(b => b.disabled = true);
   try {
-    const m = (location.hash||"").match(/cfg=([^&]+)/);
-    if (m){ const c = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); if (c && c.url && c.k) localStorage.setItem(SKEY, JSON.stringify({url:c.url, k:c.k})); history.replaceState(null, "", location.pathname + location.search); }
-    else if (!localStorage.getItem(SKEY) && SYNC_DEF.k.indexOf("__")!==0) localStorage.setItem(SKEY, JSON.stringify(SYNC_DEF));
-  } catch(e){}
-})();
-function syncCfg(){ let c = null; try { c = JSON.parse(localStorage.getItem(SKEY)||"null"); } catch(e){} c = c || SYNC_DEF; return (c.url && c.url.indexOf("https://script.google.com/")===0 && c.k && c.k.indexOf("__")!==0) ? c : null; }
+    const r = await api({acao, u, senha});
+    if (!r.ok){ toast(r.erro || "Não foi possível entrar"); return; }
+    setConta({t:r.t, u:r.u}); S.sy = 0; GR = null; keep();
+    toast(acao === "criar" ? "Conta criada. Bem-vindo, " + r.u : "Entrou como " + r.u);
+    await syncNow(false); render();
+  } catch(e){ toast("Falha de conexão. Tente de novo"); }
+  finally { btns.forEach(b => { if (b.isConnected) b.disabled = false; }); }
+}
+async function sair(){ const c = syncCfg(); setConta(null); S.sy = 0; GR = null; keep(); render(); toast("Você saiu da conta. O progresso continua neste aparelho"); try { if (c) await api({acao:"sair", t:c.t}); } catch(e){} }
 let syncSt = {last:0, err:"", busy:false}, syncT = null, syncAgain = false;
 function syncSoon(){ if (!syncCfg()) return; clearTimeout(syncT); syncT = setTimeout(() => syncNow(true), 1500); }
 function norm(o){ o = o || {}; o.t = o.t||{}; o.w = o.w||{}; o.tm = o.tm||{run:null,days:{}}; o.tm.days = o.tm.days||{}; return o; }
@@ -362,7 +374,7 @@ async function syncNow(pushOnly){
   syncSt.busy = true; paintSync();
   try {
     if (!pushOnly || !S.sy){
-      const g = await (await fetch(c.url + "?k=" + encodeURIComponent(c.k) + "&_=" + Date.now(), {redirect:"follow"})).json();
+      const g = await (await fetch(c.url + "?t=" + encodeURIComponent(c.t) + "&_=" + Date.now(), {redirect:"follow"})).json();
       if (!g.ok) throw new Error(g.erro||"erro");
       const r = g.s;
       if (!S.sy){
@@ -372,15 +384,15 @@ async function syncNow(pushOnly){
       } else if (r && (r.u||0) > (S.u||0)) { adopt(r); syncSt.last = Date.now(); syncSt.err = ""; return; }
       else if (r && (r.u||0) === (S.u||0)) { syncSt.last = Date.now(); syncSt.err = ""; return; }
     }
-    const p = await (await fetch(c.url, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({k:c.k, s:S}), redirect:"follow", keepalive: JSON.stringify(S).length < 60000})).json();
+    const p = await (await fetch(c.url, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({t:c.t, s:S}), redirect:"follow", keepalive: JSON.stringify(S).length < 60000})).json();
     if (!p.ok) throw new Error(p.erro||"erro");
     if (p.antigo && p.s) adopt(p.s);
     syncSt.last = Date.now(); syncSt.err = "";
-  } catch(e){ syncSt.err = e && e.message === "chave" ? "chave inválida" : "falhou, tento de novo"; }
+  } catch(e){ if (e && e.message === "sessao"){ setConta(null); syncSt.err = ""; toast("Sessão expirada: entre de novo"); render(); } else syncSt.err = "falhou, tento de novo"; }
   finally { syncSt.busy = false; paintSync(); if (syncAgain){ syncAgain = false; syncSoon(); } }
 }
 function syncTxt(){
-  if (!syncCfg()) return "Desligada";
+  if (!syncCfg()) return "Desligada: entre na sua conta";
   if (syncSt.busy) return "Sincronizando…";
   if (syncSt.err) return "Sem sincronizar (" + syncSt.err + ")";
   if (syncSt.last){ const d = new Date(syncSt.last); return "Sincronizado às " + String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0"); }
@@ -586,12 +598,13 @@ function vRotina(){
     <div class="muted">Quando uma matéria do dia acaba, o app puxa a próxima do mesmo bloco.</div></section>
   <section class="card"><h2>Sincronização celular ↔ PC</h2>
     <div class="kv"><b>Status</b><span id="syncSt">${esc(syncTxt())}</span><b>Versão do app</b><span>${APP_V}${window.CFO ? " · atualiza sozinho" : ""}</span></div>
-    <div class="muted">${syncCfg() ? "Seu progresso e suas horas vão para a sua conta Google e aparecem no celular e no PC. Sincroniza ao abrir o app, a cada alteração e a cada minuto." : "Cole abaixo o link do script e a chave para ligar a sincronização."}</div>
-    <div class="row"><button class="btn small" id="syncGo">Sincronizar agora</button></div>
-    <details><summary class="muted">Configurar link</summary>
-      <input type="url" id="syncUrl" placeholder="https://script.google.com/macros/s/…/exec" value="${esc((syncCfg()||{}).url||"")}" aria-label="Link do script">
-      <input type="text" id="syncKey" placeholder="Chave" value="${esc((syncCfg()||{}).k||"")}" aria-label="Chave">
-      <button class="btn small ghost" id="syncSave">Salvar link</button></details></section>
+    ${syncCfg() ? `<div class="muted">Conectado como <b>${esc(syncCfg().u)}</b>. Seu progresso e suas horas aparecem em qualquer aparelho em que você entrar com essa conta. Sincroniza ao abrir, a cada alteração e a cada minuto.</div>
+    <div class="row"><button class="btn small" id="syncGo">Sincronizar agora</button><button class="btn small ghost" id="lgOut">Sair da conta</button></div>` :
+    `<div class="muted">Entre com seu usuário e senha para ver o mesmo progresso no celular e no PC. Primeira vez? Escolha um usuário e uma senha e toque em Criar conta: o progresso deste aparelho vai junto.</div>
+    <input type="text" id="lgU" placeholder="Usuário" autocomplete="username" autocapitalize="none" spellcheck="false" aria-label="Usuário">
+    <input type="password" id="lgP" placeholder="Senha (mínimo 6 caracteres)" autocomplete="current-password" aria-label="Senha">
+    <div class="row"><button class="btn small" id="lgIn">Entrar</button><button class="btn small ghost" id="lgNew">Criar conta</button></div>`}
+  </section>
   <section class="card"><h2>Backup dos seus dados</h2>
     <div class="muted">${mem ? "Este navegador não está guardando dados: o progresso some ao fechar. " : ""}O progresso fica salvo neste aparelho${syncCfg() ? " e na sincronização" : ""}. Copie o backup de vez em quando e guarde em lugar seguro (por exemplo, mande para você mesmo no WhatsApp).</div>
     <div class="row"><button class="btn small" id="bkCopy">Copiar backup</button><button class="btn small ghost" id="bkRestore">Restaurar backup</button></div>
@@ -599,6 +612,94 @@ function vRotina(){
     <button class="btn small danger" id="bkReset" style="align-self:flex-start">Apagar todo o progresso</button></section>`;
 }
 
+
+/* ---------- grupos ---------- */
+let GR = null, grBusy = false, grErr = "";
+async function grLoad(){
+  const c = syncCfg(); if (!c || grBusy) return;
+  grBusy = true; grErr = "";
+  try { const r = await api({acao:"grupo_info", t:c.t}); if (r.ok) GR = r; else if (r.erro === "sessao"){ setConta(null); } else grErr = r.erro || "erro"; }
+  catch(e){ grErr = "Sem conexão. Tente de novo."; }
+  grBusy = false; if (tab === "grupo") render();
+}
+async function grAct(body, ok){
+  const c = syncCfg(); if (!c) return;
+  try { const r = await api(Object.assign({t:c.t}, body)); if (!r.ok){ toast(r.erro || "Não deu certo"); return; } if (ok) ok(r); await grLoad(); }
+  catch(e){ toast("Sem conexão. Tente de novo"); }
+}
+function quando(ms){
+  if (!ms) return "nunca sincronizou";
+  const d = new Date(ms), dias = Math.floor((Date.now()-ms)/86400000), hh = String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  if (iso(d) === today()) return "hoje às "+hh;
+  return dias <= 1 ? "ontem às "+hh : "há "+dias+" dias";
+}
+function resumoMembro(m){
+  const t = today(), ws = weekStart(t);
+  let seen = 0, late = 0, hoje = 0, pcts = []; const porMat = {}, porBl = {I:[0,0],II:[0,0],III:[0,0]};
+  for (const x of T){
+    const id = x[I_ID], s = m.t[id], mt = x[I_MAT];
+    porMat[mt] = porMat[mt] || [0,0]; porMat[mt][1]++; porBl[x[I_BL]][1]++;
+    if (!s || !s.f) continue;
+    seen++; porMat[mt][0]++; porBl[x[I_BL]][0]++;
+    if (typeof s.pct === "number") pcts.push(s.pct);
+    const r48 = add(s.f,2), r7 = add(r48,7), r30 = add(r7,30);
+    const n = !s.d48 ? r48 : !s.d7 ? r7 : !s.d30 ? r30 : null;
+    if (n && n < t) late++; else if (n && n === t) hoje++;
+  }
+  const dia = d => (m.days[d]||0) + (m.run && d === t ? Math.max(0,(Date.now()-m.run)/1000) : 0);
+  let sem = 0; for (let i=0;i<7;i++) sem += dia(add(ws,i));
+  let ult7 = 0; for (let i=0;i<7;i++) ult7 += dia(add(t,-i));
+  return {seen, late, hoje, pct: pcts.length ? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length) : null, hojeH: dia(t), sem, ult7, porMat, porBl, run: !!m.run};
+}
+function convite(g){ return "Entre no meu grupo de estudos do Plano CFO PMGO. 1) Abra " + PAGES + " (ou instale o app que eu te passar). 2) Na aba Rotina, crie sua conta. 3) Na aba Grupo, digite o código " + g.codigo + "."; }
+function vGrupo(){
+  const c = syncCfg();
+  if (!c) return `<section class="card"><h2>Grupo de estudos</h2><div class="muted">Para criar um grupo ou entrar em um, primeiro entre na sua conta.</div><div class="row"><button class="btn small" id="goLogin">Entrar ou criar conta</button></div></section>`;
+  if (!GR){ if (!grBusy) setTimeout(grLoad, 0); return `<section class="card"><h2>Grupo de estudos</h2><div class="muted">${grErr ? esc(grErr) : "Carregando…"}</div>${grErr ? `<div class="row"><button class="btn small" id="grRe">Tentar de novo</button></div>` : ""}</section>`; }
+  let h = "";
+  for (const g of GR.admin){
+    const ms = g.membros.map(m => ({m, r: resumoMembro(m)})).sort((a,b) => b.r.sem - a.r.sem);
+    h += `<section class="card"><h2>${esc(g.nome)}</h2>
+      <div class="kv"><b>Código</b><span><span class="code" style="font-size:20px;letter-spacing:3px">${esc(g.codigo)}</span></span><b>Pessoas</b><span>${ms.length}</span></div>
+      <div class="row"><button class="btn small" data-conv="${esc(g.codigo)}">Copiar convite</button><button class="btn small ghost" id="grRe">Atualizar</button></div>
+      <textarea readonly rows="3" aria-label="Texto do convite" id="cv_${esc(g.codigo)}">${esc(convite(g))}</textarea>`;
+    if (!ms.length) h += `<div class="empty">Ninguém entrou ainda. Mande o convite: a pessoa cria a conta e digita o código na aba Grupo.</div>`;
+    for (const {m, r} of ms){
+      const bl = ["I","II","III"].map(b => `Bloco ${b}: ${r.porBl[b][0]}/${r.porBl[b][1]}`).join(" · ");
+      h += `<details class="mat"><summary><div style="flex:1;min-width:0"><div><b>${esc(m.u)}</b>${r.run ? ` <span class="pill due">estudando agora</span>` : ""}${r.late ? ` <span class="pill late">${r.late} rev. atrasada${r.late>1?"s":""}</span>` : ""}</div>
+        <div class="muted">${r.seen}/${T.length} aulas · hoje ${hm(r.hojeH)} · semana ${hm(r.sem)} de 20h · ${esc(quando(m.at))}</div>
+        <div class="bar"><i style="width:${(r.seen/T.length*100).toFixed(1)}%"></i></div></div></summary>
+        <div class="kv"><b>Revisões</b><span>${r.late} atrasada${r.late===1?"":"s"}, ${r.hoje} para hoje</span>
+        <b>Média de acertos</b><span>${r.pct===null ? "sem registro" : r.pct+"%"}</span>
+        <b>Últimos 7 dias</b><span>${hm(r.ult7)} líquidas</span>
+        <b>Blocos</b><span>${bl}</span></div>
+        <div class="kv">${Object.keys(r.porMat).map(k => `<b>${esc(MAT[k]||k)}</b><span>${r.porMat[k][0]}/${r.porMat[k][1]}</span>`).join("")}</div>
+        <div class="row"><button class="btn small danger" data-rm="${esc(g.codigo)}|${esc(m.u)}">Remover do grupo</button></div></details>`;
+    }
+    h += `</section>`;
+  }
+  h += `<section class="card"><h2>Criar um grupo</h2><div class="muted">Você recebe um código para convidar quem quiser acompanhar.</div>
+    <input type="text" id="grNome" placeholder="Nome do grupo (ex.: CFO 2027)" maxlength="40" aria-label="Nome do grupo"><div class="row"><button class="btn small" id="grNew">Criar grupo</button></div></section>`;
+  h += `<section class="card"><h2>Entrar em um grupo</h2><div class="muted">Quem administra o grupo passa a ver suas aulas concluídas, revisões, % de acertos e horas líquidas. Suas anotações não são compartilhadas.</div>
+    <input type="text" id="grCod" placeholder="Código do grupo" autocapitalize="characters" maxlength="6" aria-label="Código do grupo"><div class="row"><button class="btn small" id="grJoin">Entrar no grupo</button></div>`;
+  if (GR.participa.length) h += `<div class="kv">${GR.participa.map(g => `<b>${esc(g.nome)}</b><span>admin: ${esc(g.admin)} · <button class="btn small ghost" data-leave="${esc(g.codigo)}">Sair</button></span>`).join("")}</div>`;
+  h += `</section>`;
+  return h;
+}
+function bindGrupo(v){
+  const re = v.querySelectorAll("#grRe"); re.forEach(b => b.onclick = () => { GR = null; grErr = ""; render(); });
+  v.querySelectorAll("[data-conv]").forEach(b => b.onclick = async () => {
+    const g = GR.admin.find(x => x.codigo === b.dataset.conv), txt = convite(g);
+    try { await navigator.clipboard.writeText(txt); toast("Convite copiado. Cole no WhatsApp"); } catch(e){ const ta = document.getElementById("cv_"+g.codigo); if (ta){ ta.focus(); ta.select(); } toast("Selecione o texto e copie"); }
+  });
+  const nw = v.querySelector("#grNew"); if (nw) nw.onclick = () => grAct({acao:"grupo_criar", nome: v.querySelector("#grNome").value}, r => toast("Grupo criado. Código "+r.codigo));
+  const jn = v.querySelector("#grJoin"); if (jn) jn.onclick = () => { const c = v.querySelector("#grCod").value.trim(); if (c.length < 6){ toast("Digite o código de 6 caracteres"); return; } grAct({acao:"grupo_entrar", codigo:c}, r => toast("Você entrou em "+r.nome)); };
+  v.querySelectorAll("[data-leave]").forEach(b => b.onclick = () => grAct({acao:"grupo_sair", codigo:b.dataset.leave}, () => toast("Você saiu do grupo")));
+  v.querySelectorAll("[data-rm]").forEach(b => { let armed = false; b.onclick = () => {
+    if (!armed){ armed = true; b.textContent = "Toque de novo para remover"; setTimeout(() => { armed = false; if (b.isConnected) b.textContent = "Remover do grupo"; }, 4000); return; }
+    const [c, u] = b.dataset.rm.split("|"); grAct({acao:"grupo_remover", codigo:c, membro:u}, () => toast(u+" removido"));
+  }; });
+}
 /* ---------- detalhe da aula ---------- */
 function pjList(x){
   const p = PJ[x[I_ID]];
@@ -648,11 +749,12 @@ function render(){
   const v = document.getElementById("view"), main = document.getElementById("main");
   const keep = main.scrollTop;
   const open = [...v.querySelectorAll("details.mat")].map(d => d.open);
-  v.innerHTML = tab==="hoje" ? vHoje() : tab==="aulas" ? vAulas() : tab==="horas" ? vHoras() : tab==="crono" ? vCrono() : vRotina();
+  v.innerHTML = tab==="hoje" ? vHoje() : tab==="aulas" ? vAulas() : tab==="horas" ? vHoras() : tab==="crono" ? vCrono() : tab==="grupo" ? vGrupo() : vRotina();
   if (tab==="aulas"){ v.querySelectorAll("details.mat").forEach((d,i) => { if (open[i]) d.open = true; }); }
   main.scrollTop = keep;
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===tab));
   bind();
+  if (tab==="grupo") bindGrupo(v);
 }
 function bind(){
   const v = document.getElementById("view");
@@ -666,8 +768,13 @@ function bind(){
   const busca = v.querySelector("#busca");
   if (busca) busca.oninput = e => { fBusca = e.target.value; const pos = e.target.selectionStart; render(); const nb = document.getElementById("busca"); nb.focus(); try{ nb.setSelectionRange(pos,pos); }catch(_){} };
   v.querySelectorAll("[data-week]").forEach(c => c.onchange = e => { S.w[c.dataset.week] = e.target.checked; save(); });
-  const sg = v.querySelector("#syncGo"); if (sg) sg.onclick = () => { if (!syncCfg()) { toast("Configure o link primeiro"); return; } syncNow(false); };
-  const ss = v.querySelector("#syncSave"); if (ss) ss.onclick = () => { const url = v.querySelector("#syncUrl").value.trim(), k = v.querySelector("#syncKey").value.trim(); try { localStorage.setItem(SKEY, JSON.stringify({url, k})); } catch(e){} if (!syncCfg()){ toast("Link ou chave inválidos"); return; } S.sy = 0; keep(); toast("Link salvo"); syncNow(false); render(); };
+  const sg = v.querySelector("#syncGo"); if (sg) sg.onclick = () => syncNow(false);
+  const lo = v.querySelector("#lgOut"); if (lo) lo.onclick = sair;
+  const lgv = () => [v.querySelector("#lgU").value.trim(), v.querySelector("#lgP").value];
+  const li = v.querySelector("#lgIn"); if (li) li.onclick = () => { const [u,p] = lgv(); if (!u || !p){ toast("Preencha usuário e senha"); return; } entrar("entrar", u, p); };
+  const ln = v.querySelector("#lgNew"); if (ln) ln.onclick = () => { const [u,p] = lgv(); if (!u || !p){ toast("Preencha usuário e senha"); return; } entrar("criar", u, p); };
+  const lp = v.querySelector("#lgP"); if (lp) lp.onkeydown = e => { if (e.key === "Enter") li.click(); };
+  const gl = v.querySelector("#goLogin"); if (gl) gl.onclick = () => { tab = "rotina"; render(); setTimeout(() => { const u = document.getElementById("lgU"); if (u){ u.scrollIntoView({block:"center"}); u.focus(); } }, 50); };
   const bc = v.querySelector("#bkCopy");
   if (bc){
     bc.onclick = async () => {
@@ -686,13 +793,13 @@ function bind(){
     };
   }
 }
-document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { tab = b.dataset.tab; document.getElementById("main").scrollTop = 0; render(); try{ history.replaceState(null,"","#"+tab); }catch(e){} });
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { tab = b.dataset.tab; if (tab==="grupo" && GR){ GR = null; } document.getElementById("main").scrollTop = 0; render(); try{ history.replaceState(null,"","#"+tab); }catch(e){} });
 let tt; function toast(m){ const el = document.getElementById("toast"); el.textContent = m; el.classList.add("show"); clearTimeout(tt); tt = setTimeout(()=>el.classList.remove("show"), 2200); }
-const h0 = (location.hash||"").slice(1); if (["hoje","aulas","horas","crono","rotina"].includes(h0)) tab = h0;
+const h0 = (location.hash||"").slice(1); if (["hoje","aulas","horas","crono","rotina","grupo"].includes(h0)) tab = h0;
 render();
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 4, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 5, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
