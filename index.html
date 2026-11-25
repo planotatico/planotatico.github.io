@@ -115,6 +115,16 @@ a{color:var(--accent);font-weight:600}
 a.btn{text-decoration:none;display:inline-block}
 .clock{font:700 44px/1 var(--display);letter-spacing:.02em;font-variant-numeric:tabular-nums;color:var(--accent)}
 .bar2{height:8px;border-radius:4px;background:var(--accent-soft);overflow:hidden}.bar2>i{display:block;height:100%;background:var(--gold)}
+.viz{--s1:#257de0;--s2:#f47230;--s3:#00b894;--s4:#f2a600;--s5:#ee7fac;--s6:#008a17;--s7:#6a4ce2;--s-outros:#9aa1ad;--s-sem:#c9ced6}
+:root[data-theme="dark"] .viz{--s1:#338ced;--s2:#e76624;--s3:#00a888;--s4:#d28e05;--s5:#e24d8b;--s6:#0aac23;--s7:#9887ef;--s-outros:#6f7682;--s-sem:#4a505b}
+.pizza{display:flex;align-items:center;gap:18px;flex-wrap:wrap}.pizza svg{width:200px;height:200px;flex:none}.pizza path{transition:opacity .15s}.pizza svg:hover path{opacity:.55}.pizza svg path:hover{opacity:1}
+.pz-t{font:700 17px var(--display);fill:var(--ink)}.pz-s{font:500 11px var(--body);fill:var(--muted)}
+.pz-tot b{display:block;font:700 30px/1.1 var(--display);font-variant-numeric:tabular-nums;color:var(--ink)}.pz-tot span{color:var(--muted);font-size:14px}
+.pz-leg{display:flex;flex-direction:column}.pz-row{display:grid;grid-template-columns:12px 1fr auto;grid-template-areas:"c n v" ". b b";gap:4px 10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.pz-row>i{grid-area:c;width:12px;height:12px;border-radius:50%}.pz-n{grid-area:n;font-size:14px}.pz-v{grid-area:v;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}.pz-v b{color:var(--ink)}
+.pz-b{grid-area:b;height:6px;border-radius:3px;background:var(--accent-soft);overflow:hidden}.pz-b>i{display:block;height:100%;border-radius:3px}
+.pz-sub{display:flex;justify-content:space-between;gap:10px;padding:5px 0 5px 22px;font-size:13px;color:var(--muted);border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums}
+.tmSel{height:44px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);padding:0 10px;font:inherit;width:100%}
 .hrow{display:grid;grid-template-columns:84px 1fr 52px;gap:10px;align-items:center;padding:6px 0;font-variant-numeric:tabular-nums}
 .hrow.now .hd{color:var(--accent);font-weight:600}.hb{height:10px;border-radius:5px;background:var(--accent-soft);overflow:hidden}.hb>i{display:block;height:100%;background:var(--accent)}.hv{text-align:right;font-size:14px}
 .pjl{display:flex;flex-direction:column;border-top:1px solid var(--line);padding-top:6px}
@@ -608,6 +618,8 @@ function mergeFirst(local, remote){
   const m = norm(JSON.parse(JSON.stringify(remote)));
   for (const id in local.t) if (!m.t[id] || !m.t[id].f) m.t[id] = local.t[id];
   for (const d in local.tm.days) m.tm.days[d] = Math.max(m.tm.days[d]||0, local.tm.days[d]);
+  for (const ch of ["by","byA"]) for (const d in (local.tm[ch]||{})){ m.tm[ch] = m.tm[ch] || {}; const md = (m.tm[ch][d] = m.tm[ch][d] || {}); for (const k in local.tm[ch][d]) md[k] = Math.max(md[k]||0, local.tm[ch][d][k]); }
+  if (!m.tm.cur && local.tm.cur) m.tm.cur = local.tm.cur;
   for (const w in local.w) if (local.w[w]) m.w[w] = true;
   if (!m.tm.run && local.tm.run) m.tm.run = local.tm.run;
   return m;
@@ -1157,9 +1169,92 @@ function qzRender(){
 let META_DIA = 4*3600, META_SEM = 20*3600;
 function aplicaMetas(){ const pf = S.perfil; META_DIA = (pf && pf.horas ? pf.horas : 4)*3600; META_SEM = META_DIA * (pf && pf.dias ? pf.dias.length : 5); }
 function tmDay(d){ let v = S.tm.days[d] || 0; if (S.tm.run && d===today()) v += Math.max(0,(Date.now()-S.tm.run)/1000); return v; }
+/* tempo por matéria (S.tm.by) e por conteúdo/aula (S.tm.byA), além do total do dia (S.tm.days) */
+const ATIV = {_q:"Questões", _sim:"Simulado", _rev:"Revisões", _out:"Outras atividades"};
+function tmCredita(d, sec, cur){
+  cur = cur || S.tm.cur || {}; const m = cur.m || "_sem";
+  const by = (S.tm.by = S.tm.by || {}), bd = (by[d] = by[d] || {}); bd[m] = Math.max(0, (bd[m]||0) + sec);
+  if (cur.a){ const ba = (S.tm.byA = S.tm.byA || {}), da = (ba[d] = ba[d] || {}); da[cur.a] = Math.max(0, (da[cur.a]||0) + sec); }
+}
 function tmStart(){ if (!S.tm.run){ S.tm.run = Date.now(); save(); } }
-function tmStop(){ if (S.tm.run){ const d = today(); S.tm.days[d] = (S.tm.days[d]||0) + Math.max(0,(Date.now()-S.tm.run)/1000); S.tm.run = null; save(); } }
-function tmAdd(d, sec){ S.tm.days[d] = Math.max(0,(S.tm.days[d]||0) + sec); save(); }
+function tmStop(){ if (S.tm.run){ const d = today(), sec = Math.max(0,(Date.now()-S.tm.run)/1000); S.tm.days[d] = (S.tm.days[d]||0) + sec; tmCredita(d, sec); S.tm.run = null; save(); } }
+function tmAdd(d, sec, cur){ const antes = S.tm.days[d]||0; S.tm.days[d] = Math.max(0, antes + sec); tmCredita(d, S.tm.days[d] - antes, cur); save(); }
+function tmTroca(m, a){ const ia = !!S.tm.run; if (ia) tmStop(); S.tm.cur = {m: m || "", a: a || ""}; if (ia) tmStart(); save(); }
+function nomeAtiv(k){ if (ATIV[k]) return ATIV[k]; if (k === "_sem") return "Sem matéria definida"; if (MAT[k]) return MAT[k].replace(/ \(.*\)/,""); for (const c in CONC) if (CONC[c].MAT && CONC[c].MAT[k]) return CONC[c].MAT[k]; return k; }
+function seletorAtiv(id){
+  const cur = S.tm.cur || {}, mats = Object.keys(MAT);
+  const aulas = cur.m && MAT[cur.m] ? T.filter(x => x[I_MAT] === cur.m) : [];
+  return `<div class="row" style="gap:8px;flex-wrap:wrap"><label class="f" for="${id}M" style="flex:1;min-width:150px">Estudando agora<select id="${id}M" class="tmSel">
+      <option value="">Escolha a matéria…</option>${mats.map(m => `<option value="${m}"${cur.m===m?" selected":""}>${esc(nomeAtiv(m))}</option>`).join("")}
+      <optgroup label="Outras atividades">${Object.keys(ATIV).map(k => `<option value="${k}"${cur.m===k?" selected":""}>${ATIV[k]}</option>`).join("")}</optgroup></select></label>
+    ${aulas.length ? `<label class="f" for="${id}A" style="flex:1;min-width:150px">Conteúdo (opcional)<select id="${id}A" class="tmSel"><option value="">Toda a matéria</option>${aulas.map(x => `<option value="${x[I_ID]}"${cur.a===x[I_ID]?" selected":""}>${esc(x[I_AULA].replace("Aula ","")+" · "+x[I_TIT]).slice(0,70)}</option>`).join("")}</select></label>` : ""}</div>`;
+}
+
+/* ---------- gráfico "Todas as atividades" (aba Horas) ---------- */
+let HP = {modo:"mat", per:"semana", m:"", de:"", ate:""};
+function periodoHP(){
+  const t = today(), x = parse(t);
+  if (HP.per === "dia") return [t, t];
+  if (HP.per === "semana") return [weekStart(t), add(weekStart(t), 6)];
+  if (HP.per === "mes") return [iso(new Date(x.getFullYear(), x.getMonth(), 1)), iso(new Date(x.getFullYear(), x.getMonth()+1, 0))];
+  if (HP.per === "ano") return [x.getFullYear()+"-01-01", x.getFullYear()+"-12-31"];
+  if (HP.per === "custom") return [HP.de || add(t,-29), HP.ate || t];
+  return ["0000-01-01", "9999-12-31"];
+}
+function somaAtiv(de, ate){
+  const out = {}, t = today(), runSec = S.tm.run ? Math.max(0,(Date.now()-S.tm.run)/1000) : 0, cur = S.tm.cur || {};
+  if (HP.modo === "mat"){
+    for (const d in S.tm.days){ if (d < de || d > ate) continue;
+      const bd = (S.tm.by||{})[d] || {}; let soma = 0;
+      for (const k in bd){ out[k] = (out[k]||0) + bd[k]; soma += bd[k]; }
+      const resto = (S.tm.days[d]||0) - soma; if (resto > 30) out._sem = (out._sem||0) + resto; }
+    if (runSec && t >= de && t <= ate){ const k = cur.m || "_sem"; out[k] = (out[k]||0) + runSec; }
+  } else {
+    for (const d in (S.tm.byA||{})){ if (d < de || d > ate) continue;
+      for (const a in S.tm.byA[d]){ const x = byId(a); if (x && x[I_MAT] === HP.m) out[a] = (out[a]||0) + S.tm.byA[d][a]; } }
+    if (runSec && t >= de && t <= ate && cur.m === HP.m && cur.a) out[cur.a] = (out[cur.a]||0) + runSec;
+  }
+  return out;
+}
+const hmsL = s => { s = Math.round(s); return `${Math.floor(s/3600)}h ${String(Math.floor(s%3600/60)).padStart(2,"0")}m ${String(s%60).padStart(2,"0")}s`; };
+function corDe(chaves){ // cor fixa por matéria: as 7 com mais tempo no total recebem uma cor; o resto vira "Outros"
+  const tot = {}; for (const d in (HP.modo === "mat" ? (S.tm.by||{}) : (S.tm.byA||{}))){ const o = (HP.modo === "mat" ? S.tm.by : S.tm.byA)[d]; for (const k in o) tot[k] = (tot[k]||0) + o[k]; }
+  const ord = chaves.filter(k => k !== "_sem").sort((a,b) => (tot[b]||0) - (tot[a]||0) || (a < b ? -1 : 1));
+  const map = {}; ord.slice(0,7).forEach((k,i) => map[k] = "var(--s" + (i+1) + ")"); return map;
+}
+function grafAtiv(){
+  const [de, ate] = periodoHP(), raw = somaAtiv(de, ate);
+  const ks = Object.keys(raw).filter(k => raw[k] >= 1), cor = corDe(ks);
+  let fatias = [], outros = 0, outrosL = [];
+  for (const k of ks){ if (cor[k]) fatias.push({k, v:raw[k], nome: HP.modo === "mat" ? nomeAtiv(k) : ((byId(k)||[])[I_TIT] || k), cor:cor[k]}); else if (k !== "_sem"){ outros += raw[k]; outrosL.push({nome: HP.modo === "mat" ? nomeAtiv(k) : ((byId(k)||[])[I_TIT] || k), v: raw[k]}); } }
+  fatias.sort((a,b) => b.v - a.v);
+  if (outros) fatias.push({k:"_outros", v:outros, nome:"Outros", cor:"var(--s-outros)"});
+  if (raw._sem) fatias.push({k:"_sem", v:raw._sem, nome:"Sem matéria definida", cor:"var(--s-sem)"});
+  const total = fatias.reduce((a,f) => a + f.v, 0);
+  const pers = [["dia","Dia"],["semana","Semana"],["mes","Mês"],["ano","Ano"],["total","Total"],["custom","Customizar"]];
+  let h = `<section class="card viz"><h2>Todas as atividades</h2>
+    <div class="chips" role="group" aria-label="Agrupar por"><button class="chip" data-hpm="mat" aria-pressed="${HP.modo==="mat"}">Matérias</button><button class="chip" data-hpm="cont" aria-pressed="${HP.modo==="cont"}">Conteúdos</button></div>
+    ${HP.modo === "cont" ? `<label class="f" for="hpMat">Matéria<select id="hpMat" class="tmSel">${Object.keys(MAT).map(m => `<option value="${m}"${HP.m===m?" selected":""}>${esc(nomeAtiv(m))}</option>`).join("")}</select></label>` : ""}
+    <div class="chips" role="group" aria-label="Período">${pers.map(([v,l]) => `<button class="chip" data-hpp="${v}" aria-pressed="${HP.per===v}">${l}</button>`).join("")}</div>
+    ${HP.per === "custom" ? `<div class="row"><label class="f" for="hpDe" style="flex:1">De<input type="date" id="hpDe" value="${de}"></label><label class="f" for="hpAte" style="flex:1">Até<input type="date" id="hpAte" value="${ate}"></label></div>` : ""}`;
+  if (!total){ return h + `<div class="empty">${HP.modo === "cont" ? "Ainda não há tempo registrado por conteúdo nesta matéria. No cronômetro, escolha a matéria e o conteúdo antes de iniciar." : "Nenhum tempo registrado neste período. No cronômetro, escolha a matéria antes de iniciar."}</div></section>`; }
+  // rosca: fatias com 2px de folga na cor da superfície
+  const R = 80, r = 50, cx = 100, cy = 100; let a0 = -Math.PI/2, arcos = "";
+  for (const f of fatias){
+    const ang = f.v / total * Math.PI * 2, a1 = a0 + ang, lg = ang > Math.PI ? 1 : 0;
+    const p = (rad, ra) => `${(cx + ra*Math.cos(rad)).toFixed(2)} ${(cy + ra*Math.sin(rad)).toFixed(2)}`;
+    const d = fatias.length === 1 ? `M${cx} ${cy-R}A${R} ${R} 0 1 1 ${cx-0.01} ${cy-R}L${cx-0.01} ${cy-r}A${r} ${r} 0 1 0 ${cx} ${cy-r}Z`
+      : `M${p(a0,R)}A${R} ${R} 0 ${lg} 1 ${p(a1,R)}L${p(a1,r)}A${r} ${r} 0 ${lg} 0 ${p(a0,r)}Z`;
+    arcos += `<path d="${d}" fill="${f.cor}" stroke="var(--surface)" stroke-width="2" data-fat="${esc(f.k)}"><title>${esc(f.nome)}: ${hmsL(f.v)} (${(f.v/total*100).toFixed(1).replace(".",",")}%)</title></path>`;
+    a0 = a1;
+  }
+  h += `<div class="pizza"><svg viewBox="0 0 200 200" role="img" aria-label="Tempo por ${HP.modo==="mat"?"matéria":"conteúdo"}">${arcos}
+      <text x="100" y="96" text-anchor="middle" class="pz-t">${Math.floor(total/3600)}h ${String(Math.floor(total%3600/60)).padStart(2,"0")}m</text><text x="100" y="114" text-anchor="middle" class="pz-s">no período</text></svg>
+    <div class="pz-tot"><b>${hmsL(total)}</b><span>${HP.per === "total" ? "Todas as atividades" : br(de) + (de !== ate ? " a " + br(ate) : "")}</span></div></div>
+    <div class="pz-leg">${fatias.map(f => `<div class="pz-row"><i style="background:${f.cor}"></i><span class="pz-n">${esc(f.nome)}</span><span class="pz-v">${hmsL(f.v)} <b>(${(f.v/total*100).toFixed(1).replace(".",",")}%)</b></span><span class="pz-b"><i style="width:${(f.v/fatias[0].v*100).toFixed(1)}%;background:${f.cor}"></i></span></div>` + (f.k === "_outros" ? outrosL.sort((a,b) => b.v - a.v).map(o => `<div class="pz-sub"><span>${esc(o.nome)}</span><span>${hmsL(o.v)} (${(o.v/total*100).toFixed(1).replace(".",",")}%)</span></div>`).join("") : "")).join("")}</div>
+    ${raw._sem && HP.modo === "mat" ? `<div class="muted" style="font-size:13px">"Sem matéria definida" é o tempo registrado antes de escolher a matéria no cronômetro.</div>` : ""}</section>`;
+  return h;
+}
 function weekStart(d){ const x = parse(d); const wd = (x.getDay()+6)%7; x.setDate(x.getDate()-wd); return iso(x); }
 function tmWeek(){ const ws = weekStart(today()); let s = 0; for (let i=0;i<7;i++) s += tmDay(add(ws,i)); return s; }
 const hms = s => { s = Math.floor(s); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60; return h+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0"); };
@@ -1170,13 +1265,14 @@ function timerCard(full){
     <div class="clock" id="tmClock">${hms(d)}</div>
     <div class="bar2" aria-hidden="true"><i id="tmBar" style="width:${Math.min(100,d/META_DIA*100).toFixed(1)}%"></i></div>
     <div class="muted" id="tmInfo">Hoje ${hm(d)} de 4h · semana ${hm(w)} de 20h</div>
+    ${seletorAtiv("tm")}
     <div class="row"><button class="btn" id="tmToggle">${run?"Pausar":"Iniciar"}</button>${full?`<button class="btn small ghost" data-tmadd="900">+15 min</button><button class="btn small ghost" data-tmadd="-900">−15 min</button>`:""}</div>
     <div class="muted">Pause em qualquer interrupção: só conta tempo de estudo de verdade. A contagem continua mesmo com o app fechado.</div></section>`;
   return h;
 }
 function vHoras(){
   const t = today();
-  let h = timerCard(true);
+  let h = timerCard(true) + grafAtiv();
   const ws = weekStart(t);
   h += `<section class="card"><h2>Esta semana</h2>`;
   const dn = ["seg","ter","qua","qui","sex","sáb","dom"];
@@ -1190,6 +1286,7 @@ function vHoras(){
   for (const k of Object.keys(byW).sort().reverse()) h += `<div class="hrow"><span class="hd">sem. ${br(k)}</span><span class="hb"><i style="width:${Math.min(100,byW[k]/META_SEM*100).toFixed(1)}%"></i></span><span class="hv">${hm(byW[k])}</span></div>`;
   h += `</section><section class="card"><h2>Lançar horas manualmente</h2><div class="muted">Esqueceu de ligar o cronômetro? Lance aqui (use número negativo para tirar).</div>
     <div class="row"><label class="f" for="mhD" style="flex:1">Dia<input type="date" id="mhD" value="${t}"></label><label class="f" for="mhM" style="flex:1">Minutos<input type="number" id="mhM" inputmode="numeric" placeholder="ex.: 30"></label></div>
+    <label class="f" for="mhA">Matéria ou atividade<select id="mhA"><option value="">Sem matéria</option>${Object.keys(MAT).map(m => `<option value="${m}"${(S.tm.cur||{}).m===m?" selected":""}>${esc(nomeAtiv(m))}</option>`).join("")}${Object.keys(ATIV).map(k => `<option value="${k}">${ATIV[k]}</option>`).join("")}</select></label>
     <button class="btn small" id="mhGo" style="align-self:flex-start">Lançar</button></section>`;
   return h;
 }
@@ -1560,9 +1657,15 @@ function bind(){
   const ph = v.querySelector("#plHoje"); if (ph) ph.onclick = () => { tab = "hoje"; render(); try { document.getElementById("main").scrollTop = 0; } catch(e){} };
   v.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openAula(b.dataset.open));
   v.querySelectorAll("[data-bloco]").forEach(b => b.onclick = () => { fBloco = b.dataset.bloco; render(); });
-  const tg = v.querySelector("#tmToggle"); if (tg) tg.onclick = () => { if (S.tm.run){ tmStop(); toast("Pausado: "+hm(tmDay(today()))+" hoje"); } else { tmStart(); toast("Cronômetro rodando"); } render(); };
+  const tg = v.querySelector("#tmToggle"); if (tg) tg.onclick = () => { if (S.tm.run){ tmStop(); toast("Pausado: "+hm(tmDay(today()))+" hoje"); } else { tmStart(); toast((S.tm.cur||{}).m ? "Cronômetro rodando: " + nomeAtiv(S.tm.cur.m) : "Cronômetro rodando. Escolha a matéria para o gráfico de atividades"); } render(); };
+  const tmM = v.querySelector("#tmM"); if (tmM) tmM.onchange = () => { tmTroca(tmM.value, ""); render(); };
+  const tmA = v.querySelector("#tmA"); if (tmA) tmA.onchange = () => { tmTroca((S.tm.cur||{}).m, tmA.value); render(); };
+  v.querySelectorAll("[data-hpm]").forEach(b => b.onclick = () => { HP.modo = b.dataset.hpm; if (HP.modo === "cont" && !MAT[HP.m]) HP.m = MAT[(S.tm.cur||{}).m] ? S.tm.cur.m : Object.keys(MAT)[0]; render(); });
+  v.querySelectorAll("[data-hpp]").forEach(b => b.onclick = () => { HP.per = b.dataset.hpp; render(); });
+  const hpMat = v.querySelector("#hpMat"); if (hpMat) hpMat.onchange = () => { HP.m = hpMat.value; render(); };
+  const hpDe = v.querySelector("#hpDe"), hpAte = v.querySelector("#hpAte"); if (hpDe) hpDe.onchange = () => { HP.de = hpDe.value; render(); }; if (hpAte) hpAte.onchange = () => { HP.ate = hpAte.value; render(); };
   v.querySelectorAll("[data-tmadd]").forEach(b => b.onclick = () => { tmStop(); tmAdd(today(), Number(b.dataset.tmadd)); render(); });
-  const mg = v.querySelector("#mhGo"); if (mg) mg.onclick = () => { const d = v.querySelector("#mhD").value, m = Number(v.querySelector("#mhM").value); if (!d || !m){ toast("Informe o dia e os minutos"); return; } if (d===today()) tmStop(); tmAdd(d, m*60); render(); toast("Lançado: "+(m>0?"+":"")+m+" min em "+br(d)); };
+  const mg = v.querySelector("#mhGo"); if (mg) mg.onclick = () => { const d = v.querySelector("#mhD").value, m = Number(v.querySelector("#mhM").value); if (!d || !m){ toast("Informe o dia e os minutos"); return; } if (d===today()) tmStop(); const ma = v.querySelector("#mhA").value; tmAdd(d, m*60, {m: ma, a: ""}); render(); toast("Lançado: "+(m>0?"+":"")+m+" min em "+br(d)); };
   const busca = v.querySelector("#busca");
   if (busca) busca.oninput = e => { fBusca = e.target.value; const pos = e.target.selectionStart; render(); const nb = document.getElementById("busca"); nb.focus(); try{ nb.setSelectionRange(pos,pos); }catch(_){} };
   v.querySelectorAll("[data-week]").forEach(c => c.onchange = e => { S.w[c.dataset.week] = e.target.checked; save(); });
@@ -1817,7 +1920,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 19, PAGES = "https://planotatico.github.io/";
+const APP_V = 20, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
