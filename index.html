@@ -260,6 +260,24 @@ nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes slam{0%{opacity:0;transform:scale(2.6)}100%{opacity:1;transform:scale(1)}}
 @media (prefers-reduced-motion: reduce){.p3d *, .p3d{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}.p3d .pk,.p3d .pt,.p3d .pr,.p3d .pl,.p3d .abtn{opacity:1}}
+
+/* ---------- questionário ---------- */
+.qprog{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:10px 12px 0}
+.qprog span{font-size:10px;text-align:center;color:#8a96ab;padding-top:6px;border-top:4px solid #e3e8f0;letter-spacing:.02em}
+.qprog span.ok{border-top-color:#2e7d4f;color:#2e7d4f}.qprog span.cur{border-top-color:#c9a227;color:#041e42;font-weight:700}
+.qk{font:600 12px var(--body);letter-spacing:.14em;text-transform:uppercase;color:#b8901c}
+.apane h3+.lead{margin-top:-8px}
+.qchips{display:flex;flex-wrap:wrap;gap:8px}
+.qchip{border:1.5px solid #c9d2e0;background:#fbfcfe;color:#1d2a40;border-radius:999px;padding:9px 14px;font:500 14px var(--body);line-height:1.2;text-align:left}
+.qchip.on{background:#041e42;border-color:#041e42;color:#fff;box-shadow:0 0 0 2px #c9a227 inset}
+.qta{width:100%;border:1.5px solid #c9d2e0;border-radius:10px;background:#fbfcfe;padding:10px 12px;font:15px var(--body);color:#0f1b2d;resize:vertical}
+.qmat{padding:10px;border-radius:10px;border:1px solid #e3e8f0}.qmat.red{border-color:#f3c3bd;background:#fff7f6}.qmat.red label{color:#b3261e}
+.qmat .qchip{font-size:13px;padding:7px 11px}
+.qnav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:4px}
+.qnav .abtn{flex:1}.qback{border:0;background:none;color:#041e42;font-weight:700;text-decoration:underline;text-underline-offset:3px;padding:8px}
+.qres{background:#f4f6fa;border-radius:10px;padding:10px 12px;font-size:14px}
+.qbl{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:10px;border:1px solid #e3e8f0}.qbl b{font:700 15px var(--display);letter-spacing:.06em;text-transform:uppercase;color:#041e42}.qbl span{font-size:14px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;vertical-align:middle}.dot.r{background:#b3261e}.dot.g{background:#2e7d4f}
 </style>
 </head>
 <body>
@@ -519,6 +537,7 @@ let S = {t:{}, w:{}};
 let mem = true;
 try { const raw = localStorage.getItem(KEY); if (raw) S = JSON.parse(raw); localStorage.setItem(KEY+".probe","1"); mem = false; } catch(e){ mem = true; }
 S.t = S.t || {}; S.w = S.w || {}; S.tm = S.tm || {run:null, days:{}};
+setTimeout(() => aplicaMetas(), 0);
 function keep(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 function save(){ S.u = Date.now(); keep(); syncSoon(); }
 
@@ -547,7 +566,7 @@ function mergeFirst(local, remote){
   return m;
 }
 function adopt(r){
-  const cur = JSON.stringify(S); S = norm(r); S.sy = 1; keep();
+  const cur = JSON.stringify(S); S = norm(r); S.sy = 1; keep(); aplicaMetas();
   if (JSON.stringify(S) !== cur) { const dl = document.getElementById("dlg"); if (!dl || !dl.classList.contains("open")) render(); }
 }
 async function syncNow(pushOnly){
@@ -618,11 +637,13 @@ function status(id){
   if (n.d === t) return {cls:"due", txt:"rev "+n.n+" hoje"};
   return {cls:"", txt:"rev "+n.n+" "+br(n.d)};
 }
+function blocoDe(x){ const pf = S.perfil; return pf && pf.bl && pf.bl[x[I_MAT]+"|"+x[I_BL]] ? pf.bl[x[I_MAT]+"|"+x[I_BL]] : x[I_BL]; }
+function blocosOrd(){ const v = [...new Set(T.map(blocoDe))]; const r = ["I","II","III","IV","V","VI","VII","VIII","IX","X"]; return v.sort((a,b) => r.indexOf(a) - r.indexOf(b)); }
 function currentBlock(){
-  for (const b of ["I","II","III"]) if (T.some(x => x[I_BL]===b && !(S.t[x[I_ID]]||{}).f)) return b;
+  for (const b of blocosOrd()) if (T.some(x => blocoDe(x)===b && !(S.t[x[I_ID]]||{}).f)) return b;
   return null;
 }
-function nextOf(mat, block){ return T.find(x => x[I_MAT]===mat && x[I_BL]===block && !(S.t[x[I_ID]]||{}).f); }
+function nextOf(mat, block){ return T.find(x => x[I_MAT]===mat && blocoDe(x)===block && !(S.t[x[I_ID]]||{}).f); }
 
 /* ---------- cabeçalho ---------- */
 function header(){ gameHeader(); }
@@ -650,12 +671,16 @@ function estrela(x, y, r, pontas, cor, rot){
   for (let i=0;i<n;i++){ const a = Math.PI/pontas*i - Math.PI/2 + (rot||0), rr = i%2 ? ri : r; d += (i?"L":"M")+(x+Math.cos(a)*rr).toFixed(2)+" "+(y+Math.sin(a)*rr).toFixed(2); }
   return `<path d="${d}Z" fill="${cor}"/>`;
 }
+let INS_N = 0;
 function insig(L, cls, car){
   car = car || carreira();
-  const P = patente(L), t = P.tipo, OURO = "#f2c300", OURO2 = "#c9a227", PRATA = "#dfe5ee", fundo = car === "bm" ? "#6b0f12" : "#041e42";
-  const simples = (x,y,r) => car === "bm" ? estrela(x,y,r,4,PRATA) : estrela(x,y,r,5,PRATA);
-  const composta = (x,y,r) => car === "bm" ? estrela(x,y,r,8,OURO) : estrela(x,y,r,5,OURO2) + estrela(x,y,r*.82,5,OURO,Math.PI/5);
-  const div = (y, cor) => `<path d="M12 ${y+7}L24 ${y}L36 ${y+7}" fill="none" stroke="${cor||OURO}" stroke-width="3.4" stroke-linejoin="miter" stroke-linecap="butt"/>`;
+  const P = patente(L), t = P.tipo, id = "i" + (++INS_N);
+  const OURO = `url(#${id}o)`, OURO2 = "#c9a227", PRATA = `url(#${id}p)`, fx = `filter="url(#${id}s)"`;
+  const f1 = car === "bm" ? "#9b1c20" : "#0b3470", f2 = car === "bm" ? "#3d0507" : "#020f26";
+  // mesmas insígnias da PM para as duas carreiras; Bombeiro muda só a cor do fundo
+  const simples = (x,y,r) => estrela(x,y,r,5,PRATA);
+  const composta = (x,y,r) => estrela(x,y,r,5,OURO) + estrela(x,y,r*.78,5,"#fff3b0",Math.PI/5).replace('fill="#fff3b0"','fill="#fff3b0" opacity=".55"');
+  const div = (y) => `<path d="M12 ${y+7}L24 ${y}L36 ${y+7}" fill="none" stroke="${OURO}" stroke-width="3.6" stroke-linejoin="miter"/>`;
   let g = "";
   if (t === "rec") g = `<path d="M12 27L24 20L36 27" fill="none" stroke="${OURO2}" stroke-width="1.6" stroke-dasharray="3 2.2"/>`;
   else if (/^d\d$/.test(t)){
@@ -663,12 +688,21 @@ function insig(L, cls, car){
     for (let i=0;i<top;i++) g += div(y0 + i*6);
     for (let i=0;i<low;i++) g += div(y0 + top*6 + 4 + i*6);
   }
-  else if (t === "tri") g = `<path d="M24 15L35 34H13Z" fill="none" stroke="${OURO}" stroke-width="2.8" stroke-linejoin="miter"/>`;
-  else if (/^b\d$/.test(t)){ const n = +t[1]; for (let i=0;i<n;i++) g += `<rect x="14" y="${26 - n*4 + i*8}" width="20" height="4.2" rx=".6" fill="${OURO}"/>`; }
-  else if (t === "asp") g = estrela(24,26,9,5,"none").replace('fill="none"', `fill="none" stroke="${PRATA}" stroke-width="1.8"`);
+  else if (t === "tri") g = `<path d="M24 15L35 34H13Z" fill="none" stroke="${OURO}" stroke-width="3" stroke-linejoin="miter"/>`;
+  else if (/^b\d$/.test(t)){ const n = +t[1]; for (let i=0;i<n;i++) g += `<rect x="14" y="${26 - n*4 + i*8}" width="20" height="4.4" rx=".8" fill="${OURO}"/>`; }
+  else if (t === "asp") g = estrela(24,26,9,5,"none").replace('fill="none"', `fill="none" stroke="${PRATA}" stroke-width="2"`);
   else if (/^s\d$/.test(t)){ const n = +t[1], ys = n===1?[26]:n===2?[19,33]:[14,26,38]; g = ys.map(y => simples(24,y,n===3?5.6:6.6)).join(""); }
-  else { const c = +t[1], sN = t.length > 2 ? +t[3] : 0, ys = [14,26,38]; ys.forEach((y,i) => { g += i < sN ? simples(24,y,5.6) : composta(24,y,5.9); }); }
-  return `<svg class="${cls||""}" viewBox="0 0 48 52" aria-hidden="true"><path d="M24 2 45 9v17c0 12.5-8.6 21.3-21 25C11.6 47.3 3 38.5 3 26V9Z" fill="${fundo}" stroke="${OURO2}" stroke-width="2.5"/>${g}</svg>`;
+  else { const sN = t.length > 2 ? +t[3] : 0, ys = [14,26,38]; ys.forEach((y,i) => { g += i < sN ? simples(24,y,5.6) : composta(24,y,6); }); }
+  return `<svg class="${cls||""}" viewBox="0 0 48 52" aria-hidden="true"><defs>
+    <linearGradient id="${id}o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7c4"/><stop offset=".45" stop-color="#f2c300"/><stop offset="1" stop-color="#9a7200"/></linearGradient>
+    <linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#d3dae4"/><stop offset="1" stop-color="#7f8a9b"/></linearGradient>
+    <linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#c9a227"/><stop offset="1" stop-color="#6e5200"/></linearGradient>
+    <radialGradient id="${id}f" cx=".35" cy=".25" r=".9"><stop offset="0" stop-color="${f1}"/><stop offset="1" stop-color="${f2}"/></radialGradient>
+    <filter id="${id}s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.1" stdDeviation=".7" flood-color="#000" flood-opacity=".55"/></filter></defs>
+    <path d="M24 2 45 9v17c0 12.5-8.6 21.3-21 25C11.6 47.3 3 38.5 3 26V9Z" fill="url(#${id}f)" stroke="url(#${id}b)" stroke-width="2.8"/>
+    <path d="M24 5.2 42 11v14.8C42 37 34.6 44.8 24 48.4" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="1"/>
+    <path d="M6 11.5 24 5.6 42 11.5V18C33 14 15 14 6 18Z" fill="#ffffff" opacity=".07"/>
+    <g ${fx}>${g}</g></svg>`;
 }
 function diaUtil(d){ const w = parse(d).getDay(); return w !== 0 && w !== 6; }
 function jogo(t, days, extra){
@@ -752,7 +786,7 @@ let G = null; // último estado do jogo mostrado
 function gameHeader(){
   const g = meuJogo(), ini = xpNivel(g.L), fim = xpNivel(g.L+1);
   $("pIns").innerHTML = insig(g.L);
-  $("pRank").textContent = g.pat.nome; $("pLv").textContent = "Nível " + g.L;
+  $("pRank").textContent = g.pat.nome.length > 16 ? g.pat.sigla : g.pat.nome; $("pLv").textContent = "Nível " + g.L;
   $("pXpBar").style.width = ((g.xp-ini)/(fim-ini)*100).toFixed(1)+"%";
   $("pXp").textContent = (g.xp-ini) + " / " + (fim-ini) + " XP";
   $("pSeen").textContent = g.aulas + " de " + T.length + " aulas";
@@ -760,7 +794,7 @@ function gameHeader(){
   gameCheck(g);
 }
 function gameCheck(g){
-  if (!syncCfg()){ G = null; return; }   // só comemora com a conta aberta (a tela de login fica por cima)
+  if (!syncCfg() || QZ){ G = null; return; }   // só comemora com a conta aberta (a tela de login fica por cima)
   const lista = conquistas(g).filter(a => a.ok);
   if (!S.ach){ S.ach = {}; lista.forEach(a => S.ach[a.id] = today()); keep(); G = g; if (lista.length) setTimeout(() => celebra({tipo:"intro", n:lista.length, g}), 600); return; }
   const novas = lista.filter(a => !S.ach[a.id]);
@@ -852,13 +886,165 @@ function missoes(){
     [novas >= 1, "Estudar 1 aula nova", "+"+XP_AULA+" XP"],
     [novas >= 2, "Estudar a 2ª aula nova", "+"+XP_AULA+" XP"],
     [h >= 1800, "30 min líquidos (mantém a sequência)", "sequência"],
-    [h >= META_DIA, "Meta de 4h líquidas (" + hm(h) + ")", "+"+XP_META+" XP bônus"],
+    [h >= META_DIA, "Meta de " + (META_DIA/3600) + "h líquidas (" + hm(h) + ")", "+"+XP_META+" XP bônus"],
   ];
   const feitas = it.filter(x => x[0]).length;
   return `<section class="card"><h2>Missões do dia ${feitas}/${it.length}</h2>${it.map(x => `<div class="missao${x[0]?" ok":""}"><span class="ck">${x[0]?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m5 12 5 5 9-10"/></svg>':""}</span><span class="t">${esc(x[1])}</span><span class="x">${esc(x[2])}</span></div>`).join("")}</section>`;
 }
+
+/* ---------- plano adaptado pelo diagnóstico (método Sarah Delma, dias 1 a 4) ---------- */
+const PESO = {PORT:5, CONST:5, PEN:5, ADM:4, PP:4, LPE:3, DPM:3, DPPM:3, GO:2};   // importância na prova (edital-base AOCP 003/2022)
+const DOM = ["Não sei / nunca estudei","Estudei, mas não domino","Tenho resumo e faço questões","Acerto 90% ou mais"];
+const NIVEIS = {
+  zerado:{nome:"Zerado", n:2, txt:"Comece com apenas 2 matérias e fique só com elas por cerca de 1 mês, aplicando o método: teoria, resumo objetivo, questões e as revisões de 48h, 7 e 30 dias."},
+  iniciante:{nome:"Iniciante", n:2, txt:"Comece com 2 matérias por cerca de 1 mês. É o tempo de se acostumar a estudar do jeito certo: revisando, revisando, revisando e fazendo questões."},
+  intermediario:{nome:"Intermediário", n:4, txt:"Bloco I com as 4 matérias mais importantes. Fique só com elas até esgotar os tópicos e então inclua as próximas."},
+  avancado:{nome:"Avançado", n:5, txt:"Bloco I com 5 matérias. Nos tópicos que você já domina, vá direto ao resumo e ao caderno de questões, revisando por questões."}
+};
+const GNOME = {"PORT|III":"Redação Oficial", "CONST|III":"Constituição de Goiás", "LPE|III":"Estatuto dos PMs de Goiás"};
+const gNome = g => GNOME[g.k] || MAT[g.m].replace(/ \(.*\)/,"");
+function grupos(){ const g = []; for (const x of T){ const k = x[I_MAT]+"|"+x[I_BL]; if (!g.find(y => y.k===k)) g.push({k, m:x[I_MAT], ob:x[I_BL]}); } return g; }
+function montaBlocos(pf){
+  const fator = [1.6, 1.4, 1.0, 0.6], ob = {I:1, II:.9, III:.55};
+  const gs = grupos().map(g => ({...g, sc: (PESO[g.m]||2) * ob[g.ob] * fator[pf.dom[g.m] ?? 1]})).sort((a,b) => b.sc - a.sc);
+  const n = NIVEIS[pf.nivel].n, R = ["I","II","III","IV","V","VI","VII","VIII","IX","X"], bl = {};
+  gs.forEach((g,i) => bl[g.k] = R[Math.floor(i/n)]);
+  return bl;
+}
+function matsHoje(b){
+  const gs = grupos().filter(g => blocoDe([0,g.m,0,0,g.ob]) === b && T.some(x => x[I_MAT]===g.m && x[I_BL]===g.ob && !(S.t[x[I_ID]]||{}).f));
+  const mats = [...new Set(gs.map(g => g.m))];
+  const porDia = (S.perfil.horas || 4) <= 2 ? 1 : 2;
+  if (mats.length <= porDia) return mats;
+  // rodízio: cada dia de estudo avança o par de matérias do bloco
+  let k = 0; for (let d = "2026-01-05"; d < today(); d = add(d,1)) if (S.perfil.dias.includes(parse(d).getDay())) k++;
+  const out = []; for (let i=0;i<porDia;i++) out.push(mats[(k*porDia + i) % mats.length]);
+  return [...new Set(out)];
+}
+function dicaDom(x){
+  if (!S.perfil) return "";
+  const d = S.perfil.dom[x[I_MAT]] ?? 1;
+  return d >= 2 ? `<div class="muted" style="color:var(--ok)">Você já tem base nesta matéria: leia seu resumo e vá direto ao caderno de questões.</div>`
+               : `<div class="muted" style="color:var(--bad)">Tópico em vermelho: vá à teoria (PDF ou videoaula) e crie seu resumo antes das questões.</div>`;
+}
+function diasUteisAte(fim){ if (!S.perfil) return 0; let n = 0; for (let d = today(); d <= fim; d = add(d,1)) if (S.perfil.dias.includes(parse(d).getDay())) n++; return n; }
+function provaCard(){
+  const pf = S.perfil; if (!pf || !pf.prova) return "";
+  const t = today(), dias = Math.round((parse(pf.prova) - parse(t)) / 86400000);
+  if (dias < 0) return "";
+  const faltam = T.filter(x => !(S.t[x[I_ID]]||{}).f).length, du = Math.max(1, diasUteisAte(pf.prova));
+  const ritmo = faltam / du;
+  return `<section class="card"><h2>Faltam ${dias} dia${dias===1?"":"s"} para a prova</h2>
+    <div class="kv"><b>Prova</b><span>${br(pf.prova)}/${pf.prova.slice(0,4)}${pf.semEdital ? " (previsão)" : ""}</span><b>Aulas a estudar</b><span>${faltam} de ${T.length}</span><b>Ritmo</b><span>${ritmo <= 2 ? `${ritmo.toFixed(1).replace(".",",")} aula por dia de estudo: dá para fechar o edital com folga para revisar` : `${ritmo.toFixed(1).replace(".",",")} aulas por dia de estudo: aperte o ritmo ou aumente as horas no diagnóstico`}</span><b>Seu nível</b><span>${NIVEIS[pf.nivel].nome} · ${pf.horas}h por dia, ${pf.dias.length} dias por semana</span></div></section>`;
+}
+
+/* ---------- questionário de diagnóstico ---------- */
+let QZ = null;
+function abrirDiagnostico(){
+  const pf = S.perfil || {};
+  QZ = {step:0, d: {cargo: pf.cargo || "cfo-pmgo", motivo: pf.motivo || "", ident: pf.ident ?? null, prova: pf.prova || "", semEdital: pf.semEdital ?? true, leu: pf.leu ?? null,
+    horas: pf.horas || 4, dias: pf.dias ? [...pf.dias] : [1,2,3,4,5], q: Object.assign({tempo:null, rev:null, quest:null, edital:null}, pf.q || {}), dom: Object.assign({}, pf.dom || {})}};
+  let w = $("quiz"); if (!w){ w = document.createElement("div"); w.id = "quiz"; w.className = "auth"; document.body.appendChild(w); }
+  w.classList.add("on"); qzRender();
+}
+function qzNivel(q){
+  const pts = {tempo:{nunca:0, m6:1, a2:2, mais:3}, rev:{nao:0, asvezes:1, sim:2}, quest:{nao:0, asvezes:1, sim:2}, edital:{nao:0, uma:1, tres:3}};
+  let s = 0; for (const k in pts) s += pts[k][q[k]] || 0;
+  if (q.edital === "tres" && q.rev === "sim" && q.quest === "sim") return "avancado";
+  return s <= 1 ? "zerado" : s <= 4 ? "iniciante" : s <= 7 ? "intermediario" : "avancado";
+}
+const QZ_PASSOS = 6;
+function chips(name, opts, val, multi){
+  return `<div class="qchips" role="group">` + opts.map(([v,l]) => { const on = multi ? val.includes(v) : val === v; return `<button type="button" class="qchip${on?" on":""}" data-q="${name}" data-v="${v}" aria-pressed="${on}">${esc(l)}</button>`; }).join("") + `</div>`;
+}
+function qzRender(){
+  const d = QZ.d, st = QZ.step, w = $("quiz");
+  const passos = ["Cargo","Edital","Rotina","Nível","Domínio","Seu plano"];
+  let corpo = "", ok = true;
+  if (st === 0){
+    corpo = `<small class="qk">Desafio 01 · Escolha do cargo</small><h3>Qual é o seu cargo?</h3>
+      <p class="lead">Foque em um cargo só. Quando terminar todas as matérias dele, aí sim você inclui outro.</p>
+      ${chips("cargo", [["cfo-pmgo","Cadete Combatente · CFO PMGO"]], d.cargo)}
+      <div class="muted" style="font-size:13px">Outros concursos chegam em breve.</div>
+      <div class="fld"><label for="qMotivo">Por que você escolheu este cargo? (não vale só dinheiro)</label><textarea id="qMotivo" rows="3" class="qta" placeholder="Seus motivos aparecem para você nos dias difíceis.">${esc(d.motivo)}</textarea></div>
+      <div class="fld"><label>Você se identifica com uns 80% das matérias do edital?</label>${chips("ident", [["sim","Sim, gosto de estudá-las"],["nao","Não muito"]], d.ident)}</div>
+      ${d.ident === "nao" ? `<div class="alert on bad">A Sarah recomenda analisar melhor a escolha: trabalhar com o que não gosta corrói com o tempo. Se mesmo assim este é o cargo, siga em frente.</div>` : ""}`;
+    ok = !!d.ident;
+  } else if (st === 1){
+    corpo = `<small class="qk">Desafio 02 · Conheça seu edital</small><h3>Edital-base: AOCP 003/2022</h3>
+      <p class="lead">50 questões objetivas e 1 discursiva. Enquanto o novo edital não sai, o plano segue o anterior, verticalizado tópico a tópico na aba Aulas.</p>
+      <div class="fld"><label>Já tem data de prova?</label>${chips("semEdital", [["false","Sim, tenho a data"],["true","Ainda não (vou usar uma previsão)"]], String(d.semEdital))}</div>
+      <div class="fld"><label for="qProva">${d.semEdital ? "Data prevista da prova" : "Data da prova"}</label><div class="box"><input type="date" id="qProva" value="${esc(d.prova)}" min="${today()}" style="padding:0 12px"></div></div>
+      <div class="fld"><label>Você já leu o edital inteiro e verticalizou os tópicos?</label>${chips("leu", [["sim","Sim"],["nao","Ainda não"]], d.leu)}</div>
+      ${d.leu === "nao" ? `<div class="alert on ok">Sem problema: a aba Aulas já traz o edital verticalizado e enumerado. Leia os detalhes da prova (tempo, número e peso das questões, discursiva) assim que puder.</div>` : ""}`;
+    ok = !!d.prova && !!d.leu;
+  } else if (st === 2){
+    corpo = `<small class="qk">Rotina</small><h3>Quanto tempo você tem?</h3>
+      <p class="lead">Conte só o tempo líquido: pausas e interrupções ficam de fora.</p>
+      <div class="fld"><label>Horas líquidas por dia</label>${chips("horas", [1,2,3,4,5,6,8].map(h => [h, h+"h"]), d.horas)}</div>
+      <div class="fld"><label>Dias de estudo na semana</label>${chips("dias", [[1,"Seg"],[2,"Ter"],[3,"Qua"],[4,"Qui"],[5,"Sex"],[6,"Sáb"],[0,"Dom"]], d.dias, true)}</div>
+      <div class="muted">Meta: ${d.horas}h por dia · ${d.horas*d.dias.length}h por semana.</div>`;
+    ok = d.dias.length > 0;
+  } else if (st === 3){
+    corpo = `<small class="qk">Dia 04 · Em que nível você está?</small><h3>Seja sincero(a)</h3>
+      <p class="lead">Seu nível decide quantas matérias entram no Bloco I.</p>
+      <div class="fld"><label>Há quanto tempo estuda para concursos?</label>${chips("tempo", [["nunca","Estou começando agora"],["m6","Menos de 6 meses"],["a2","De 6 meses a 2 anos"],["mais","Mais de 2 anos"]], d.q.tempo)}</div>
+      <div class="fld"><label>Você faz revisões programadas (48h, 7 e 30 dias)?</label>${chips("rev", [["nao","Não"],["asvezes","Às vezes"],["sim","Sim, sempre"]], d.q.rev)}</div>
+      <div class="fld"><label>Faz cadernos de questões e caderno de erros?</label>${chips("quest", [["nao","Não"],["asvezes","Às vezes"],["sim","Sim, sempre"]], d.q.quest)}</div>
+      <div class="fld"><label>Já revisou o edital inteiro?</label>${chips("edital", [["nao","Ainda não"],["uma","Pelo menos 1 vez"],["tres","3 vezes, com 90% de acerto"]], d.q.edital)}</div>`;
+    ok = d.q.tempo && d.q.rev && d.q.quest && d.q.edital;
+  } else if (st === 4){
+    corpo = `<small class="qk">Desafio 03 · A hora da verdade</small><h3>Quanto você domina cada matéria?</h3>
+      <p class="lead">Sem medo (e sem arrogância): o que você não sabe ou não domina fica em vermelho e vira micrometa.</p>
+      ${Object.keys(MAT).map(m => `<div class="fld qmat${(d.dom[m] ?? 9) <= 1 ? " red" : ""}"><label>${esc(MAT[m].replace(/ \(.*\)/,""))}</label>${chips("dom:"+m, DOM.map((t,i) => [i, t]), d.dom[m])}</div>`).join("")}`;
+    ok = Object.keys(MAT).every(m => d.dom[m] !== undefined);
+  } else {
+    const nivel = qzNivel(d.q), pf = Object.assign({}, d, {nivel}), bl = montaBlocos(pf), R = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
+    const porB = {}; grupos().forEach(g => { const b = bl[g.k]; (porB[b] = porB[b] || []).push(g); });
+    const vermelhas = Object.keys(MAT).filter(m => (d.dom[m] ?? 1) <= 1).length;
+    corpo = `<small class="qk">Diagnóstico pronto</small><h3>Nível ${NIVEIS[nivel].nome}</h3>
+      <p class="lead">${NIVEIS[nivel].txt}</p>
+      <div class="qres"><b>${vermelhas}</b> de ${Object.keys(MAT).length} matérias em vermelho · <b>${d.horas}h</b> por dia · <b>${d.dias.length}</b> dias por semana</div>
+      ${Object.keys(porB).sort((a,b) => R.indexOf(a)-R.indexOf(b)).map(b => `<div class="qbl"><b>Bloco ${b}${b==="I"?" · comece por aqui":""}</b><span>${porB[b].map(g => esc(gNome(g)) + ((d.dom[g.m] ?? 1) <= 1 ? ' <i class="dot r"></i>' : ' <i class="dot g"></i>')).join(" · ")}</span></div>`).join("")}
+      <div class="muted" style="font-size:13px">Ordem pelos pesos do edital e pelo seu domínio: as matérias mais importantes e mais fracas vêm primeiro. Só passe ao próximo bloco quando esgotar os tópicos do atual.</div>`;
+  }
+  const last = st === QZ_PASSOS - 1;
+  w.innerHTML = `<div class="in"><div class="crest" style="margin-bottom:12px"><small>Diagnóstico · método Sarah Delma</small><b style="font-size:24px">Monte seu plano</b></div>
+    <div class="stripe" aria-hidden="true"></div>
+    <div class="abox"><div class="qprog">${passos.map((p,i) => `<span class="${i<st?"ok":i===st?"cur":""}">${esc(p)}</span>`).join("")}</div>
+    <form class="apane" id="qForm" novalidate>${corpo}
+      <div class="qnav">${st > 0 ? `<button type="button" class="qback" id="qBack">Voltar</button>` : (S.perfil ? `<button type="button" class="qback" id="qClose">Cancelar</button>` : "<span></span>")}
+      <button class="abtn" type="submit" ${ok ? "" : "disabled"}>${last ? "Começar meu plano" : "Continuar"}</button></div></form></div></div>`;
+  w.scrollTop = 0;
+  w.querySelectorAll(".qchip").forEach(b => b.onclick = () => {
+    const q = b.dataset.q, v = b.dataset.v;
+    if (q === "dias"){ const n = +v, i = d.dias.indexOf(n); i < 0 ? d.dias.push(n) : d.dias.splice(i,1); }
+    else if (q === "horas") d.horas = +v;
+    else if (q === "semEdital") d.semEdital = v === "true";
+    else if (q.startsWith("dom:")) d.dom[q.slice(4)] = +v;
+    else if (["tempo","rev","quest","edital"].includes(q)) d.q[q] = v;
+    else d[q] = v;
+    const keep = $("qMotivo") ? $("qMotivo").value : null; if (keep !== null) d.motivo = keep;
+    const pv = $("qProva") ? $("qProva").value : null; if (pv !== null) d.prova = pv;
+    const y = w.scrollTop; qzRender(); w.scrollTop = y;
+  });
+  const mo = $("qMotivo"); if (mo) mo.oninput = () => d.motivo = mo.value;
+  const pr = $("qProva"); if (pr) pr.onchange = () => { d.prova = pr.value; qzRender(); };
+  if (st === 1 && !d.prova){ const x = new Date(); x.setMonth(x.getMonth()+8); d.prova = iso(x); setTimeout(qzRender, 0); }
+  const bk = $("qBack"); if (bk) bk.onclick = () => { QZ.step--; qzRender(); };
+  const cl = $("qClose"); if (cl) cl.onclick = () => { $("quiz").classList.remove("on"); QZ = null; };
+  $("qForm").onsubmit = e => {
+    e.preventDefault(); if (!ok) return;
+    if (!last){ QZ.step++; qzRender(); return; }
+    const nivel = qzNivel(d.q), pf = {cargo:d.cargo, motivo:d.motivo.trim(), ident:d.ident, prova:d.prova, semEdital:d.semEdital, leu:d.leu, horas:d.horas, dias:d.dias.sort(), q:d.q, dom:d.dom, nivel, feito:today()};
+    pf.bl = montaBlocos(pf); S.perfil = pf; aplicaMetas(); save();
+    $("quiz").classList.remove("on"); QZ = null; tab = "hoje"; G = null; render();
+    toast("Plano montado: nível " + NIVEIS[nivel].nome + ". Comece pelo Bloco I.");
+  };
+}
 /* ---------- cronômetro de horas líquidas ---------- */
-const META_DIA = 4*3600, META_SEM = 20*3600;
+let META_DIA = 4*3600, META_SEM = 20*3600;
+function aplicaMetas(){ const pf = S.perfil; META_DIA = (pf && pf.horas ? pf.horas : 4)*3600; META_SEM = META_DIA * (pf && pf.dias ? pf.dias.length : 5); }
 function tmDay(d){ let v = S.tm.days[d] || 0; if (S.tm.run && d===today()) v += Math.max(0,(Date.now()-S.tm.run)/1000); return v; }
 function tmStart(){ if (!S.tm.run){ S.tm.run = Date.now(); save(); } }
 function tmStop(){ if (S.tm.run){ const d = today(); S.tm.days[d] = (S.tm.days[d]||0) + Math.max(0,(Date.now()-S.tm.run)/1000); S.tm.run = null; save(); } }
@@ -913,7 +1099,7 @@ const label = x => esc(SHORT[x[I_MAT]])+" · "+esc(x[I_AULA]);
 function vHoje(){
   const t = today(), dt = new Date();
   const due = T.map(x => ({x, n: nextRev(x[I_ID])})).filter(o => o.n && o.n.d <= t).sort((a,b)=> a.n.d < b.n.d ? -1 : 1);
-  let h = timerCard(false) + missoes() + `<section class="card"><h2>Revisões de hoje</h2><div class="muted">Faça antes de qualquer aula nova.${due.length ? " "+due.length+" pendente"+(due.length>1?"s":"")+"." : ""}</div>`;
+  let h = provaCard() + timerCard(false) + missoes() + `<section class="card"><h2>Revisões de hoje</h2><div class="muted">Faça antes de qualquer aula nova.${due.length ? " "+due.length+" pendente"+(due.length>1?"s":"")+"." : ""}</div>`;
   if (!due.length) h += `<div class="empty">Nenhuma revisão vencida. Pode ir direto para a aula nova.</div>`;
   for (const o of due){
     const late = o.n.d < t;
@@ -926,15 +1112,15 @@ function vHoje(){
   const b = currentBlock(), wd = dt.getDay();
   h += `<section class="card"><h2>Aula nova · ${WD[wd]}</h2>`;
   if (!b){ h += `<div class="empty">Edital fechado. Siga a manutenção do cronograma: refazer cadernos (meta 90%), discursiva e simulados.</div>`; }
-  else if (wd===0 || wd===6){ h += `<div class="empty">Fim de semana: descanso. Se quiser adiantar, só revisões.</div>`; }
+  else if (S.perfil ? !S.perfil.dias.includes(wd) : (wd===0 || wd===6)){ h += `<div class="empty">Hoje não é dia de estudo no seu plano: descanso. Se quiser adiantar, só revisões.</div>`; }
   else {
-    let mats = ROT[b][wd].filter(m => nextOf(m,b));
+    let mats = S.perfil ? matsHoje(b) : ROT[b][wd].filter(m => nextOf(m,b));
     for (const m of Object.keys(MAT)) if (mats.length < 2 && !mats.includes(m) && nextOf(m,b)) mats.push(m);
-    h += `<div class="muted">Bloco ${b} · metade do tempo de conteúdo para cada matéria. Se a aula não acabar hoje, ela continua amanhã.</div>`;
+    h += `<div class="muted">Bloco ${b} · ${mats.length > 1 ? "metade do tempo de conteúdo para cada matéria" : "todo o tempo de conteúdo nesta matéria"}. Se a aula não acabar hoje, ela continua amanhã.</div>`;
     for (const m of mats){
       const x = nextOf(m,b);
       h += `<div class="item"><div class="txt"><div class="code">${label(x)}</div><div class="tt">${esc(x[I_TIT])}</div>
-        <div class="muted">Edital: ${esc(x[I_ED])} · <a href="${cursoUrl(x)}" target="_blank" rel="noopener">${ondeAbrir(x)}</a>${isPJ(x)&&PJ[x[I_ID]].a.length?" · "+PJ[x[I_ID]].a.length+" aulas do Pablo":""}</div>${x[I_OBS]?`<div class="muted">${esc(x[I_OBS])}</div>`:""}</div>
+        ${dicaDom(x)}<div class="muted">Edital: ${esc(x[I_ED])} · <a href="${cursoUrl(x)}" target="_blank" rel="noopener">${ondeAbrir(x)}</a>${isPJ(x)&&PJ[x[I_ID]].a.length?" · "+PJ[x[I_ID]].a.length+" aulas do Pablo":""}</div>${x[I_OBS]?`<div class="muted">${esc(x[I_OBS])}</div>`:""}</div>
         <button class="btn small ghost" data-first="${x[I_ID]}">Terminei</button></div>`;
     }
   }
@@ -949,15 +1135,15 @@ function curWeek(){ const t = today(); let cur = null; for (const w of WEEKS) if
 
 function vAulas(){
   let h = `<section class="card"><input type="search" id="busca" placeholder="Buscar aula, lei ou item do edital" value="${esc(fBusca)}" aria-label="Buscar aula">
-    <div class="chips" role="group" aria-label="Filtrar por bloco">${["todos","I","II","III"].map(b=>`<button class="chip" data-bloco="${b}" aria-pressed="${fBloco===b}">${b==="todos"?"Todos":"Bloco "+b}</button>`).join("")}</div>
+    <div class="chips" role="group" aria-label="Filtrar por bloco">${["todos",...blocosOrd()].map(b=>`<button class="chip" data-bloco="${b}" aria-pressed="${fBloco===b}">${b==="todos"?"Todos":"Bloco "+b}</button>`).join("")}</div>
     <div class="muted">Aulas dos cursos PM-GO (Cadete) do Estratégia e, em Português, unidades do curso do Pablo Jamilk (seu Drive), na ordem de estudo. Toque numa aula para lançar a data, as revisões, o % de acerto e o "não domino".</div></section>`;
   const q = fBusca.trim().toLowerCase();
   const groups = [];
   for (const x of T){
-    if (fBloco!=="todos" && x[I_BL]!==fBloco) continue;
+    if (fBloco!=="todos" && blocoDe(x)!==fBloco) continue;
     if (q && !(x[I_ID]+" "+x[I_AULA]+" "+x[I_TIT]+" "+x[I_ED]).toLowerCase().includes(q)) continue;
-    const key = x[I_MAT]+"|"+x[I_BL];
-    let g = groups.find(g => g.key===key); if (!g){ g = {key, m:x[I_MAT], b:x[I_BL], items:[]}; groups.push(g); }
+    const key = x[I_MAT]+"|"+blocoDe(x);
+    let g = groups.find(g => g.key===key); if (!g){ g = {key, m:x[I_MAT], b:blocoDe(x), items:[]}; groups.push(g); }
     g.items.push(x);
   }
   if (!groups.length) h += `<div class="empty">Nenhuma aula encontrada.</div>`;
@@ -975,7 +1161,7 @@ function vAulas(){
 
 function vCrono(){
   const cw = curWeek(), b = currentBlock();
-  const left = b ? T.filter(x => x[I_BL]===b && !(S.t[x[I_ID]]||{}).f).length : 0;
+  const left = b ? T.filter(x => blocoDe(x)===b && !(S.t[x[I_ID]]||{}).f).length : 0;
   let h = `<section class="card"><h2>Cronograma</h2><div class="muted">Base: Edital 003/2022 (AOCP). Quando o novo edital sair, confira o conteúdo. As datas supõem cerca de 2 aulas por dia no Bloco I; se o seu ritmo for outro, o app segue o seu ritmo e o cronograma estica.</div>${b?`<div><b>Bloco ${b}:</b> faltam ${left} aulas.</div>`:""}`;
   for (const w of WEEKS){
     h += `<div class="week${cw && cw[0]===w[0]?" now":""}"><input type="checkbox" data-week="${w[0]}" ${S.w[w[0]]?"checked":""} aria-label="Semana ${w[0]} feita">
@@ -1118,7 +1304,7 @@ function pjList(x){
 }
 function openAula(id){
   const x = byId(id), s = st(id), r = revs(id), m = x[I_MAT];
-  let h = `<div class="code">${esc(MAT[m])} · ${esc(x[I_AULA])} · Bloco ${x[I_BL]}</div><h2 style="text-transform:none;letter-spacing:0">${esc(x[I_TIT])}</h2>
+  let h = `<div class="code">${esc(MAT[m])} · ${esc(x[I_AULA])} · Bloco ${blocoDe(x)}</div><h2 style="text-transform:none;letter-spacing:0">${esc(x[I_TIT])}</h2>
     <div class="muted">Edital: ${esc(x[I_ED])}</div>`;
   if (x[I_OBS]) h += `<div class="muted">${esc(x[I_OBS])}</div>`;
   h += `<div class="row" style="flex-wrap:wrap">${isPJ(x) ? "" : `<a class="btn small ghost" href="${cursoUrl(x)}" target="_blank" rel="noopener">Abrir no Estratégia</a>`}${PASSO[m]?`<a class="btn small ghost" href="${EC+PASSO[m]}/aulas" target="_blank" rel="noopener">Passo Estratégico</a>`:""}</div>
@@ -1190,13 +1376,13 @@ function bind(){
       catch(e){ ta.value = txt; ta.select(); toast("Selecione o texto e copie"); }
     };
     v.querySelector("#bkRestore").onclick = () => {
-      try { const o = JSON.parse(document.getElementById("bkText").value); if (!o || typeof o.t!=="object") throw 0; S = {t:o.t, w:o.w||{}, tm:o.tm||{run:null,days:{}}, ach:o.ach, car:o.car, sy:S.sy}; G = null; save(); render(); toast("Backup restaurado"); }
+      try { const o = JSON.parse(document.getElementById("bkText").value); if (!o || typeof o.t!=="object") throw 0; S = {t:o.t, w:o.w||{}, tm:o.tm||{run:null,days:{}}, ach:o.ach, car:o.car, perfil:o.perfil, sy:S.sy}; G = null; aplicaMetas(); save(); render(); toast("Backup restaurado"); }
       catch(e){ toast("Backup inválido: cole o texto completo"); }
     };
     let armed = false;
     v.querySelector("#bkReset").onclick = e => {
       if (!armed){ armed = true; e.target.textContent = "Toque de novo para apagar tudo"; setTimeout(()=>{ armed=false; if (e.target.isConnected) e.target.textContent="Apagar todo o progresso"; }, 4000); return; }
-      S = {t:{}, w:{}, tm:{run:null,days:{}}, ach:{}, car:S.car, sy:S.sy}; G = null; save(); render(); toast("Progresso apagado");
+      S = {t:{}, w:{}, tm:{run:null,days:{}}, ach:{}, car:S.car, perfil:S.perfil, sy:S.sy}; G = null; save(); render(); toast("Progresso apagado");
     };
   }
 }
@@ -1234,7 +1420,7 @@ async function authCall(btn, body, campos){
 async function aposEntrar(r, lembrar, msg){
   setConta({t:r.t, u:r.u, nome:r.nome, email:r.email}, lembrar); S.sy = 0; GR = null; keep();
   ["lSenha","cSenha","cSenha2","eSenha","eSenha2","eCod"].forEach(id => $(id).value = "");
-  toast(msg); await syncNow(false); G = null; render();
+  toast(msg); await syncNow(false); G = null; aplicaMetas(); render(); if (!S.perfil) abrirDiagnostico();
 }
 function initAuth(){
   $("t_login").onclick = () => authPane("login"); $("t_cad").onclick = () => authPane("cad");
@@ -1307,10 +1493,11 @@ function openConta(){
       <input type="password" id="pAtual" placeholder="Senha atual" autocomplete="current-password" aria-label="Senha atual">
       <input type="password" id="pNova" placeholder="Nova senha (mínimo 6)" autocomplete="new-password" aria-label="Nova senha">
       <button class="btn small ghost" id="pTroca" style="margin-top:8px">Trocar senha</button></details>
+    <div class="row"><button class="btn small ghost" id="pDiag">${S.perfil ? "Refazer diagnóstico" : "Fazer diagnóstico"}</button></div>
     <div class="row"><button class="btn small danger" id="pSair">Sair da conta</button><button class="btn small ghost" id="pFechar">Fechar</button></div>
     <div class="muted">Ao sair, o progresso continua salvo na conta e neste aparelho.</div>`;
   $("dlg").classList.add("open");
-  $("pFechar").onclick = closeDlg; $("pSair").onclick = sair;
+  $("pFechar").onclick = closeDlg; $("pSair").onclick = sair; $("pDiag").onclick = () => { closeDlgQuiet(); abrirDiagnostico(); };
   $("pCar").onchange = e => { S.car = e.target.value; save(); render(); toast(S.car === "bm" ? "Carreira: Bombeiro Militar" : "Carreira: Polícia Militar"); };
   $("pSalvar").onclick = async () => {
     try { const r = await api({acao:"perfil", t:c.t, nome:$("pNome").value, email:$("pEmail").value}); if (!r.ok){ toast(r.erro); return; } updConta({nome:r.nome, email:r.email}); toast("Dados salvos"); }
@@ -1323,10 +1510,11 @@ function openConta(){
   };
 }
 initAuth();
+if (syncCfg() && !S.perfil) setTimeout(abrirDiagnostico, 300);
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 7, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 8, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
