@@ -1194,9 +1194,11 @@ function tmStart(){ if (!S.tm.run){ S.tm.run = Date.now(); save(); } }
 function tmStop(){ if (S.tm.run){ const d = today(), sec = Math.max(0,(Date.now()-S.tm.run)/1000); S.tm.days[d] = (S.tm.days[d]||0) + sec; tmCredita(d, sec); S.tm.run = null; save(); } }
 function tmAdd(d, sec, cur){ const antes = S.tm.days[d]||0; S.tm.days[d] = Math.max(0, antes + sec); tmCredita(d, S.tm.days[d] - antes, cur); save(); }
 function tmTroca(m, a){ const ia = !!S.tm.run; if (ia) tmStop(); const qm = (S.tm.cur||{}).qm; S.tm.cur = {m: m || "", a: a || "", qm: qm || ""}; if (ia) tmStart(); save(); }
+function nomeAssunto(a, comMat){ const x = byId(a); if (!x) return a; const t = x[I_TIT].length > 48 ? x[I_TIT].slice(0,46) + "…" : x[I_TIT]; return (comMat ? nomeAtiv(x[I_MAT]) + " · " : "") + x[I_AULA] + " · " + t; }
+function opcoesAssunto(m){ const xs = MAT[m] ? T.filter(x => x[I_MAT] === m) : []; if (!xs.length) return `<option value="">Sem assunto</option>`; const p = nextOf(m, currentBlock()); return xs.map(x => `<option value="${x[I_ID]}"${p && p[I_ID]===x[I_ID]?" selected":""}>${esc(nomeAssunto(x[I_ID], false))}</option>`).join(""); }
 function nomeAtiv(k){ if (ATIV[k]) return ATIV[k]; if (k === "_sem") return "Sem matéria definida"; if (MAT[k]) return MAT[k].replace(/ \(.*\)/,""); for (const c in CONC) if (CONC[c].MAT && CONC[c].MAT[k]) return CONC[c].MAT[k]; return k; }
 function curPadrao(){ // sem escolha ainda: a 1ª matéria da aula nova, já na próxima aula dela
-  const cur = S.tm.cur || {}; if (cur.m) return cur;
+  const cur = S.tm.cur || {}; if (cur.m){ if (MAT[cur.m] && !cur.a){ const x = nextOf(cur.m, currentBlock()) || T.find(y => y[I_MAT] === cur.m && !(S.t[y[I_ID]]||{}).f) || T.find(y => y[I_MAT] === cur.m); if (x){ cur.a = x[I_ID]; S.tm.cur = cur; } } return cur; }
   const an = matsAulaNova(), m = an[0] || ""; const x = m ? nextOf(m, currentBlock()) : null;
   return {m, a: x ? x[I_ID] : ""};
 }
@@ -1213,42 +1215,47 @@ function seletorAtiv(id){
       <optgroup label="Outras matérias">${outras.map(m => opt(m, nomeAtiv(m))).join("")}</optgroup>
       <optgroup label="Outras atividades">${["_sim","_rev","_out"].map(k => opt(k, ATIV[k])).join("")}</optgroup></select></label>
     ${ehQ ? `<label class="f" for="${id}Q" style="flex:1;min-width:150px">Matéria das questões<select id="${id}Q" class="tmSel"><option value="">Várias matérias</option>${[...an, ...outras].map(m => `<option value="${m}"${cur.qm===m?" selected":""}>${esc(nomeAtiv(m))}</option>`).join("")}</select></label>` : ""}
-    ${aulas.length ? `<label class="f" for="${id}A" style="flex:1;min-width:150px">Conteúdo${prox ? "" : " (opcional)"}<select id="${id}A" class="tmSel"><option value="">Toda a matéria</option>${aulas.map(x => `<option value="${x[I_ID]}"${cur.a===x[I_ID]?" selected":""}>${esc((prox && prox[I_ID]===x[I_ID] ? "▶ " : "") + x[I_AULA].replace("Aula ","")+" · "+x[I_TIT]).slice(0,72)}</option>`).join("")}</select></label>` : ""}</div>
+    ${aulas.length ? `<label class="f" for="${id}A" style="flex:1;min-width:150px">Assunto<select id="${id}A" class="tmSel">${ehQ ? `<option value="">Vários assuntos</option>` : ""}${aulas.map(x => `<option value="${x[I_ID]}"${cur.a===x[I_ID]?" selected":""}>${esc((prox && prox[I_ID]===x[I_ID] ? "▶ " : "") + x[I_AULA].replace("Aula ","")+" · "+x[I_TIT]).slice(0,72)}</option>`).join("")}</select></label>` : ""}</div>
     ${ehQ ? formQuestoes(id, cur.qm || "") : ""}`;
 }
 /* ---------- questões: acertos e erros ---------- */
-function formQuestoes(id, m){
+function formQuestoes(id, m, a){
   return `<div class="qform"><div class="row" style="gap:8px;align-items:flex-end;flex-wrap:wrap">
     <label class="f" for="${id}Ac" style="flex:1;min-width:90px">Acertos<input type="number" id="${id}Ac" min="0" inputmode="numeric" placeholder="0"></label>
     <label class="f" for="${id}Er" style="flex:1;min-width:90px">Erros<input type="number" id="${id}Er" min="0" inputmode="numeric" placeholder="0"></label>
-    ${id === "qx" ? `<label class="f" for="qxM" style="flex:2;min-width:150px">Matéria<select id="qxM" class="tmSel">${Object.keys(MAT).map(k => `<option value="${k}"${m===k?" selected":""}>${esc(nomeAtiv(k))}</option>`).join("")}</select></label>` : ""}
+    ${id === "qx" ? `<label class="f" for="qxM" style="flex:2;min-width:150px">Matéria<select id="qxM" class="tmSel">${Object.keys(MAT).map(k => `<option value="${k}"${m===k?" selected":""}>${esc(nomeAtiv(k))}</option>`).join("")}</select></label>
+    <label class="f" for="qxA" style="flex:1 1 100%">Assunto<select id="qxA" class="tmSel"><option value="">Vários assuntos</option>${T.filter(x => x[I_MAT] === m).map(x => `<option value="${x[I_ID]}"${a===x[I_ID]?" selected":""}>${esc(nomeAssunto(x[I_ID], false))}</option>`).join("")}</select></label>` : ""}
     <button class="btn small" data-qreg="${id}" style="height:44px">Registrar</button></div>
     <div class="muted" style="font-size:13px">Lance o resultado de cada caderno ao terminar. Os acertos e erros aparecem na aba Horas.</div></div>`;
 }
-function regQuestoes(m, ac, er){
-  const d = today(), q = (S.q = S.q || {}); (q[d] = q[d] || []).push({id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), m: m || "_varias", ac, er});
+function regQuestoes(m, ac, er, a){
+  const d = today(), q = (S.q = S.q || {}); (q[d] = q[d] || []).push({id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), m: m || "_varias", a: a || "", ac, er});
+  if (a){ let A = 0, E = 0; for (const dd in q) for (const r of q[dd]) if (r.a === a){ A += r.ac; E += r.er; } if (A + E) st(a).pct = Math.round(A / (A + E) * 100); }
   save();
 }
 function somaQuestoes(de, ate){
   const por = {}; let ac = 0, er = 0;
-  for (const d in (S.q||{})){ if (d < de || d > ate) continue; for (const r of S.q[d]){ const o = (por[r.m] = por[r.m] || {ac:0, er:0}); o.ac += r.ac; o.er += r.er; ac += r.ac; er += r.er; } }
+  for (const d in (S.q||{})){ if (d < de || d > ate) continue; for (const r of S.q[d]){ const o = (por[r.m] = por[r.m] || {ac:0, er:0, as:{}}); o.ac += r.ac; o.er += r.er; ac += r.ac; er += r.er;
+    const ka = r.a || "_v", oa = (o.as[ka] = o.as[ka] || {ac:0, er:0}); oa.ac += r.ac; oa.er += r.er; } }
   return {por, ac, er};
 }
+let QXM = "", QXA = "";
 function cardQuestoes(){
   const [de, ate] = periodoHP(), Q = somaQuestoes(de, ate), tot = Q.ac + Q.er, pct = n => tot ? (n/tot*100).toFixed(1).replace(".",",") + "%" : "-";
   const nm = k => k === "_varias" ? "Várias matérias" : nomeAtiv(k);
   const linhas = Object.keys(Q.por).sort((a,b) => (Q.por[b].ac+Q.por[b].er) - (Q.por[a].ac+Q.por[a].er)).map(k => { const o = Q.por[k], t = o.ac + o.er, p = t ? o.ac/t*100 : 0;
     return `<div class="qrow"><span class="pz-n">${esc(nm(k))}</span><span class="pz-v"><b class="qok">${o.ac}</b> certas · <b class="qerr">${o.er}</b> erradas · <b>${p.toFixed(0)}%</b></span>
-      <span class="qbar" role="img" aria-label="${p.toFixed(0)}% de acerto"><i class="ok" style="width:${p.toFixed(1)}%"></i><i class="er" style="width:${(100-p).toFixed(1)}%"></i></span></div>`; }).join("");
+      <span class="qbar" role="img" aria-label="${p.toFixed(0)}% de acerto"><i class="ok" style="width:${p.toFixed(1)}%"></i><i class="er" style="width:${(100-p).toFixed(1)}%"></i></span></div>` +
+      Object.keys(o.as).map(ka => { const z = o.as[ka], tz = z.ac + z.er; return `<div class="pz-sub"><span>${esc(ka === "_v" ? "Vários assuntos" : nomeAssunto(ka, false))}</span><span><b class="qok">${z.ac}</b> / <b class="qerr">${z.er}</b> · ${tz ? Math.round(z.ac/tz*100) : 0}%</span></div>`; }).join(""); }).join("");
   return `<section class="card"><h2>Questões resolvidas</h2>
     <div class="muted" style="font-size:13px">${HP.per === "total" ? "Todo o período" : br(de) + (de !== ate ? " a " + br(ate) : "")} · mesmo período do gráfico acima</div>
     <div class="qtiles"><div><b>${tot}</b><span>questões</span></div><div><b class="qok">${Q.ac}</b><span>acertos · ${pct(Q.ac)}</span></div><div><b class="qerr">${Q.er}</b><span>erros · ${pct(Q.er)}</span></div></div>
     ${linhas || `<div class="empty">Nenhuma questão registrada neste período.</div>`}
-    <h3 style="margin:6px 0 0;font-size:15px">Registrar resultado</h3>${formQuestoes("qx", (S.tm.cur||{}).qm || matsAulaNova()[0] || "")}</section>`;
+    <h3 style="margin:6px 0 0;font-size:15px">Registrar resultado</h3>${formQuestoes("qx", QXM || (S.tm.cur||{}).qm || matsAulaNova()[0] || Object.keys(MAT)[0], QXA)}</section>`;
 }
 
 /* ---------- gráfico "Todas as atividades" (aba Horas) ---------- */
-let HP = {modo:"mat", per:"semana", m:"", de:"", ate:""};
+let HP = {modo:"cont", per:"semana", m:"", de:"", ate:""};
 function periodoHP(){
   const t = today(), x = parse(t);
   if (HP.per === "dia") return [t, t];
@@ -1267,9 +1274,12 @@ function somaAtiv(de, ate){
       const resto = (S.tm.days[d]||0) - soma; if (resto > 30) out._sem = (out._sem||0) + resto; }
     if (runSec && t >= de && t <= ate){ const k = cur.m || "_sem"; out[k] = (out[k]||0) + runSec; }
   } else {
-    for (const d in (S.tm.byA||{})){ if (d < de || d > ate) continue;
-      for (const a in S.tm.byA[d]){ const x = byId(a); if (x && x[I_MAT] === HP.m) out[a] = (out[a]||0) + S.tm.byA[d][a]; } }
-    if (runSec && t >= de && t <= ate && cur.m === HP.m && cur.a) out[cur.a] = (out[cur.a]||0) + runSec;
+    const ok = m => !HP.m || m === HP.m;
+    for (const d in S.tm.days){ if (d < de || d > ate) continue;
+      const bd = (S.tm.by||{})[d] || {}, ba = (S.tm.byA||{})[d] || {}, porMat = {};
+      for (const a in ba){ const x = byId(a); if (!x) continue; porMat[x[I_MAT]] = (porMat[x[I_MAT]]||0) + ba[a]; if (ok(x[I_MAT])) out[a] = (out[a]||0) + ba[a]; }
+      for (const m in bd){ if (!MAT[m] || !ok(m)) continue; const resto = bd[m] - (porMat[m]||0); if (resto > 30) out["_m:" + m] = (out["_m:" + m]||0) + resto; } }
+    if (runSec && t >= de && t <= ate){ const x = cur.a ? byId(cur.a) : null; if (x && ok(x[I_MAT])) out[cur.a] = (out[cur.a]||0) + runSec; else if (MAT[cur.m] && ok(cur.m)) out["_m:" + cur.m] = (out["_m:" + cur.m]||0) + runSec; }
   }
   return out;
 }
@@ -1279,22 +1289,23 @@ function corDe(chaves){ // cor fixa por matéria: as 7 com mais tempo no total r
   const ord = chaves.filter(k => k !== "_sem").sort((a,b) => (tot[b]||0) - (tot[a]||0) || (a < b ? -1 : 1));
   const map = {}; ord.slice(0,7).forEach((k,i) => map[k] = "var(--s" + (i+1) + ")"); return map;
 }
+function rotuloHP(k){ if (HP.modo === "mat") return nomeAtiv(k); if (k.startsWith("_m:")) return nomeAtiv(k.slice(3)) + " · sem assunto"; return nomeAssunto(k, !HP.m); }
 function grafAtiv(){
   const [de, ate] = periodoHP(), raw = somaAtiv(de, ate);
   const ks = Object.keys(raw).filter(k => raw[k] >= 1), cor = corDe(ks);
   let fatias = [], outros = 0, outrosL = [];
-  for (const k of ks){ if (cor[k]) fatias.push({k, v:raw[k], nome: HP.modo === "mat" ? nomeAtiv(k) : ((byId(k)||[])[I_TIT] || k), cor:cor[k]}); else if (k !== "_sem"){ outros += raw[k]; outrosL.push({nome: HP.modo === "mat" ? nomeAtiv(k) : ((byId(k)||[])[I_TIT] || k), v: raw[k]}); } }
+  for (const k of ks){ if (cor[k]) fatias.push({k, v:raw[k], nome: rotuloHP(k), cor:cor[k]}); else if (k !== "_sem"){ outros += raw[k]; outrosL.push({nome: rotuloHP(k), v: raw[k]}); } }
   fatias.sort((a,b) => b.v - a.v);
   if (outros) fatias.push({k:"_outros", v:outros, nome:"Outros", cor:"var(--s-outros)"});
   if (raw._sem) fatias.push({k:"_sem", v:raw._sem, nome:"Sem matéria definida", cor:"var(--s-sem)"});
   const total = fatias.reduce((a,f) => a + f.v, 0);
   const pers = [["dia","Dia"],["semana","Semana"],["mes","Mês"],["ano","Ano"],["total","Total"],["custom","Customizar"]];
   let h = `<section class="card viz"><h2>Todas as atividades</h2>
-    <div class="chips" role="group" aria-label="Agrupar por"><button class="chip" data-hpm="mat" aria-pressed="${HP.modo==="mat"}">Matérias</button><button class="chip" data-hpm="cont" aria-pressed="${HP.modo==="cont"}">Conteúdos</button></div>
-    ${HP.modo === "cont" ? `<label class="f" for="hpMat">Matéria<select id="hpMat" class="tmSel">${Object.keys(MAT).map(m => `<option value="${m}"${HP.m===m?" selected":""}>${esc(nomeAtiv(m))}</option>`).join("")}</select></label>` : ""}
+    <div class="chips" role="group" aria-label="Agrupar por"><button class="chip" data-hpm="mat" aria-pressed="${HP.modo==="mat"}">Matérias</button><button class="chip" data-hpm="cont" aria-pressed="${HP.modo==="cont"}">Matéria e assunto</button></div>
+    ${HP.modo === "cont" ? `<label class="f" for="hpMat">Filtrar matéria<select id="hpMat" class="tmSel"><option value="">Todas as matérias</option>${Object.keys(MAT).map(m => `<option value="${m}"${HP.m===m?" selected":""}>${esc(nomeAtiv(m))}</option>`).join("")}</select></label>` : ""}
     <div class="chips" role="group" aria-label="Período">${pers.map(([v,l]) => `<button class="chip" data-hpp="${v}" aria-pressed="${HP.per===v}">${l}</button>`).join("")}</div>
     ${HP.per === "custom" ? `<div class="row"><label class="f" for="hpDe" style="flex:1">De<input type="date" id="hpDe" value="${de}"></label><label class="f" for="hpAte" style="flex:1">Até<input type="date" id="hpAte" value="${ate}"></label></div>` : ""}`;
-  if (!total){ return h + `<div class="empty">${HP.modo === "cont" ? "Ainda não há tempo registrado por conteúdo nesta matéria. No cronômetro, escolha a matéria e o conteúdo antes de iniciar." : "Nenhum tempo registrado neste período. No cronômetro, escolha a matéria antes de iniciar."}</div></section>`; }
+  if (!total){ return h + `<div class="empty">${HP.modo === "cont" ? "Ainda não há tempo registrado por assunto neste período. No cronômetro, escolha a matéria e o assunto antes de iniciar." : "Nenhum tempo registrado neste período. No cronômetro, escolha a matéria antes de iniciar."}</div></section>`; }
   // rosca: fatias com 2px de folga na cor da superfície
   const R = 80, r = 50, cx = 100, cy = 100; let a0 = -Math.PI/2, arcos = "";
   for (const f of fatias){
@@ -1343,7 +1354,8 @@ function vHoras(){
   for (const k of Object.keys(byW).sort().reverse()) h += `<div class="hrow"><span class="hd">sem. ${br(k)}</span><span class="hb"><i style="width:${Math.min(100,byW[k]/META_SEM*100).toFixed(1)}%"></i></span><span class="hv">${hm(byW[k])}</span></div>`;
   h += `</section><section class="card"><h2>Lançar horas manualmente</h2><div class="muted">Esqueceu de ligar o cronômetro? Lance aqui (use número negativo para tirar).</div>
     <div class="row"><label class="f" for="mhD" style="flex:1">Dia<input type="date" id="mhD" value="${t}"></label><label class="f" for="mhM" style="flex:1">Minutos<input type="number" id="mhM" inputmode="numeric" placeholder="ex.: 30"></label></div>
-    <label class="f" for="mhA">Matéria ou atividade<select id="mhA"><option value="">Sem matéria</option>${Object.keys(MAT).map(m => `<option value="${m}"${(S.tm.cur||{}).m===m?" selected":""}>${esc(nomeAtiv(m))}</option>`).join("")}${Object.keys(ATIV).map(k => `<option value="${k}">${ATIV[k]}</option>`).join("")}</select></label>
+    <label class="f" for="mhA">Matéria ou atividade<select id="mhA" class="tmSel"><option value="">Sem matéria</option>${Object.keys(MAT).map(m => `<option value="${m}"${curPadrao().m===m?" selected":""}>${esc(nomeAtiv(m))}</option>`).join("")}${Object.keys(ATIV).map(k => `<option value="${k}">${ATIV[k]}</option>`).join("")}</select></label>
+    <label class="f" for="mhB">Assunto<select id="mhB" class="tmSel">${opcoesAssunto(curPadrao().m)}</select></label>
     <button class="btn small" id="mhGo" style="align-self:flex-start">Lançar</button></section>`;
   return h;
 }
@@ -1715,19 +1727,22 @@ function bind(){
   v.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openAula(b.dataset.open));
   v.querySelectorAll("[data-bloco]").forEach(b => b.onclick = () => { fBloco = b.dataset.bloco; render(); });
   const tg = v.querySelector("#tmToggle"); if (tg) tg.onclick = () => { if (S.tm.run){ tmStop(); toast("Pausado: "+hm(tmDay(today()))+" hoje"); } else { if (!(S.tm.cur||{}).m && curPadrao().m) S.tm.cur = curPadrao(); tmStart(); toast((S.tm.cur||{}).m ? "Cronômetro rodando: " + nomeAtiv(S.tm.cur.m) : "Cronômetro rodando. Escolha a matéria para o gráfico de atividades"); } render(); };
-  const tmM = v.querySelector("#tmM"); if (tmM) tmM.onchange = () => { const m = tmM.value, x = MAT[m] ? nextOf(m, currentBlock()) : null; tmTroca(m, x ? x[I_ID] : ""); render(); };
-  const tmQ = v.querySelector("#tmQ"); if (tmQ) tmQ.onchange = () => { const c = S.tm.cur || {}; c.qm = tmQ.value; c.a = ""; S.tm.cur = c; save(); render(); };
+  const tmM = v.querySelector("#tmM"); if (tmM) tmM.onchange = () => { const m = tmM.value, x = MAT[m] ? (nextOf(m, currentBlock()) || T.find(y => y[I_MAT] === m && !(S.t[y[I_ID]]||{}).f) || T.find(y => y[I_MAT] === m)) : null; tmTroca(m, x ? x[I_ID] : ""); render(); };
+  const tmQ = v.querySelector("#tmQ"); if (tmQ) tmQ.onchange = () => { const ia = !!S.tm.run; if (ia) tmStop(); const c = S.tm.cur || {}; c.qm = tmQ.value; c.a = ""; S.tm.cur = c; if (ia) tmStart(); save(); render(); };
+  const mhA = v.querySelector("#mhA"); if (mhA) mhA.onchange = () => { v.querySelector("#mhB").innerHTML = opcoesAssunto(mhA.value); };
+  const qxM = v.querySelector("#qxM"); if (qxM) qxM.onchange = () => { QXM = qxM.value; QXA = ""; render(); };
+  const qxA = v.querySelector("#qxA"); if (qxA) qxA.onchange = () => { QXA = qxA.value; };
   v.querySelectorAll("[data-qreg]").forEach(b => b.onclick = () => { const id = b.dataset.qreg, ac = Math.max(0, parseInt(v.querySelector("#"+id+"Ac").value)||0), er = Math.max(0, parseInt(v.querySelector("#"+id+"Er").value)||0);
     if (!ac && !er){ toast("Informe acertos e erros"); return; }
-    const m = id === "qx" ? v.querySelector("#qxM").value : ((S.tm.cur||{}).qm || "");
-    regQuestoes(m, ac, er); render(); toast(`Registrado: ${ac} certas, ${er} erradas (${Math.round(ac/(ac+er)*100)}%)`); });
+    const m = id === "qx" ? v.querySelector("#qxM").value : ((S.tm.cur||{}).qm || ""), a = id === "qx" ? v.querySelector("#qxA").value : ((S.tm.cur||{}).a || "");
+    regQuestoes(m, ac, er, a); render(); toast(`Registrado: ${ac} certas, ${er} erradas (${Math.round(ac/(ac+er)*100)}%)`); });
   const tmA = v.querySelector("#tmA"); if (tmA) tmA.onchange = () => { tmTroca((S.tm.cur||{}).m, tmA.value); render(); };
-  v.querySelectorAll("[data-hpm]").forEach(b => b.onclick = () => { HP.modo = b.dataset.hpm; if (HP.modo === "cont" && !MAT[HP.m]) HP.m = MAT[(S.tm.cur||{}).m] ? S.tm.cur.m : Object.keys(MAT)[0]; render(); });
+  v.querySelectorAll("[data-hpm]").forEach(b => b.onclick = () => { HP.modo = b.dataset.hpm; if (!MAT[HP.m]) HP.m = ""; render(); });
   v.querySelectorAll("[data-hpp]").forEach(b => b.onclick = () => { HP.per = b.dataset.hpp; render(); });
   const hpMat = v.querySelector("#hpMat"); if (hpMat) hpMat.onchange = () => { HP.m = hpMat.value; render(); };
   const hpDe = v.querySelector("#hpDe"), hpAte = v.querySelector("#hpAte"); if (hpDe) hpDe.onchange = () => { HP.de = hpDe.value; render(); }; if (hpAte) hpAte.onchange = () => { HP.ate = hpAte.value; render(); };
   v.querySelectorAll("[data-tmadd]").forEach(b => b.onclick = () => { tmStop(); tmAdd(today(), Number(b.dataset.tmadd)); render(); });
-  const mg = v.querySelector("#mhGo"); if (mg) mg.onclick = () => { const d = v.querySelector("#mhD").value, m = Number(v.querySelector("#mhM").value); if (!d || !m){ toast("Informe o dia e os minutos"); return; } if (d===today()) tmStop(); const ma = v.querySelector("#mhA").value; tmAdd(d, m*60, {m: ma, a: ""}); render(); toast("Lançado: "+(m>0?"+":"")+m+" min em "+br(d)); };
+  const mg = v.querySelector("#mhGo"); if (mg) mg.onclick = () => { const d = v.querySelector("#mhD").value, m = Number(v.querySelector("#mhM").value); if (!d || !m){ toast("Informe o dia e os minutos"); return; } if (d===today()) tmStop(); const ma = v.querySelector("#mhA").value, mb = v.querySelector("#mhB").value; tmAdd(d, m*60, {m: ma, a: MAT[ma] ? mb : ""}); render(); toast("Lançado: "+(m>0?"+":"")+m+" min em "+br(d)); };
   const busca = v.querySelector("#busca");
   if (busca) busca.oninput = e => { fBusca = e.target.value; const pos = e.target.selectionStart; render(); const nb = document.getElementById("busca"); nb.focus(); try{ nb.setSelectionRange(pos,pos); }catch(_){} };
   v.querySelectorAll("[data-week]").forEach(c => c.onchange = e => { S.w[c.dataset.week] = e.target.checked; save(); });
@@ -1982,7 +1997,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 21, PAGES = "https://planotatico.github.io/";
+const APP_V = 22, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
