@@ -225,6 +225,41 @@ nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
 .rank{display:grid;grid-template-columns:26px 34px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .rank .pos{font:700 18px var(--display);color:var(--muted);text-align:center}.rank .pos.p1{color:#c9a227}.rank .pos.p2{color:#9aa7bd}.rank .pos.p3{color:#b0703c}
 .rank .ins{width:34px;height:34px}.rank .xs{font:700 16px var(--display);color:var(--accent);text-align:right}
+
+/* ---------- promoção em 3D ---------- */
+.p3d{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px;overflow:hidden;color:#fff;text-align:center;
+  background:radial-gradient(60% 45% at 50% 40%,#1e468c 0%,#041e42 55%,#010814 100%);animation:p3bg .35s ease-out}
+@keyframes p3bg{from{opacity:0}}
+.p3d.bm{background:radial-gradient(60% 45% at 50% 40%,#961e1e 0%,#46080a 55%,#140203 100%)}
+.p3d .rays{position:absolute;left:50%;top:40%;width:170vmax;height:170vmax;margin:-85vmax 0 0 -85vmax;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,rgba(242,195,0,.16) 0 6deg,transparent 6deg 18deg);animation:rays 14s linear infinite;
+  -webkit-mask:radial-gradient(circle,#000 0,#000 18%,transparent 55%);mask:radial-gradient(circle,#000 0,#000 18%,transparent 55%);opacity:0;animation:rays 14s linear infinite, fadein .6s .5s forwards}
+@keyframes rays{to{transform:rotate(360deg)}}
+@keyframes fadein{to{opacity:1}}
+.p3d .ring{position:absolute;left:50%;top:40%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:3px solid rgba(242,195,0,.9);opacity:0;animation:ring .9s .75s ease-out}
+@keyframes ring{0%{opacity:1;transform:scale(.5)}100%{opacity:0;transform:scale(12)}}
+.p3d .stage{perspective:900px;width:220px;height:240px;position:relative;margin-top:-30px}
+.p3d .coin{position:absolute;inset:0;transform-style:preserve-3d;animation:jump 1.15s cubic-bezier(.2,.8,.25,1) both, hover3d 4s 1.2s ease-in-out infinite}
+.p3d .coin .lay{position:absolute;inset:0;backface-visibility:visible}
+.p3d .coin .lay svg{width:100%;height:100%;display:block}
+.p3d .coin .lay.edge{filter:brightness(.45) saturate(1.2)}
+.p3d .coin .front{filter:drop-shadow(0 0 18px rgba(242,195,0,.55))}
+.p3d .sheen{position:absolute;inset:0;transform:translateZ(1px);-webkit-mask:var(--m);mask:var(--m);-webkit-mask-size:100% 100%;mask-size:100% 100%;
+  background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.75) 48%,transparent 60%);background-size:250% 100%;animation:sheen 2.6s 1.1s ease-in-out infinite;pointer-events:none}
+@keyframes sheen{0%{background-position:150% 0}60%,100%{background-position:-60% 0}}
+@keyframes jump{0%{transform:translateY(75vh) scale(.35) rotateY(-720deg) rotateX(25deg)}60%{transform:translateY(-46px) scale(1.15) rotateY(-20deg) rotateX(-8deg)}75%{transform:translateY(8px) scale(.96) rotateY(8deg)}88%{transform:translateY(-10px) scale(1.03) rotateY(-4deg)}100%{transform:translateY(0) scale(1) rotateY(0)}}
+@keyframes hover3d{0%,100%{transform:translateY(0) rotateY(-18deg) rotateX(4deg)}50%{transform:translateY(-10px) rotateY(18deg) rotateX(-4deg)}}
+.p3d .spark{position:absolute;left:50%;top:40%;width:7px;height:7px;border-radius:50%;background:#f2c300;box-shadow:0 0 8px #f2c300;opacity:0;animation:spark 1.1s .75s ease-out forwards}
+@keyframes spark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+.p3d .pk{font:700 15px var(--display);letter-spacing:.35em;color:#f2c300;opacity:0;animation:up .5s .85s forwards}
+.p3d .pt{font:700 44px/1 var(--display);letter-spacing:.06em;text-transform:uppercase;text-shadow:0 3px 0 #000,0 0 22px rgba(242,195,0,.5);opacity:0;animation:slam .55s .95s cubic-bezier(.2,1.8,.4,1) forwards}
+.p3d .pr{font:700 30px/1.05 var(--display);letter-spacing:.05em;text-transform:uppercase;color:#f2c300;opacity:0;animation:up .5s 1.2s forwards;margin-top:4px}
+.p3d .pl{font-size:15px;opacity:0;animation:up .5s 1.35s forwards}
+.p3d .pl b{color:#f2c300}
+.p3d .abtn{margin-top:18px;min-width:240px;opacity:0;animation:up .5s 1.6s forwards}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes slam{0%{opacity:0;transform:scale(2.6)}100%{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){.p3d *, .p3d{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}.p3d .pk,.p3d .pt,.p3d .pr,.p3d .pl,.p3d .abtn{opacity:1}}
 </style>
 </head>
 <body>
@@ -596,21 +631,44 @@ function header(){ gameHeader(); }
 /* ---------- jogo: XP, patentes, sequência e conquistas (sem moedas) ---------- */
 // XP sai só dos dados do estudo, então é igual em todos os aparelhos e pode ser comparado no grupo
 const XP_AULA = 50, XP_REV = {d48:20, d7:25, d30:35}, XP_HORA = 20, XP_META = 40, XP_90 = 30;
-const PATENTES = [[1,"Candidato"],[3,"Aluno"],[5,"Cadete 1º Ano"],[8,"Cadete 2º Ano"],[11,"Cadete 3º Ano"],[14,"Aspirante a Oficial"],[16,"2º Tenente"],[18,"1º Tenente"],[20,"Capitão"],[22,"Major"],[24,"Tenente-Coronel"],[26,"Coronel"]];
-const xpNivel = L => 50*L*(L-1);              // XP total para chegar ao nível L
+// Escala hierárquica do Estatuto da PMDF (Lei 7.289/1984) e insígnias do Regulamento de Uniformes da PMDF (Decreto 42.923/2022).
+// Bombeiro: mesma escala; estrelas do Regulamento de Uniformes do CBMDF (simples de 4 pontas, composta de 8 pontas).
+// [nível mínimo, nome, sigla, desenho]
+const PATENTES = [
+  [1,"Soldado de 2ª Classe","SD 2ª CL","rec"],[2,"Soldado","SD","d1"],[3,"Cabo","CB","d2"],
+  [4,"3º Sargento","3º SGT","d3"],[5,"2º Sargento","2º SGT","d4"],[6,"1º Sargento","1º SGT","d5"],[7,"Subtenente","ST","tri"],
+  [8,"Cadete CFO I","CAD I","b1"],[10,"Cadete CFO II","CAD II","b2"],[12,"Cadete CFO III","CAD III","b3"],[14,"Aspirante a Oficial","ASP","asp"],
+  [16,"2º Tenente","2º TEN","s1"],[18,"1º Tenente","1º TEN","s2"],[20,"Capitão","CAP","s3"],
+  [22,"Major","MAJ","c1s2"],[24,"Tenente-Coronel","TC","c2s1"],[26,"Coronel","CEL","c3"]
+];
+const xpNivel = L => 45*L*(L-1);              // XP total para chegar ao nível L
 function nivelDe(xp){ let L = 1; while (xpNivel(L+1) <= xp) L++; return L; }
-function patente(L){ let p = PATENTES[0]; for (const x of PATENTES) if (L >= x[0]) p = x; return {n:PATENTES.indexOf(p), nome:p[1]}; }
-function insig(L, cls){
-  const k = patente(L).n;
-  let inner = "";
-  const star = (x,y,r) => { let d = ""; for (let i=0;i<10;i++){ const a = Math.PI/5*i - Math.PI/2, rr = i%2 ? r*.45 : r; d += (i?"L":"M")+(x+Math.cos(a)*rr).toFixed(1)+" "+(y+Math.sin(a)*rr).toFixed(1); } return `<path d="${d}Z" fill="#f2c300"/>`; };
-  if (k === 0) inner = `<path d="M15 26l9 6 9-6" fill="none" stroke="#c9a227" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
-  else if (k === 1) inner = `<path d="M15 22l9 6 9-6M15 30l9 6 9-6" fill="none" stroke="#c9a227" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>`;
-  else if (k <= 4){ const n = k-1; for (let i=0;i<n;i++) inner += `<rect x="13" y="${17+i*7}" width="22" height="4" rx="1.5" fill="#f2c300"/>`; inner += `<path d="M24 ${19+n*7}l3 3h-6Z" fill="#c9a227"/>`; }
-  else if (k === 5) inner = star(24,26,8).replace('fill="#f2c300"','fill="none" stroke="#f2c300" stroke-width="1.8"');
-  else if (k <= 8){ const n = k-5; const xs = n===1?[24]:n===2?[17,31]:[14,24,34]; inner = xs.map(x => star(x,26,n===3?5.5:7)).join(""); }
-  else { const n = k-8; inner = `<path d="M10 34c3 5 9 7 14 7s11-2 14-7" fill="none" stroke="#c9a227" stroke-width="2"/>`; const xs = n===1?[24]:n===2?[18,30]:n===3?[14,24,34]:[12,20,28,36]; inner += xs.map(x => star(x,24,n>=3?4.6:6)).join(""); }
-  return `<svg class="${cls||""}" viewBox="0 0 48 52" aria-hidden="true"><path d="M24 2 45 9v17c0 12.5-8.6 21.3-21 25C11.6 47.3 3 38.5 3 26V9Z" fill="#041e42" stroke="#c9a227" stroke-width="2.5"/>${inner}</svg>`;
+function patente(L){ let i = 0; PATENTES.forEach((x,k) => { if (L >= x[0]) i = k; }); const p = PATENTES[i]; return {n:i, nome:p[1], sigla:p[2], tipo:p[3], prox: PATENTES[i+1] || null}; }
+function carreira(){ return (S.car === "bm") ? "bm" : "pm"; }
+function estrela(x, y, r, pontas, cor, rot){
+  let d = ""; const n = pontas*2, ri = pontas === 4 ? r*.38 : r*.42;
+  for (let i=0;i<n;i++){ const a = Math.PI/pontas*i - Math.PI/2 + (rot||0), rr = i%2 ? ri : r; d += (i?"L":"M")+(x+Math.cos(a)*rr).toFixed(2)+" "+(y+Math.sin(a)*rr).toFixed(2); }
+  return `<path d="${d}Z" fill="${cor}"/>`;
+}
+function insig(L, cls, car){
+  car = car || carreira();
+  const P = patente(L), t = P.tipo, OURO = "#f2c300", OURO2 = "#c9a227", PRATA = "#dfe5ee", fundo = car === "bm" ? "#6b0f12" : "#041e42";
+  const simples = (x,y,r) => car === "bm" ? estrela(x,y,r,4,PRATA) : estrela(x,y,r,5,PRATA);
+  const composta = (x,y,r) => car === "bm" ? estrela(x,y,r,8,OURO) : estrela(x,y,r,5,OURO2) + estrela(x,y,r*.82,5,OURO,Math.PI/5);
+  const div = (y, cor) => `<path d="M12 ${y+7}L24 ${y}L36 ${y+7}" fill="none" stroke="${cor||OURO}" stroke-width="3.4" stroke-linejoin="miter" stroke-linecap="butt"/>`;
+  let g = "";
+  if (t === "rec") g = `<path d="M12 27L24 20L36 27" fill="none" stroke="${OURO2}" stroke-width="1.6" stroke-dasharray="3 2.2"/>`;
+  else if (/^d\d$/.test(t)){
+    const n = +t[1], top = n <= 3 ? n : 3, low = n - top, h = top*6 + (low ? 4 + low*6 : 0), y0 = 26 - h/2;
+    for (let i=0;i<top;i++) g += div(y0 + i*6);
+    for (let i=0;i<low;i++) g += div(y0 + top*6 + 4 + i*6);
+  }
+  else if (t === "tri") g = `<path d="M24 15L35 34H13Z" fill="none" stroke="${OURO}" stroke-width="2.8" stroke-linejoin="miter"/>`;
+  else if (/^b\d$/.test(t)){ const n = +t[1]; for (let i=0;i<n;i++) g += `<rect x="14" y="${26 - n*4 + i*8}" width="20" height="4.2" rx=".6" fill="${OURO}"/>`; }
+  else if (t === "asp") g = estrela(24,26,9,5,"none").replace('fill="none"', `fill="none" stroke="${PRATA}" stroke-width="1.8"`);
+  else if (/^s\d$/.test(t)){ const n = +t[1], ys = n===1?[26]:n===2?[19,33]:[14,26,38]; g = ys.map(y => simples(24,y,n===3?5.6:6.6)).join(""); }
+  else { const c = +t[1], sN = t.length > 2 ? +t[3] : 0, ys = [14,26,38]; ys.forEach((y,i) => { g += i < sN ? simples(24,y,5.6) : composta(24,y,5.9); }); }
+  return `<svg class="${cls||""}" viewBox="0 0 48 52" aria-hidden="true"><path d="M24 2 45 9v17c0 12.5-8.6 21.3-21 25C11.6 47.3 3 38.5 3 26V9Z" fill="${fundo}" stroke="${OURO2}" stroke-width="2.5"/>${g}</svg>`;
 }
 function diaUtil(d){ const w = parse(d).getDay(); return w !== 0 && w !== 6; }
 function jogo(t, days, extra){
@@ -718,8 +776,9 @@ const filaC = []; let cAberta = false;
 function celebra(c){ filaC.push(c); if (!cAberta) proxC(); }
 function proxC(){
   const c = filaC.shift(); if (!c){ cAberta = false; return; } cAberta = true;
+  if (c.tipo === "nivel"){ promo3D(c.g); return; }
   let ic, sm, tt, pp;
-  if (c.tipo === "nivel"){ ic = insig(c.g.L, "big"); sm = "Promoção!"; tt = "Nível " + c.g.L; pp = c.g.pat.nome + (patente(c.g.L-1).nome !== c.g.pat.nome ? " · nova patente" : "") + ". Continue assim."; }
+  if (c.tipo === "nivel"){ const promo = patente(c.g.L-1).nome !== c.g.pat.nome; ic = insig(c.g.L, "big"); sm = promo ? "Promoção!" : "Subiu de nível"; tt = promo ? c.g.pat.nome : "Nível " + c.g.L; pp = promo ? "Você foi promovido a " + c.g.pat.nome + " (nível " + c.g.L + "). Continue assim." : c.g.pat.nome + " · nível " + c.g.L + (c.g.pat.prox ? ". Próxima promoção: " + c.g.pat.prox[1] + " no nível " + c.g.pat.prox[0] + "." : "."); }
   else if (c.tipo === "intro"){ ic = insig(c.g.L, "big"); sm = "Bem-vindo às conquistas"; tt = c.g.pat.nome; pp = "Pelo que você já estudou, começa no nível " + c.g.L + " com " + c.n + " conquista" + (c.n>1?"s":"") + " desbloqueada" + (c.n>1?"s":"") + "."; }
   else { ic = badgeSvg(c.a.ic).replace("<svg ", '<svg class="big" '); sm = "Conquista desbloqueada"; tt = c.a.nome; pp = c.a.desc; }
   const w = document.createElement("div"); w.className = "celebra"; w.setAttribute("role","dialog"); w.setAttribute("aria-modal","true");
@@ -731,6 +790,36 @@ function proxC(){
   w.querySelector("button").onclick = fecha; w.onclick = e => { if (e.target === w) fecha(); };
   w.querySelector("button").focus();
 }
+
+/* ---------- promoção em 3D (estilo jogo) ---------- */
+function somPromo(){
+  try {
+    const A = window.AudioContext || window.webkitAudioContext; if (!A) return; const ac = new A(), t0 = ac.currentTime + .05;
+    const nota = (f, t, d, v) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = "triangle"; o.frequency.value = f; g.gain.setValueAtTime(0, t0+t); g.gain.linearRampToValueAtTime(v||.18, t0+t+.02); g.gain.exponentialRampToValueAtTime(.001, t0+t+d); o.connect(g).connect(ac.destination); o.start(t0+t); o.stop(t0+t+d+.05); };
+    [[523,0,.18],[523,.16,.12],[523,.3,.12],[659,.44,.5],[784,.62,.3],[1047,.82,.9,.22]].forEach(n => nota(...n));
+    setTimeout(() => ac.close(), 2500);
+  } catch(e){}
+}
+function promo3D(g, preview){
+  const P = g.pat, promo = preview ? false : patente(g.L-1).nome !== P.nome, car = carreira();
+  const svg = insig(g.L, "", car), N = 12;
+  let lay = ""; for (let i=N;i>=1;i--) lay += `<div class="lay edge" style="transform:translateZ(${-i*1.1}px)">${svg}</div>`;
+  const mask = "url(\"data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 52"><path d="M24 2 45 9v17c0 12.5-8.6 21.3-21 25C11.6 47.3 3 38.5 3 26V9Z"/></svg>') + "\")";
+  let sp = ""; for (let i=0;i<22;i++){ const a = Math.random()*Math.PI*2, r = 120 + Math.random()*160; sp += `<i class="spark" style="--dx:${(Math.cos(a)*r).toFixed(0)}px;--dy:${(Math.sin(a)*r).toFixed(0)}px;animation-delay:${(.7+Math.random()*.25).toFixed(2)}s"></i>`; }
+  const w = document.createElement("div"); w.className = "p3d" + (car === "bm" ? " bm" : ""); w.setAttribute("role","dialog"); w.setAttribute("aria-modal","true");
+  const kicker = preview ? "SUA PATENTE" : "PARABÉNS!";
+  const titulo = preview ? P.sigla : promo ? "Você foi promovido" : "Novo nível";
+  const linha = preview ? `Nível <b>${g.L}</b> · ${g.xp} XP` : promo ? `Você alcançou a patente de <b>${esc(P.nome)}</b> · nível ${g.L}` : `Você alcançou o <b>nível ${g.L}</b>` + (P.prox ? ` · próxima promoção: ${esc(P.prox[1])} no nível ${P.prox[0]}` : "");
+  w.setAttribute("aria-label", kicker + " " + titulo + ". " + P.nome);
+  w.innerHTML = `<div class="rays"></div><div class="ring"></div>${sp}
+    <div class="stage"><div class="coin">${lay}<div class="lay front">${svg}</div><div class="sheen" style="--m:${mask}"></div></div></div>
+    <div class="pk">${kicker}</div><div class="pt">${esc(titulo)}</div><div class="pr">${esc(P.nome)}</div><div class="pl">${linha}</div>
+    <button class="abtn" type="button">${preview ? "Fechar" : "Continuar"}</button>`;
+  document.body.appendChild(w);
+  if (!preview){ somPromo(); try { navigator.vibrate && navigator.vibrate(promo ? [60,40,60,40,160] : [80,40,80]); } catch(e){} }
+  const fim = () => { w.remove(); if (!preview) proxC(); };
+  w.querySelector("button").onclick = fim; setTimeout(() => { const b = w.querySelector("button"); if (b && b.isConnected) b.focus(); }, 1700);
+}
 function heat(days){
   const t = today(), ws = weekStart(t); let h = `<div class="heatlbl">${["S","T","Q","Q","S","S","D"].map(x=>`<span>${x}</span>`).join("")}</div><div class="heat">`;
   for (let i=-35;i<7;i++){ const d = add(ws,i); const v = (days[d]||0) + (S.tm.run && d===t ? (Date.now()-S.tm.run)/1000 : 0); const l = d > t ? "" : v >= META_DIA ? "l4" : v >= 3*3600 ? "l3" : v >= 7200 ? "l2" : v >= 1800 ? "l1" : ""; h += `<i class="${l}${d===t?" hj":""}" title="${br(d)}: ${hm(v)}"></i>`; }
@@ -740,8 +829,9 @@ function abrirConquistas(){
   const g = meuJogo(), A = conquistas(g), ok = A.filter(a => a.ok).length, ini = xpNivel(g.L), fim = xpNivel(g.L+1);
   const novo = id => S.ach && S.ach[id] === today();
   const sh = $("sheet");
-  sh.innerHTML = `<div class="lvhead"><span class="ins">${insig(g.L)}</span><div style="flex:1"><b>${esc(g.pat.nome)}</b><div class="muted">Nível ${g.L} · ${g.xp} XP no total · faltam ${fim-g.xp} XP para o nível ${g.L+1}</div><div class="bar2" style="margin-top:6px"><i style="width:${((g.xp-ini)/(fim-ini)*100).toFixed(1)}%"></i></div></div></div>
+  sh.innerHTML = `<div class="lvhead"><span class="ins" role="button" aria-label="Ver insígnia em 3D">${insig(g.L)}</span><div style="flex:1"><b>${esc(g.pat.nome)}</b><div class="muted">Nível ${g.L} · ${g.xp} XP no total · faltam ${fim-g.xp} XP para o nível ${g.L+1}</div><div class="bar2" style="margin-top:6px"><i style="width:${((g.xp-ini)/(fim-ini)*100).toFixed(1)}%"></i></div></div></div>
     <div class="ladder">${PATENTES.map(p => `<div class="${g.L >= p[0] ? (patente(g.L).nome===p[1]?"cur":"") : "lock"}"><span class="ins">${insig(p[0])}</span>${esc(p[1])}<br><span class="muted">nív. ${p[0]}</span></div>`).join("")}</div>
+    <div class="muted">${carreira()==="bm" ? "Carreira de Bombeiro Militar" : "Carreira de Polícia Militar"}: escala do Estatuto da PMDF; insígnias conforme o Regulamento de Uniformes ${carreira()==="bm" ? "do CBMDF" : "da PMDF"}. ${patente(g.L).prox ? "Próxima promoção: <b>" + esc(patente(g.L).prox[1]) + "</b> no nível " + patente(g.L).prox[0] + "." : "Você chegou ao topo da carreira."}</div>
     <h2 style="margin:4px 0 0">Sequência: ${g.streak} dia${g.streak===1?"":"s"}</h2>
     <div class="muted">Dias com 30 min ou mais de estudo líquido. Sábado e domingo não quebram a sequência. Recorde: ${g.melhor}.</div>
     ${heat(S.tm.days)}
@@ -752,6 +842,7 @@ function abrirConquistas(){
     <div class="row"><button class="btn small ghost" id="cFechar">Fechar</button></div>`;
   $("dlg").classList.add("open"); sh.scrollTop = 0;
   $("cFechar").onclick = closeDlg;
+  const li = sh.querySelector(".lvhead .ins"); li.style.cursor = "pointer"; li.title = "Ver em 3D"; li.onclick = () => promo3D(meuJogo(), true);
 }
 function missoes(){
   const t = today(), due = T.filter(x => { const n = nextRev(x[I_ID]); return n && n.d <= t; }).length;
@@ -1099,13 +1190,13 @@ function bind(){
       catch(e){ ta.value = txt; ta.select(); toast("Selecione o texto e copie"); }
     };
     v.querySelector("#bkRestore").onclick = () => {
-      try { const o = JSON.parse(document.getElementById("bkText").value); if (!o || typeof o.t!=="object") throw 0; S = {t:o.t, w:o.w||{}, tm:o.tm||{run:null,days:{}}, ach:o.ach, sy:S.sy}; G = null; save(); render(); toast("Backup restaurado"); }
+      try { const o = JSON.parse(document.getElementById("bkText").value); if (!o || typeof o.t!=="object") throw 0; S = {t:o.t, w:o.w||{}, tm:o.tm||{run:null,days:{}}, ach:o.ach, car:o.car, sy:S.sy}; G = null; save(); render(); toast("Backup restaurado"); }
       catch(e){ toast("Backup inválido: cole o texto completo"); }
     };
     let armed = false;
     v.querySelector("#bkReset").onclick = e => {
       if (!armed){ armed = true; e.target.textContent = "Toque de novo para apagar tudo"; setTimeout(()=>{ armed=false; if (e.target.isConnected) e.target.textContent="Apagar todo o progresso"; }, 4000); return; }
-      S = {t:{}, w:{}, tm:{run:null,days:{}}, ach:{}, sy:S.sy}; G = null; save(); render(); toast("Progresso apagado");
+      S = {t:{}, w:{}, tm:{run:null,days:{}}, ach:{}, car:S.car, sy:S.sy}; G = null; save(); render(); toast("Progresso apagado");
     };
   }
 }
@@ -1210,6 +1301,7 @@ function openConta(){
     <div class="kv"><b>Status</b><span id="syncSt2">${esc(syncTxt())}</span><b>Login</b><span>${esc(c.u)}</span></div>
     <label class="f">Nome<input type="text" id="pNome" value="${esc(c.nome||"")}" maxlength="60"></label>
     <label class="f">E-mail para recuperar a senha<input type="email" id="pEmail" value="${esc(c.email||"")}" autocapitalize="none" spellcheck="false" placeholder="seuemail@exemplo.com"></label>
+    <label class="f">Carreira (patentes e insígnias)<select id="pCar" style="height:44px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 10px"><option value="pm"${carreira()==="pm"?" selected":""}>Polícia Militar</option><option value="bm"${carreira()==="bm"?" selected":""}>Bombeiro Militar</option></select></label>
     <div class="row"><button class="btn small" id="pSalvar">Salvar dados</button></div>
     <details><summary class="muted">Trocar senha</summary>
       <input type="password" id="pAtual" placeholder="Senha atual" autocomplete="current-password" aria-label="Senha atual">
@@ -1219,6 +1311,7 @@ function openConta(){
     <div class="muted">Ao sair, o progresso continua salvo na conta e neste aparelho.</div>`;
   $("dlg").classList.add("open");
   $("pFechar").onclick = closeDlg; $("pSair").onclick = sair;
+  $("pCar").onchange = e => { S.car = e.target.value; save(); render(); toast(S.car === "bm" ? "Carreira: Bombeiro Militar" : "Carreira: Polícia Militar"); };
   $("pSalvar").onclick = async () => {
     try { const r = await api({acao:"perfil", t:c.t, nome:$("pNome").value, email:$("pEmail").value}); if (!r.ok){ toast(r.erro); return; } updConta({nome:r.nome, email:r.email}); toast("Dados salvos"); }
     catch(e){ toast("Sem conexão. Tente de novo"); }
@@ -1233,7 +1326,7 @@ initAuth();
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 6, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 7, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
