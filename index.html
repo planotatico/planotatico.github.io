@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#041e42">
+<title>Plano CFO PMGO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Identidade PMGO: azul-marinho (Pantone 282C) e amarelo-ouro, com a faixa verde e amarela de Goiás sob o cabeçalho */
+  --bg:#eef1f6; --surface:#ffffff; --ink:#0f1b2d; --muted:#55627a; --line:#d8dee8;
+  --accent:#041e42; --accent-soft:#e1e7f1; --gold:#b8901c;
+  --navy:#041e42; --navy2:#0b2d5c; --ouro:#c9a227; --gverde:#0a7a3e; --gamarelo:#f2c300;
+  --ok:#2e7d4f; --warn:#b26a00; --bad:#b3261e; --bad-soft:#fbe9e7; --warn-soft:#fff3df;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#07111f; --surface:#0e1c30; --ink:#e8edf5; --muted:#9aa7bd; --line:#1f3150;
+    --accent:#e0b84a; --accent-soft:#1a2b45; --gold:#e0b84a;
+    --ok:#7fcf9c; --warn:#f0b14e; --bad:#f2877d; --bad-soft:#3a1d1a; --warn-soft:#3a2c12;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#07111f; --surface:#0e1c30; --ink:#e8edf5; --muted:#9aa7bd; --line:#1f3150;
+  --accent:#e0b84a; --accent-soft:#1a2b45; --gold:#e0b84a;
+  --ok:#7fcf9c; --warn:#f0b14e; --bad:#f2877d; --bad-soft:#3a1d1a; --warn-soft:#3a2c12;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);display:flex;flex-direction:column}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+header.top{background:linear-gradient(160deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;padding:14px 16px 12px;border-bottom:3px solid var(--ouro)}
+.stripe{height:6px;background:repeating-linear-gradient(180deg,var(--gverde) 0 1.5px,var(--gamarelo) 1.5px 3px)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{width:46px;height:52px;flex:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.top h1 small{display:block;font:600 12px/1.2 var(--body);letter-spacing:.14em;color:var(--ouro);text-transform:uppercase}
+.top h1{font:700 22px/1.1 var(--display);letter-spacing:.04em;text-transform:uppercase;margin:0}
+.top .sub{font-size:13px;opacity:.85;margin-top:2px}
+.bar{height:8px;border-radius:4px;background:rgba(255,255,255,.25);margin-top:10px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--ouro)}
+.top .stats{display:flex;gap:16px;font-size:13px;margin-top:6px;font-variant-numeric:tabular-nums}
+main{flex:1;overflow-y:auto;padding:16px;padding-bottom:96px}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h2{font:700 19px/1.2 var(--display);text-transform:uppercase;letter-spacing:.05em;margin:0;text-wrap:balance}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.muted{color:var(--muted);font-size:14px}
+.row{display:flex;gap:10px;align-items:flex-start}
+.item{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}
+.item .txt{flex:1;min-width:0}
+.code{font:600 13px var(--display);letter-spacing:.06em;color:var(--accent);white-space:nowrap}
+.tt{font-size:15px}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.pill.late{background:var(--bad-soft);color:var(--bad)}
+.pill.due{background:var(--warn-soft);color:var(--warn)}
+.pill.done{background:transparent;color:var(--ok);border:1px solid var(--ok)}
+.pill.red{background:var(--bad-soft);color:var(--bad)}
+.btn{border:0;border-radius:8px;background:var(--accent);color:var(--surface);padding:9px 14px;font-weight:600;white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn.small{padding:6px 10px;font-size:14px}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;border:0;background:none;padding:10px 4px 12px;font:600 13px var(--body);color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px}
+nav.tabs button[aria-selected="true"]{color:var(--accent)}
+nav.tabs svg{width:22px;height:22px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+input[type=search],input[type=date],input[type=number],input[type=url],input[type=text],textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:9px 10px}
+details.mat{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+details.mat>summary{list-style:none;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:600}
+details.mat>summary::-webkit-details-marker{display:none}
+details.mat .list{padding:0 14px 6px}
+.topic{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:10px 0}
+.topic .tt{flex:1}
+.topic.nd .tt{color:var(--bad);font-weight:600}
+.week{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.week:first-of-type{border-top:0}
+.week.now{background:var(--accent-soft);margin:0 -14px;padding:12px 14px}
+.week input{width:22px;height:22px;accent-color:var(--accent);margin-top:2px;flex:none}
+.wk{font:700 16px var(--display);color:var(--accent);min-width:34px}
+.dlg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.dlg.open{display:flex}
+details>input,details>button{margin-top:8px}
+.sheet{background:var(--surface);width:100%;max-width:680px;max-height:88%;overflow-y:auto;border-radius:14px 14px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+.revrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.switch{display:flex;align-items:center;gap:10px}
+.switch input{width:22px;height:22px;accent-color:var(--bad)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:15px}
+.kv b{color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+.empty{padding:8px 0;color:var(--muted)}
+a{color:var(--accent);font-weight:600}
+a.btn{text-decoration:none;display:inline-block}
+.clock{font:700 44px/1 var(--display);letter-spacing:.02em;font-variant-numeric:tabular-nums;color:var(--accent)}
+.bar2{height:8px;border-radius:4px;background:var(--accent-soft);overflow:hidden}.bar2>i{display:block;height:100%;background:var(--gold)}
+.hrow{display:grid;grid-template-columns:84px 1fr 52px;gap:10px;align-items:center;padding:6px 0;font-variant-numeric:tabular-nums}
+.hrow.now .hd{color:var(--accent);font-weight:600}.hb{height:10px;border-radius:5px;background:var(--accent-soft);overflow:hidden}.hb>i{display:block;height:100%;background:var(--accent)}.hv{text-align:right;font-size:14px}
+.pjl{display:flex;flex-direction:column;border-top:1px solid var(--line);padding-top:6px}
+.pjrow{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.pjlinks{display:flex;gap:10px;white-space:nowrap}
+nav.tabs button{font-size:12px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 46 52" aria-hidden="true"><path d="M23 1.5 44 8v17c0 12.5-8.6 21.3-21 25.5C10.6 46.3 2 37.5 2 25V8Z" fill="#041e42" stroke="#c9a227" stroke-width="2.5"/><path d="M23 6.5 39.5 11.6V25c0 10-6.7 17.2-16.5 20.8C13.2 42.2 6.5 35 6.5 25V11.6Z" fill="none" stroke="#c9a227" stroke-width=".8" opacity=".7"/><path d="m23 11.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8Z" fill="#f2c300"/><text x="23" y="39.5" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="10.5" letter-spacing="1" fill="#ffffff">CFO</text></svg>
+    <h1><small>Rumo ao oficialato</small>Plano CFO PMGO</h1>
+  </div>
+  <div class="sub" id="hdrSub">Cadete Combatente · 4h por dia, seg a sex · Método Sarah Delma</div>
+  <div class="bar" aria-hidden="true"><i id="progBar" style="width:0%"></i></div>
+  <div class="stats"><span id="stSeen">0 aulas estudadas</span><span id="stRev">0 revisões feitas</span></div>
+</header>
+<div class="stripe" aria-hidden="true"></div>
+
+<main id="main"><div class="wrap" id="view"></div></main>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-tab="hoje" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Hoje</button>
+  <button role="tab" data-tab="aulas" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>Aulas</button>
+  <button role="tab" data-tab="horas" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>Horas</button>
+  <button role="tab" data-tab="crono" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v16h16"/><path d="M8 14l3-3 3 2 5-6"/></svg>Cronograma</button>
+  <button role="tab" data-tab="rotina" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 12h16M4 19h10"/></svg>Rotina</button>
+</nav>
+
+<div class="dlg" id="dlg" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>"use strict";
+const MAT = {
+  PORT:"Língua Portuguesa (Pablo Jamilk)", CONST:"Direito Constitucional", ADM:"Direito Administrativo", PEN:"Direito Penal",
+  PP:"Direito Processual Penal", LPE:"Legislação Penal Especial e Extravagante",
+  DPM:"Direito Penal Militar", DPPM:"Direito Processual Penal Militar", GO:"Realidade de Goiás"
+};
+const SHORT = {PORT:"Português",CONST:"Constitucional",ADM:"Administrativo",PEN:"Penal",PP:"Processo Penal",LPE:"Leg. Penal Especial",DPM:"Penal Militar",DPPM:"Proc. Penal Militar",GO:"Realidade de Goiás"};
+const EC = "https://www.estrategiaconcursos.com.br/app/dashboard/cursos/";
+const CURSO = {PORT:"222191",GO:"222192",ADM:"222215",CONST:"222204",PEN:"222200",DPM:"222216",PP:"222201",DPPM:"222217",LPE:"222199",LEP:"222223"};
+const PASSO = {PORT:"222255",ADM:"222274",CONST:"222275",PEN:"222276",DPM:"222278",PP:"222273",DPPM:"222272",LPE:"222277"};
+// [id, matéria, aula, título, bloco, itens do edital, observação, curso (se diferente)]
+const T = [
+["PJ 01", "PORT", "Unidade 01", "Introdução e morfologia: classes de palavras, grupos de palavras, artigo", "I", "PORT 09"],
+["PJ 02", "PORT", "Unidade 02", "Adjetivo: classificação, flexão, grau e posição", "I", "PORT 09"],
+["PJ 03", "PORT", "Unidade 03", "Advérbio e categorias adverbiais (+ atividades)", "I", "PORT 09"],
+["PJ 04", "PORT", "Unidade 04", "Conjunções coordenativas e subordinativas; interjeição", "I", "PORT 09, 11"],
+["PJ 05", "PORT", "Unidade 05", "Numeral e preposição", "I", "PORT 09"],
+["PJ 06", "PORT", "Unidade 06", "Pronomes pessoais e de tratamento", "I", "PORT 09"],
+["PJ 07", "PORT", "Unidade 07", "Pronomes demonstrativos, relativos, indefinidos, interrogativos e possessivos", "I", "PORT 09, 11"],
+["PJ 08", "PORT", "Unidade 08", "Substantivo: gênero e flexões", "I", "PORT 09"],
+["PJ 09", "PORT", "Unidade 09", "Verbos: classificação, estrutura, tempos e modos", "I", "PORT 09, 10"],
+["PJ 10", "PORT", "Unidade 10", "Verbos: conjugação e aspecto verbal", "I", "PORT 09, 10"],
+["PJ 11", "PORT", "Unidade 11", "Vozes verbais (+ atividades de verbos)", "I", "PORT 09, 10, 11"],
+["PJ 12", "PORT", "Unidade 12", "Sintaxe do período simples: sujeito, predicado, objetos, complemento nominal, agente da passiva", "I", "PORT 16"],
+["PJ 13", "PORT", "Unidade 13", "Sintaxe do período simples: predicativos, adjuntos, aposto, vocativo (+ atividades)", "I", "PORT 16"],
+["PJ 14", "PORT", "Unidade 14", "Período composto: coordenação e orações substantivas", "I", "PORT 11, 16"],
+["PJ 15", "PORT", "Unidade 15", "Orações adjetivas e adverbiais, reduzidas, período misto e complexo", "I", "PORT 11, 16"],
+["PJ 16", "PORT", "Unidade 16", "Colocação pronominal", "I", "PORT 19"],
+["PJ 17", "PORT", "Unidade 17", "Acentuação gráfica", "I", "PORT 07"],
+["PJ 18", "PORT", "Unidade 18", "Crase", "I", "PORT 08"],
+["PJ 19", "PORT", "Unidade 19", "Concordância verbal e nominal", "I", "PORT 17"],
+["PJ 20", "PORT", "Unidade 20", "Regência verbal e nominal", "I", "PORT 18"],
+["PJ 21", "PORT", "Unidade 21", "Pontuação", "I", "PORT 20"],
+["PJ 22", "PORT", "Unidade 22", "Interpretação de textos e tipologias textuais", "I", "PORT 01, 02"],
+["PJ 23", "PORT", "Unidade 23", "Gêneros (charge, tirinha, poema), funções da linguagem, conotação, figuras e tradução de sentido", "I", "PORT 02, 03, 04, 05, 12"],
+["PJ 24", "PORT", "Unidade 24", "Ortografia", "I", "PORT 06"],
+["PJ 25", "PORT", "Unidade 25", "Coesão e coerência textuais; reescrita", "I", "PORT 13, 14, 15", "O curso do Pablo não tem PDF deste tema: use a Aula 12 do Estratégia."],
+["PJ 26", "PORT", "Unidade 26", "Variação linguística", "I", "PORT 21", "O curso do Pablo não tem PDF deste tema: use a Aula 15 do Estratégia."],
+["CONST 00","CONST","Aula 00","Poder constituinte. Normas constitucionais. Princípios fundamentais (arts. 1º a 4º)","I","CONST 01, 02, 04"],
+["CONST 01","CONST","Aula 01","Teoria geral dos direitos fundamentais","I","CONST 05"],
+["CONST 02","CONST","Aula 02","Direitos e deveres individuais e coletivos (art. 5º), parte I","I","CONST 05"],
+["CONST 03","CONST","Aula 03","Direitos e deveres individuais e coletivos (art. 5º), parte II","I","CONST 05"],
+["CONST 04","CONST","Aula 04","Direitos sociais","I","CONST 05"],
+["CONST 05","CONST","Aula 05","Nacionalidade","I","CONST 05"],
+["CONST 06","CONST","Aula 06","Direitos políticos","I","CONST 05"],
+["CONST 07","CONST","Aula 07","Organização do Estado: União, Estados, DF, Municípios, intervenção (arts. 18 a 36)","I","CONST 06"],
+["CONST 08","CONST","Aula 08","Poder Legislativo: estrutura e competência (arts. 44 a 52)","I","CONST 07"],
+["CONST 09","CONST","Aula 09","Processo legislativo (arts. 59 a 69)","I","CONST 07"],
+["CONST 10","CONST","Aula 10","Poder Executivo (arts. 76 a 86)","I","CONST 08"],
+["CONST 11","CONST","Aula 11","Poder Judiciário (arts. 92 a 125)","I","CONST 09"],
+["CONST 12","CONST","Aula 12","Funções essenciais à Justiça (arts. 127 a 135)","I","CONST 10"],
+["CONST 13","CONST","Aula 13","Ordem econômica e financeira (arts. 170 a 192)","I","CONST 11"],
+["CONST 14","CONST","Aula 14","Ordem social: saúde, comunicação social, meio ambiente, família, criança, adolescente e idoso","I","CONST 12"],
+["CONST 15","CONST","Aula 15","Controle de constitucionalidade. Recepção. Repristinação","I","CONST 03"],
+["ADM 00","ADM","Aula 00","Princípios da Administração Pública","I","ADM 03"],
+["ADM 01","ADM","Aula 01","Administração Pública: conceito, elementos, natureza e objetivos","I","ADM 01"],
+["ADM 02","ADM","Aula 02","Organização administrativa: direta e indireta; autarquias; agências reguladoras","I","ADM 01, 06, 08"],
+["ADM 03","ADM","Aula 03","Fundações, empresas públicas e sociedades de economia mista. Privatização","I","ADM 06, 07"],
+["ADM 04","ADM","Aula 04","Poderes administrativos. Discricionariedade. Abuso e desvio de poder","I","ADM 02, 04, 05"],
+["ADM 05","ADM","Aula 05","Ato administrativo: requisitos, atributos, vícios, revogação e anulação","I","ADM 09, 10, 11, 12"],
+["ADM 06","ADM","Aula 06","Lei 14.133/2021: licitações, parte 1","I","ADM 16, 17, 18"],
+["ADM 07","ADM","Aula 07","Lei 14.133/2021: licitações, parte 2","I","ADM 16, 17, 18"],
+["ADM 08","ADM","Aula 08","Lei 14.133/2021: contratos","I","ADM 13, 14, 15"],
+["ADM 09","ADM","Aula 09","Serviço público: concessão, autorização e permissão","I","ADM 07"],
+["ADM 10","ADM","Aula 10","Controle da Administração. Mandado de segurança, ação popular e ação civil pública","I","ADM 22, 23"],
+["ADM 11","ADM","Aula 11","Responsabilidade civil do Estado","I","ADM 24"],
+["ADM 12","ADM","Aula 12","Propriedade e limitações administrativas. Desapropriação. Requisição, servidão e ocupação","I","ADM 19, 20, 21"],
+["ADM 13","ADM","Aula 13","Agentes públicos; cargo e emprego. Servidores: direitos, deveres e responsabilidades","I","ADM 01, 26"],
+["ADM 14","ADM","Aula 14","Processo administrativo (só PDF)","I","ADM 25","Leia também a Lei Estadual 13.800/2001 (processo administrativo de Goiás)."],
+["ADM 15","ADM","Aula 15","Improbidade administrativa (Lei 8.429/1992)","I","ADM 27"],
+["PEN 00","PEN","Aula 00","Aplicação da lei penal. Infração penal. Disposições preliminares","I","PEN 01"],
+["PEN 01","PEN","Aula 01","Teoria do delito, parte I","I","PEN 02"],
+["PEN 02","PEN","Aula 02","Teoria do delito, parte II","I","PEN 02, 03"],
+["PEN 03","PEN","Aula 03","Concurso de pessoas","I","PEN 04"],
+["PEN 04","PEN","Aula 04","Das penas: espécies e cominação (só PDF)","I","PEN 05"],
+["PEN 05","PEN","Aula 05","Aplicação da pena, sursis, livramento, efeitos, medidas de segurança, extinção da punibilidade, ação penal","I","PEN 05, 06, 07, 08, 09"],
+["PEN 06","PEN","Aula 06","Crimes contra a pessoa","I","PEN 10"],
+["PEN 07","PEN","Aula 07","Crimes contra o patrimônio","I","PEN 10"],
+["PEN 08","PEN","Aula 08","Crimes contra a dignidade sexual. Crimes contra a família","I","PEN 11"],
+["PEN 09","PEN","Aula 09","Crimes contra a incolumidade pública","I","PEN 12"],
+["PEN 10","PEN","Aula 10","Crimes contra a fé pública","I","PEN 12"],
+["PEN 11","PEN","Aula 11","Crimes contra a Administração Pública 1: funcionário público","I","PEN 13"],
+["PEN 12","PEN","Aula 12","Crimes contra a Administração Pública 2: particular","I","PEN 13"],
+["PEN 13","PEN","Aula 13","Crimes contra a Administração Pública 3: estrangeira, Justiça, finanças públicas","I","PEN 13"],
+["PEN 14","PEN","Aula 14","Crimes contra a Administração Pública 4: licitações e contratos","I","PEN 13"],
+["PP 00","PP","Aula 00","Aplicação da lei processual no tempo, no espaço e às pessoas","II","PP 01"],
+["PP 01","PP","Aula 01","Inquérito policial","II","PP 02"],
+["PP 02","PP","Aula 02","Ação penal","II","PP 03"],
+["PP 03","PP","Aula 03","Sujeitos processuais","II","PP 07"],
+["PP 04","PP","Aula 04","Jurisdição e competência","II","PP 04"],
+["PP 05","PP","Aula 05","Citações e intimações. Nulidades. Sentença. Questões e processos incidentes","II","PP 05, 09, 10, 12"],
+["PP 06","PP","Aula 06","Provas, parte I","II","PP 06"],
+["PP 07","PP","Aula 07","Provas, parte II","II","PP 06"],
+["PP 08","PP","Aula 08","Prisão cautelar, parte I","II","PP 08"],
+["PP 09","PP","Aula 09","Prisão cautelar, parte II","II","PP 08"],
+["PP 10","PP","Aula 10","Processo comum","II","PP 11"],
+["PP 11","PP","Aula 11","Juizados Especiais Criminais","II","PP 18"],
+["PP 12","PP","Aula 12","Recursos","II","PP 13, 14","Revisão criminal (arts. 621 a 631): confira na lei seca."],
+["PP 13","PP","Aula 13","Habeas corpus. Mandado de segurança","II","PP 15"],
+["PP 14","PP","Aula 14","Procedimento do Tribunal do Júri","II","PP 11"],
+["PP 15","PP","Aula 15","Processos especiais do CPP","II","PP 11"],
+["PP LEP","PP","Aula única","Lei de Execução Penal (Lei 7.210/84)","II","PP 16","Curso separado: PM-GO (Cadete) Lei 7.210/84.","LEP"],
+["LPE 00","LPE","Aula 00","Abuso de autoridade (Lei 13.869/19)","II","LE 05, PEN 15"],
+["LPE 01","LPE","Aula 01","Prisão temporária (Lei 7.960/89)","II","PP 19, PEN 16"],
+["LPE 02","LPE","Aula 02","Crimes de responsabilidade de prefeitos e vereadores (DL 201/67)","II","PEN 17"],
+["LPE 03","LPE","Aula 03","Crimes contra a ordem tributária (Lei 8.137/90)","II","PEN 20"],
+["LPE 04","LPE","Aula 04","Parcelamento do solo urbano (Lei 6.766/79, só PDF)","II","PEN 19"],
+["LPE 05","LPE","Aula 05","Crime organizado (Lei 12.850/13)","II","PEN 21"],
+["LPE 06","LPE","Aula 06","Interceptação telefônica (Lei 9.296/96)","II","PEN 23"],
+["LPE 07","LPE","Aula 07","Tortura (Lei 9.455/97)","II","LE 06, PEN 24"],
+["LPE 08","LPE","Aula 08","Lavagem de dinheiro (Lei 9.613/98)","II","PEN 27"],
+["LPE 09","LPE","Aula 09","Estatuto do Idoso (Lei 10.741/03)","II","LE 08, PEN 25"],
+["LPE 10","LPE","Aula 10","Violência doméstica contra a mulher (Lei 11.340/06)","II","LE 10, PEN 28, PP 17"],
+["LPE 11","LPE","Aula 11","Estatuto do Desarmamento (Lei 10.826/03)","II","LE 01"],
+["LPE 12","LPE","Aula 12","Crimes hediondos (Lei 8.072/90)","II","LE 02"],
+["LPE 13","LPE","Aula 13","Crimes de preconceito de raça ou cor (Lei 7.716/89)","II","LE 03"],
+["LPE 14","LPE","Aula 14","Documento de identificação pessoal (Lei 5.553/68)","II","LE 04"],
+["LPE 15","LPE","Aula 15","ECA (Lei 8.069/90)","II","LE 07"],
+["LPE 16","LPE","Aula 16","Código de Trânsito Brasileiro (Lei 9.503/97)","II","LE 09"],
+["LPE 17","LPE","Aula 17","Lei Maria da Penha: Títulos I e II, Cap. III do Título III","II","LE 10"],
+["LPE 18","LPE","Aula 18","Lei de Drogas (Lei 11.343/06)","II","LE 11"],
+["LPE 19","LPE","Aula 19","Crimes contra as relações de consumo (Título II do CDC)","II","LE 12"],
+["LPE 20","LPE","Aula 20","Lei das Contravenções Penais (DL 3.688/41)","II","LE 13, PEN 14"],
+["LPE 21","LPE","Aula 21","Crimes ambientais (Lei 9.605/98)","II","LE 14"],
+["LPE LS","LPE","Lei seca","Leis do edital fora do curso: 5.250/67, 9.303/96, 10.217/01, 9.985/00, 11.204/06 e 11.101/05 (crimes falimentares)","II","PEN 18, 22, 26, 28","Não têm aula no Estratégia: leia a lei seca e faça questões. A Lei de Imprensa foi julgada não recepcionada pelo STF (ADPF 130): prioridade baixa."],
+["DPM 00","DPM","Aula 00","Aplicação da lei penal militar","II","DPM 01"],
+["DPM 01","DPM","Aula 01","Do crime. Imputabilidade. Concurso de agentes","II","DPM 01"],
+["DPM 02","DPM","Aula 02","Penas principais e acessórias. Efeitos da condenação. Ação penal. Extinção da punibilidade","II","DPM 01"],
+["DPM 03","DPM","Aula 03","Crimes militares em tempo de paz, parte I","II","DPM 02, 04"],
+["DPM 04","DPM","Aula 04","Crimes militares em tempo de paz, parte II","II","DPM 02, 04"],
+["DPM 05","DPM","Aula 05","Crimes militares em tempo de guerra (arts. 355 a 408)","II","DPM 03"],
+["DPPM 00","DPPM","Aula 00","Lei processual penal militar. Polícia judiciária militar. Ação penal militar. Inquérito","II","DPPM 01, 02, 03"],
+["DPPM 01","DPPM","Aula 01","Juiz, auxiliares e partes no processo","II","DPPM 04"],
+["DPPM 02","DPPM","Aula 02","Denúncia. Foro militar. Competência, desaforamento e conflitos","II","DPPM 03, 05"],
+["DPPM 03","DPPM","Aula 03","Questões prejudiciais. Incidentes","II","DPPM 06"],
+["DPPM 04","DPPM","Aula 04","Medidas preventivas e assecuratórias","II","DPPM 09"],
+["DPPM 05","DPPM","Aula 05","Citação, intimação e notificação. Atos probatórios","II","DPPM 12, 13"],
+["DPPM 06","DPPM","Aula 06","Deserção de oficial e de praça. Insubmissão. Habeas corpus","II","DPPM 07, 08"],
+["DPPM 07","DPPM","Aula 07","Provas. Processos. Nulidades e recursos","II","DPPM 10, 13"],
+["DPPM 08","DPPM","Aula 08","Execução. Justiça militar em tempo de guerra","II","DPPM 10, 11"],
+["GO 00","GO","Aula 00","Aspectos físicos: vegetação, hidrografia, clima e relevo","III","GO 02"],
+["GO 01","GO","Aula 01","Tópicos atuais de Goiás, parte I","III","GO 05"],
+["GO 02","GO","Aula 02","Tópicos atuais de Goiás, parte II","III","GO 05"],
+["GO 03","GO","Aula 03","Formação econômica de Goiás","III","GO 01"],
+["GO 04","GO","Aula 04","História política de Goiás","III","GO 03"],
+["GO 05","GO","Aula 05","História sociocultural de Goiás","III","GO 04"],
+["PJ 27", "PORT", "Unidade 27", "Redação Oficial", "III", "PORT 22", "Módulo bônus do Pablo Jamilk."],
+["CONST 16","CONST","Aula 16","Constituição do Estado de Goiás: organização dos Poderes (só PDF)","III","CONST 13"],
+["LPE 22","LPE","Aula 22","Estatuto dos Policiais Militares de Goiás (Lei 8.033/75), parte 1","III","LE 15"],
+["LPE 23","LPE","Aula 23","Estatuto dos Policiais Militares de Goiás, parte 2","III","LE 15"],
+["LPE 24","LPE","Aula 24","Estatuto dos Policiais Militares de Goiás, parte 3","III","LE 15"]
+];
+const WEEKS = [
+["S1","2026-11-23","23/11 a 27/11","Preparação + Bloco I","Seg e ter: conferir o edital, marcar as aulas que você não domina, criar a pasta de cadernos no Sistema de Questões. Qua a sex: primeiras aulas do Bloco I (sem revisões ainda: 4h de conteúdo).","Dias 1, 2, 3 e 6"],
+["S2","2026-11-30","30/11 a 04/12","Bloco I","Aulas novas + revisões de 48h (cadernos de questões).","Dias 5 e 7: só o Bloco I e cronometrar as revisões"],
+["S3","2026-12-07","07/12 a 11/12","Bloco I","Aulas novas + revisões de 48h e 7 dias.","Dias 8 e 17: caderno de erros e dúvidas"],
+["S4","2026-12-14","14/12 a 18/12","Bloco I","Aulas novas + revisões.","Dia 12: resumos objetivos"],
+["S5","2026-12-21","21/12 a 25/12","Bloco I (semana curta)","Seg a qua: aulas novas. 24 e 25/12: feriado (se estudar, só revisões).","Dia 11: planejar a semana na sexta"],
+["S6","2026-12-28","28/12 a 01/01","Bloco I (semana curta)","Seg a qua: aulas novas. 01/01: feriado.","Dia 19: celular sem internet até cumprir a meta"],
+["S7","2027-01-04","04/01 a 08/01","Bloco I: fechamento","Fechar as aulas do Bloco I. Começam as revisões de 30 dias.","Dia 16: rever as aulas de revisão"],
+["S8","2027-01-11","11/01 a 15/01","Bloco II","Aulas novas + revisões (as do Bloco I continuam).","Dia 10: bloco novo só depois de esgotar o anterior"],
+["S9","2027-01-18","18/01 a 22/01","Bloco II","Aulas novas + revisões.","Dia 9: manter o contato com o Bloco I"],
+["S10","2027-01-25","25/01 a 29/01","Bloco II","Aulas novas + revisões.","Dia 17: um caderno por aula"],
+["S11","2027-02-01","01/02 a 05/02","Bloco II","Aulas novas + revisões.","Dia 20: você é seu concorrente"],
+["S12","2027-02-08","08/02 a 12/02","Bloco II (Carnaval)","Se folgar no Carnaval (08 a 10/02), semana curta.",""],
+["S13","2027-02-15","15/02 a 19/02","Bloco II: fechamento","Fechar as aulas do Bloco II.",""],
+["S14","2027-02-22","22/02 a 26/02","Bloco III + hora da verdade","Seg a qui: aulas do Bloco III e revisões atrasadas. Sex 26/02: prova de Cadete 2022 (AOCP) cronometrada + 1 discursiva. Edital fechado (1ª volta).","Dias 13 e 15"],
+["S15","2027-03-01","01/03 a 05/03","Consolidação","Revisões de 30 dias pendentes. Refazer as questões erradas do Bloco I (meta 90%). Começar o banco de dados da discursiva.","Dias 14 e 18"],
+["S16+","2027-03-08","a partir de 08/03","Manutenção até a prova","Toda semana: revisões do dia + refazer cadernos (cada aula a cada 15 dias, meta 90%) + 1 discursiva. A cada 15 dias, na sexta: simulado de prova inteira. 2ª volta no que estiver abaixo de 90%.","Dias 9, 15 e 18"]
+];
+// rodízio por dia da semana: [domingo..sábado]
+const ROT = {
+  I:  [[],["PORT","CONST"],["ADM","PEN"],["PORT","CONST"],["ADM","PEN"],["PORT","ADM"],[]],
+  II: [[],["PP","LPE"],["DPM","DPPM"],["PP","LPE"],["DPM","DPPM"],["LPE","PP"],[]],
+  III:[[],["GO","PORT"],["CONST","LPE"],["GO","LPE"],["GO","LPE"],["GO","LPE"],[]]
+};
+const PJ = {"PJ 01":{"a":[["01","como assistir a este curso","","1PGQHq1dUcCsUwratFrR5ltB0FSX9_UN3"],["02","Níveis de Análise em Língua Portuguesa","","1VC_ckpegL3Seo_u4-GWftzbEBAVDZDtT"],["03","Aplicando os niveis de análise","","1BL5vsUCmyznwS8qRDe4hyDFz2b0__OIh"],["04","Morfologia - Classe de palavras","1ZKlcserm8_n82CIeu3kqS0-uDXiX4cVo","1zbts4NFT3vRHnSf0HjNlMwXbYKlIjjUP"],["05","Os Grupos de Palavras","1m5gWrWizmr8L_DdA1Xw7m1rSuM38Cb9t","1icOKUsMBei94X3NUdB0u_0XSDw92D49x"],["06","Artigo Destruidor","1UBC95yp4PCAzIbcAngIRaYe_wf5sEOsO","1_h8lzoSGu4y7Ro1xnJA2rB9bLgjiNZSq"]],"est":null},"PJ 02":{"a":[["07","O Fantástico Adjetivo","1NiTOVLwcju98Fb_ZVeioJNZbtmIcCSW1","1aaitlE-C6yX7F60g3eLute68V3jTwXsv"],["08","Adjetivo - Classificação pela formação","","1YAN2eUKyihYm5oib4qy25oDhtuB_HmXj"],["09","Flexão do Adjetivo","1n6A95x8qpTEzPS3Do1Ls14MGjtz3bBUH","1pXznaMfCjsWjsPj_ZmmZE8xrBvjxCcxY"],["10","Flexão dos Adjetivos Compostos","1-ojuwN77mqsLzkoEKfSCHe9dSvc7_C_M","1nM5kgbpSnGUP06cJdBWhhXpCdZGKLpm3"],["11","Grau do Adjetivo","","157s0Fb3kt5FprA3QroanYUPEMSLKvSUd"],["12","Posição do Adjetivo","","1TWeJvoZRs_U2roieekayOogoxBEoj0N4"]],"est":null},"PJ 03":{"a":[["13","Advérbio legionário","1ME8YtkhgL6-GHD2a-iB_4A1EheeAkyio","1FgQKS7aK_Nc48HsdHR9A_MYgjl24CRpn"],["14","Categorias Adverbiais","","1G31WfqNVupk3wPO-mVL8giYhpmIrLwty"],["15","Atividade de aprofundamento I","1s_a0m9fPLKs79ubSqVs5emnU9EpAb5kd","1QuNy_U54djtuXcLntj6Jqm78mo27E-6o"],["16","Atividade de aprofundamento II","","18N3Ipj73MoAAWl46YkbrAkd8QM9amz2M"],["17","Atividade de aprofundamento III","","1oXqHQ8Oj1JSyamrPTZsYzb4lShNvW8dh"],["18","Atividade de aprofundamento IV","","1gzSZQq0jCtAFGrAgoQ3i-kfq_qLfvBe3"]],"est":null},"PJ 04":{"a":[["19","Conan, a conjunção","1Qc_oGiVIPoKHEbiC_w1D-nJvYFzh94Oq","1k9HTUMu1BTOhx_rrlg3v62U8lw1aIhCa"],["20","Classificação das Conjunções","","14h5qAVs1GRIudTgyEfy2-IyIE7sAhEoe"],["21","Categorias Coordenativas","1EvIQK2bXGUp5X4PaS4gvJmg3A9RfF6Q9","1RlsrL4yzgbjF3tC-i7qpVKltZt0Sj_Rz"],["22","Análise de Exemplos","","13s3GlxJmyzyiXhtp1q_OsQzN-1GlW8xN"],["23","Conjunção Subordinativa","","1DC-srBTG56faEnn8Mu2bB72J0Uszk9JE"],["24","Conjunção Subordinativa Integrante","1xYO_WC9QPm8s7g0rQw5gQ-CZpa5TGo1z","1Fdz13C7VYTMOLImbgDg_FNihGf4R2ZlW"],["25","Conjunção Subordinativa Adverbial","1D1CaihG5zdHDp6BfhXYFeWmvIMVk_BGc","1Q5CcEhPsbglDsjQjtcsdZwh1Ag16GS8r"],["26","Conjunção Subordinativa Adverbial (exemplos)","1ShB1FG-lhs0U2D1ucKAx_HrPFq42nxKr","13_cZBdi5ItxqdNl8U5WwYRriQzUK7kJN"],["27","Explicativa ou Causal","1BOF3XvlCqwpoUvGvEuUIjUGrlZj5faYM","1QaFdZZZLwQwk8sUU3hLlmVxIqDQc7TD9"],["28","I de interjeição","1usC79nAvPl8EA6jNtGyAXbaj3f1kyNvy","1_Oj2mfvk0Q6ptq1qg3avb3cc76dFfgB0"],["29","Atividade de Aprofundamento I","13YEbCx4Qm9cHWW7xRsDOKrqNt8fM4kDp","1y6JjcaIEZuUIvUPAB8DbwyjiwnVR2jmo"],["30","Atividade de Aprofundamento II","1_rFGAiCDIVicT-akPBr49lPuY3s8okJg","1zLFdg9pVRRtMVoyJyriL0XtmihF5KemX"]],"est":null},"PJ 05":{"a":[["31","Numeral","1EsrQD0TC12ZuDCv6rlNasYG14pCOVQTF","1rUAUogAPgvVSvN7J4_rZcKabipjthEjK"],["32","A perfeita preposição","1LL2ii-daTjwzTxFR3HnWMYKMG9pYi8SL","1PLTnIbEVN8sIUXathbACts-oz6CTRw-P"],["33","Classificação das preposições - Essenciais","1CY2ImlZEcjwSnvo9c3stl25tWd5Muix4","11baKHiwMOnjiliYxdNlJONWUOPvPZC0M"],["34","Classificação das preposições - Acidentais","1ZG95MT0jSPIC7NxsT1BH13uKxg0ka6t9","1Eb8mopew-q7ARwvPCCb9cRZOQYMRaE9m"],["35","Locução Prepositiva","1OxSspazLMVxR-e0CDAI55Pq8MoPnBYSY","1OSBU44NouebDpO1j6aWEN2j103cZNlO-"],["36","Combinação Prepositiva","1jfp4eldK-MJec45XdZqC6oLeUHZGASiT","1593Kb5F2ICRL7Jae0y4dpnO1PLUCA5qq"],["37","Atividade de Aprofundamento I","1YSMyV5MaMV7abfn-XyhQmDxIxLqrEw1P","1hhFuJxnDmGgTIxEAXf_reioRNop1StgN"],["38","Atividade de Aprofundamento II","1EC1m-0jtyPBqOKP8BAPpdCkOrqRgFPBf","1wVKiSSXnjauS_mCvqvOYBHg_q79NyCTr"]],"est":null},"PJ 06":{"a":[["39","Pronome Enlouquecido","1eUKVprMUp8MXO8SzhH6LfujVMuY2Vgf7","1-Wa6cvYuDV8lKeQ5DRWVqNQD6Mls54mT"],["40","Pronomes - Categorias Pronominais","11Um5R1PwnDCPRUaY6c79z2-zUNUEndfY","1yakD_bTpy5jRuekTrRg8POnCP4b7zp_-"],["41","Pronomes Pessoais","1N3PCDUnp94V09Pox3etWAR_pUiOhOI20","10R2C29umPQ6Lq8UQjp4mxv11FU1TR8-N"],["42","Pronomes Pessoais - Funções Básicas","1pX9jGz93mbNhjWC_owUPw28dpzYFpcY-","1kMJZ7CpurO5Jj3Y-xU-qnr6rcG6ls0X6"],["43","Pronomes Pessoais - Casos Especiais","1Exg7W7X68DtmymkmpOsdTo1wwMjdtceF","1fzSHpYXSh2Zsf1V5gMYbeFmHLlhHIBW_"],["44","Pronomes Pessoais - Emprego de Eu x Tu, Mim x Ti","1Qv0o5u7Dd5fIaBAt-tKvG25wuHGrT_dv","1PDA6eUXqw4itxGxbYvvdgANwtH-jsbWb"],["45","Pronomes Pessoais - Emprego de Si x Consigo, Conosco x Convosco","1TdmdsXACbkqOc8r3IOfn3EmbhUyy1_Vs","1InJ08LMphkh7Hnp_iBDC3jmtyroyKvtn"],["46","Pronomes Pessoais - Emprego de o, a e lhe","1MnB7MHkiPaFlXKOhI0DztOd22sogw_gz","1X03RFTZH3LI2W0IJCdIR0AGWBXas6MHT"],["47","Pronomes Pessoais - Emprego de o e a após verbos","1tax24_D5nMIDlMHh1i34p8w1A7sI5aOo","1lPe4GzPyJHOkRXU1Aq447U3osuDzdDU3"],["48","Atividade de Aprofundamento - Pronomes Pessoais","1O_ZCbvs-mK4Yh9TC2C_YRj-KCowB58aK","1A72CSpTZFfW_Qd1kc6RI3GZ-0T0rgvFz"],["49","Pronomes de Tratamento","1Dmn5nCdt_-UadwX2ETOa_hgPxvKdShBh","1l8B_4qpbd-K7LTUX00pEZELun9cQBmCr"]],"est":null},"PJ 07":{"a":[["50","Pronomes Demonstrativos - Parte 01","1g6NWFH4smJz-e0UrsE0dDF2WVxmnet-v","1PXQ28ElAv0nkP9dnS4BM3blxpY815nsH"],["51","Pronomes Demonstrativos - Parte 02","1VM8iB_cwtejmgt558fp4vmKOjwWqtklT","19vGhBhTbyT5ixJjDkyLs0MDLaTNAldAO"],["52","Pronomes Relativos","1GeSB_tkZnKFUwMLec1-Uc_xK-odoRjy_","1L0KQmhBDP7wyr-x1nXBWG4QqhEx-e7-B"],["53","Pronomes Indefinidos","1IZz18aiDBGvxL_wHfJA99uEexULeQ0Jh","1KZRKXKmT5r-fonbEYMjC_9HOhOgnKC1j"],["54","Pronomes Interrogativos","16k-ddnefNdnVOhZT_fZe3tTQTTU4gNrB","1NGvl_ZZdDKyAPHSnmzBkkGadMs8F07LU"],["55","Pronomes Possessivos","1yk2KtWCxOj3irWui3G9dkSUvZ_jwB3kY","15z_TBcplInbN3EOHzHd6kZi07yPgArKX"],["56","Atividade de Aprofundamento I","1xzRRWFcMKM-woRexyVOT49itVoGLIdiJ","1EMFsRUj55d0dOpgJEx2fw_JWmMtAKNzO"],["57","Atividade de Aprofundamento II","131soo6s_MN7J7W-ZC2LlfxHwaSKZHona","19S9yc96CKj43aqvYIB8HFm4jEfrvM97J"]],"est":null},"PJ 08":{"a":[["58","Substantivo Marotão","1-_J3ybSDC0kF6llkdrqkD6Ay7AC1nNev","1DsYIiqqVXf5jlUgjiEWvnfExSXTCg6oc"],["59","Gênero do Substantivo","1MumiWF7-OzLVmtdVHzdnBemWW69yzYrk","1uvVJqm_ZTR7xK96DvcAR_GMhDVpkVBcU"],["60","Flexão do Substantivo - Grau","1zYGcqE5co4qpJUYo_cR2VJ8o-QVA9Ju8","13k4FU2kSmX-1MkJ4Ae2BzMjjbQbrPx9c"],["61","Flexão do Substantivo - Número","1bsAcnVFWh4a9d4jaCVrlnzUXKZk8dMRf","1Fq6QedAquE2mSm1eMWVVyROAu-SoNi_S"],["62","Flexão do Substantivo - Compostos","1lqVcS6BVoHgpxl6u50NCXjRMJxcVGm9c","1414MZnmNCe8vtEHB813EPl_58V-CbURo"],["63","Atividade de Aprofundamento","1ThzQuW6J6vHaIS2TOnzE1odBal-b_VtW","130VIADtYkpVuBUQKQE5oY8sI8KSWspaV"]],"est":null},"PJ 09":{"a":[["64","A Magia dos Verbos","1pluWS03o6JHC0WC_nHEz5h5ng7m6MmKp","1Dv3PFhdAByZZhDTr45SfDkSKDpCbOa9a"],["65","Classificação dos Verbos","12t_vA4kJGR8NqgwSiRgd11LJKNY3yiTf","1wYTqbw7pYpy1Rxa37MUXevj2LsFOW-Ap"],["66","Árvore dos Verbos","14_4D1ijz3JDJRNCyNiG3pIvW32__5NeQ","1R1F7iOk875NxzWFlW9IMRr2o_bPPqlL5"],["67","Estrutura dos verbos","1BUXDiY1FWxrPPRVFmcXMt1UgKv0G5MiQ","1MrebiLmSOFrNYC4iuEfwx9hPXz0yQ86y"],["68","Tempos e Modos Verbais","1ZodXWj2-iLg87mT1i2igC8kViWiQCi-h","194hmtio6AdtpY1Gc6XEhkI6ORvNPnQM7"],["69","Tempos e Modos Verbais - Modo Imperativo","17JjDP3MpR7UZ3afXZN9CvO2VpcXwBf4J","1Ub0CGcr0RAE-JxIEEsy1c79UC556XxxA"]],"est":null},"PJ 10":{"a":[["70","Classificação Verbal com Base na Conjugação","15-Ug67UAm4g5IXx42At8g-PCMMFbec1S","1pPySKKqFT2XmM81J3XlVe344fOEybVU5"],["71","Conjugação dos Verbos Regulares da 1ª Família","1mVTl8iMdI5TktzPXtaF4Owdv_lZasrEp","1SWOrA1rqugE08qNyVttDWGJfsAX7IaAL"],["72","Conjugação dos Verbos Regulares da 2ª Família","1wGsN1f9yC78a-TT_YC1DwKxne2fccoTv","1mN-3r6ErFsuZupJu-0_HE8dwKEGrjLI-"],["73","Conjugação dos Verbos Regulares da 3ª Família","1XnOsyqDNOmVCoyK63De2Wum76W1a3TRd","1qV8XVgDX2VJHmW2wGkz1D3Dn1aDWJItV"],["74","Conjugação de Verbos Irregulares - Verbo Haver","1ttJU_jD7HXVxlOeY2IBWS4AsYhFWALfp","123BD3pLS4sAfs41HD5RuYOYz_dSteVOg"],["75","Aspecto Verbal I","1uVcVMNSJOf7Nqzcb7EAdhn4qVVlQKu3Q","1PgUHmkUOtp8iGrr4z0g-mMVdjxNA5mq5"]],"est":null},"PJ 11":{"a":[["76","Vozes Verbais","1nkrkniUD1jzMEsYbZth4AH4kX83Og1aC","1L9KSRGbGIJelF5iiL1HcAK_eeru_ROXx"],["77","Voz Passiva (analítica e sintética)","1bl9UPYGoey2aDK9wbC5Wvd-yt5LIorFd","12w5eRjC3DnoOtIz6Td6BOuTfo9v_vkam"],["78","Voz Reflexiva e Voz Recíproca","1kbhbS9UDHcfIBiHoLVjMODJ5ZOGmpib0","1PO-tEfTnWBtXECfb0VAe90QZavLUZeHl"],["79","Atividade de Aprofundamento - Verbos I","1BQVScijWkQmXaratjSbfxjpzJ6kGBseI","1kKwC_S-YJQoEPHUf6hvdEIjH8vjLxF8K"],["80","Atividade de Aprofundamento - Verbos II","1lAO3CPDtqci5Qpk2G7txHfFTa99_-roy","18BOpr9xceFD4JCNkkfuI0bcWOs52Gpvu"]],"est":null},"PJ 12":{"a":[["81","Sintaxe","11FI7fwqMM0XDwXlUf6jGc7cuBmuVgba-","1bnNs_AzUfzSetDizf_cXxh0BNeStsIkY"],["82","As Colinas do Período Simples (Os Termos da Oração)","1Wh07f3LDrKxMoSbCcYiW86mD_eqaoPrp","1ytc5RFpAu__uLYpFjBIQRRdWnCBslftS"],["83","O Super Sujeito: Simples, Composto, Oculto, Indeterminado, Inexistente e Oracional","19gJHuKSHLu0teiAJpf1NoTWBnHDUZJl3","1DiW3qRKV24MW_mbqg2xAGtuMH9KT4E7Y"],["84","Predicado e Precipício","1EaEpMBSmCEYASeghyOwg0VkQ0dnNXcCF","1Lg9J9Ni0BNsNuUvG7kehhvkXlWs4q-u_"],["85","Complementos Verbais - Objeto Direto","1xB4AjBfOFtRsBuUajxhyc43DY9HU_D1N","1uMd8jKqSmjL_QVMHBrwpGeX03hpLw5aE"],["86","Complementos Verbais - Objeto Indireto","1vVfivT0Yrni8_HUnJhutAdpXGM4D6Fc7","12v-0TQG3P5Cr_ymoNM3KpN5xPevgNl3p"],["87","Complemento Nominal - Agora ou nunca!","1Wol_JJYKNd84WVQ29tiMe0J4Bn1Q7QdB","12uuwKE4kFia2fwh9mk-OZTDndVi4sd3d"],["88","O Agente Secreto da Passiva","1lKjw-Y5ui6W3kknng4L5anCYt4z6xTfg","1vtJ8N5oNDoLYGg97KD1fmYlIOQ-EboV9"]],"est":null},"PJ 13":{"a":[["89","Predicativando o sujeito","1tkhAipCOt0b4T3lKiZEvIxQH2YsfDoo9","1AC_YOVtD1vnMpxkD_9aUevUyPPikEAPJ"],["90","Termos Acessórios da Oração (Adjunto Adnominal)","1ccx2h93-5ns-F9Xf_UspMDS1vb9HaX3Y","1qnortcbJpPhCm3qFne2YP2sXvzcimF0x"],["91","Termos Acessórios da Oração (Adjunto Adverbial)","1LqBRn7mi03-Fkd1vb2QXbHg_cLo5I39Y","1BUUrGR6H6Q4e-my38d19zFsKb9DehwtK"],["92","Aposte no Aposto","1c2qG2uH1DYdzRqNRFTyiSBBrm7a33ARe","1fUrfM2ugq2Uc5Xflhr4wN9KIs-MOa54p"],["93","Dando Voz ao Vocativo","1w64BOgF9YozFFbSSDLhOzJHCLBYp0SQM","1wok2cYk0o9ZyXtwLrq8-YnEcqmDsd4uR"],["94","Predicativo do Objeto","1eUKWUEPLh221h70pvl-ynWTD7_6TXCEd","1yV87H_5BQzDZLqhYVxCOScgR1tub5sKo"],["95","Atividade de Aprofundamento I - Sintaxe","1sH1mCjTC4yfAvM-ZtKvShR5Tss-_fFUA","1Xy59bwB7jwuvSJsPXJFaFZkJPLpw7p-K"],["96","Atividade de Aprofundamento II - Sintaxe","1tcuiZXlJXS8FL6-TGQO29WL1Pf7-ZB0Y","1s3yh7GBb42kUCN-SvMME1Y9XgfyyOssk"],["97","Atividade de Aprofundamento III - Sintaxe","1wZllL5h1TLGES_UqY71k-5JdOcQne6Zt","11GWtv0qZQ1j6QIxmgNG-mVfX31Ey9QiU"],["B","Bônus: Complemento Nominal x Adjunto Adnominal","","13NVvY18Yg4H-yvla0sdxpHZKwZD8nvbk"]],"est":null},"PJ 14":{"a":[["98","Período Composto (Coordenação e Subordinação)","1cVjovj6XSOWp_Detg4ynezw3PYhmRf3d","18VTXO1zfSA_Y6p7rRz8LwaoaO5mEt5VU"],["99","As Legiões Coordenadas: Assindética e Sindética","1f-AxoAtoPVJqlu-VA4VLnFzvEiXitA41","12uFdgvxf0mtY6GXPJsESh5rVD-TBPKqs"],["100","Os Caminhos da Subordinação","1II7FbCO252SepLzdlfICGeix9OWu4-04","1UcKG-to1IoeWfHm53vYwCU7IQM64POTK"],["101","Orações Subordinadas Substantivas, parte I","158h1FD1rIp48Q6jqdJ7rDUJ3KIZpRoIK","175IDWoUlnj-6jF_MLRKk4kCLiZB8sKtj"],["102","Orações Subordinadas Substantivas, parte II","13l3njUmnlYkkEO2Hx3OmMFkW_YPxeG05","1K_y7s3_s4Q4aU9ZjWAjQJzDuONrVOJxN"],["110","Atividade de Aprofundamento - Orações Coordenadas","1OA6OiegUQh9DZ0HptCIY6_g1dafBFH_u","1cvyNzpIQ-WuQGvDYsNPCbaVDtyPwUff0"],["112","Atividade de Aprofundamento - Orações Subordinadas Substantivas","16mCd5mDf9srzXKdj47k45CuOzJnr5mwr","1MLULvIe-erJPzsA7vQFRR8OLT1njeXp0"]],"est":null},"PJ 15":{"a":[["103","Orações Subordinadas Adjetivas","1LvGOrM71n4avEG5M9aPmdEoJsvIICA3D","1r_7LLMXLJbfsbLRMAFuOIqhBwdTGCxcH"],["104","Função Sintática do Pronome Relativo","1Rzo29wh5sGM3tUT8_oNQx2vfCJMmuFdG","1PKwKu1g2IB0QBKHQoOEkuiU0dKuCpMhn"],["105","Orações Subordinadas Adverbiais, parte I","1tHvp_TT8RVxcn7mMWY7U18ok_-QGiyZL","1nC17F7lrgx_K-s_eMdcb6uedLbBZHtom"],["106","Orações Subordinadas Adverbiais, parte II","1oxh4rFG2BTBMpwrOnAhBmFCy5untaiFv","1FaUTg7AwLjLAXc1YJDuxbPvsvtwEgPu2"],["107","E as reduzidas","1zCnWiN4Mgg9j21hEhqr2eKTT3KW6yjhY","15oovraqAHO7JCSBnKjHbrZtXZOypQ0mA"],["108","Período Misto","19SfRRbx_QB4lXvYj-1MazYFKRAgPnp_Y","1kLkDKPGQaSmvX5p3AmP3hLyfskIOySrJ"],["109","Período Complexo","1NXPRi_D9IH2tnmHK67bc475G23Kuy6GH","1cQEGJHBJSYRp4tPTnMtqPpcuQlw3YQRq"],["111","Atividade de Aprofundamento - Orações Subordinadas Adjetivas","1rQhrsXVkWrlrUm9VFNknRNj7yw1fbyS5","14JRXLBLF5-cxVU3FwWrBO6mlLP5-t7u-"],["113","Atividade de Aprofundamento - Orações Subordinadas Adverbiais","1DEmqqMNP3iq6vkcFBU_eXZ7OTmElaan8","1b2e1vmZ_g7EZCqsJ6ZrMogsUAsk9ptAR"]],"est":null},"PJ 16":{"a":[["114","Colocação Pronominal","1rA9EInMKVTCpeMHYSaHsC4ku7I1lDX-G","19DIe79mswsPGxu0bVPOx4UnwoNzKj0E0"],["115","Colocação Pronominal - Regras de Próclise","1CzqFQ9UE6Z4CdxH7nreONzaoqivclXYE","12nO0i7foTeLrQ8ijf_ypha3FGGyiObvi"],["116","Colocação Pronominal - Regras de Mesóclise","1CIA_owIA9gEW58Gi9Y_tXfbeOZ8cHChU","1KEZgJ5rCFbfzFhTVuoXhCbS2Fuy0WRJ5"],["117","Colocação Pronominal - Regras de Ênclise","1jyqYVDCGF6MurPjzDZyZUimi9R_1d1iu","1Y6Uq42Yg-iFzYFn8HpNMJf6HQw2JnfnA"],["118","Colocação Pronominal - Colocação Facultativa","1CPGOaEK-2ynvvHjXd8sbXvSVLAFqtQj5","1v4hb_OL7eGI06fPYFlvEhKG82xoZA3ih"],["119","Atividade de Aprofundamento - Colocação Pronominal","15fLQkYgHGOyWk4YF3_8tenfdSvo7D28X","1XMU8Gro1QPqiS0YJWakAhQ5IwKIA2F8q"]],"est":null},"PJ 17":{"a":[["120","Acentuação Gráfica","17guJEh1gpiUf3RqZ3hFoLE1OjOm8KaEX","1mWPj-3Z6BcE1kTLjEffMWoxnaGurM9A4"],["121","Regras de Acentuação","1NKPuzhbqHKB-ddxpXbujzmcHo8_zq6bb","1Wncvu0IlZKVuC3Ag4Zn8E7VCf9hh6H13"],["122","Atividade de Aprofundamento - Acentuação Gráfica","1vQzRhKUyVAde2_YIh8jA9m5t_uvrOKgD","1Dqf4fACg0V6eqX8PMHK1uU9nlYDiHmdQ"]],"est":null},"PJ 18":{"a":[["123","Crase - Introdução","1VFl0ER1nBqH7J_AAIioeuD1Fnh7TXQWR","1swsXy9aDKn918kzxShkM4JB0Bti420Wv"],["124","Crase - Casos proibitivos","1rwVd4o8WdNKtkoPBzH-5cq6Gc30v1Qpj","19LiIWxa7acvTFEMWbB_sYyuvx52LL-Kd"],["125","Crase - Casos obrigatórios","1rc-ljQwkZlK85r3rSdP5PuTeTHDUPc6y","1bDH_QSr6fd_9uuH71n1T0lor-Z7I7c4z"],["126","Crase - Casos facultativos","1wOmTkxqk1mNmgKK1a9x_wuvDnOYRIMIl","10MI3bCH9hO-p1ei0gPG2A3YZjk-kzre2"],["127","Atividade de Aprofundamento - Crase","1tSC1E9L-ukWG6B9Q8r_1LiC8g1hSgRD6","1t_d9szCEuREEuy6n8f8DB1aJa_QpxDzS"]],"est":null},"PJ 19":{"a":[["128","Concordância Verbal e Nominal","11oIvEXhhJtKIYwtwKnNDVAt2f1FG7Ccs","16rQYnd1xfH4-zRpyKjlMHr1o7Rb19Wiz"],["129","Concordância Verbal e Nominal (Tipos de Concordância)","1zHAhJVn_E-bmDl5Oe08M8B8iNEXJ2qns","1YHhFv3761ih4-Fd45GKuwXtbPeuVUjS-"],["130","Regras de Concordância Verbal","1Yxl9pWLW1d4-OsI40Ivkm0g03LyZizFE","1zfsMD9nboN203K4_JqQK6zsKXaGwkBDr"],["131","Regras de Concordância Verbal - Verbos Impessoais","1ECDbIqidrXdKWCq4k2HxcJzDOuSlq4WA","1vkJDkQxUUEMdx7Ae0PNaqVnhqEhIR83r"],["132","Concordância Nominal","1qnQOwBzd0XI7dRVWMXTw_2Qpe4r821m0","1JqOuUrGAJUGo34Y8w91IBjhn4dW2jQ3B"]],"est":null},"PJ 20":{"a":[["133","Regência Verbal e Nominal","1C51D9QYHQKmFCfMJPKIiSi5VBYRWArAw","1CajWNmwa-_0p9tGvAhAE4KnzYz10dcPM"],["134-135","Atividade de Aprofundamento - Regência Verbal e Nominal","1eah8vX-81gzED_btcmpctIyUVU0CN0zx","1dS6HN68H89lUnGNrivhqlAyxojHkWieU"]],"est":null},"PJ 21":{"a":[["136","Pontuação - Introdução","1UY9tJLu6eDvWJRNpskaUw37XKZwprYzf",""],["137","Emprego da Vírgula","1CMEOITzK5MfnKIhc6ePT8bgivxaq_Mkp",""],["138","Vírgula + E","19vrw1PkiVALPCqKZXVun0quITxKxppYY",""],["139","Ponto final e Ponto e Vírgula","1Vnc2biJPbD2uoQPkflZmenL6LTH8z7uA",""],["140","Dois-pontos","1gfHrH3WJUH9pug9ulPdhKbfg6al-bNed",""],["141","Aspas","1tFRH52zfikYBuLtmE5nGs4zCkN4kpmZH",""],["142","Reticências","1HRpxElIo0EtH8vXAjMxNlu4hE4bcNp6m",""],["143","Parênteses e Travessão","11cxG9AFZOU5SuVgdIA16nEUYnLpe-JSZ",""],["144A","Atividade de Aprofundamento - Pontuação","1PIRuEdDFkyZxvbboI7lZZ1A2aAN6oaOm",""]],"est":null},"PJ 22":{"a":[["144","Interpretação de Textos","1dM1uFFqtwRv9LUIZ_CsekYCOjazLJ6BB",""],["145","Tipologias Textuais","10BwdZKXlapABYP0Ln-uga8sqzLSF_taL",""],["146","O Texto Dissertativo","1hI6zOjOvuN-gOtMLR1SlGUYC6smh_co0",""],["147","O Texto Narrativo","1omA-fTV5L-yLtSYnPjJ8JZ4bmOvW1BqM",""],["148","O Texto Descritivo","1QL9Rroc1JLNc3mxQS3_Ul_SQmshhaICC",""],["149","O Texto Injuntivo","1suxgFpA4WWrSPhEqqm_qtpwedEwk77tv",""],["150","O Texto Prescritivo","1I6G3xQWOjA8QxMvFAXmV0Sr-tq-1wfdM",""],["AT1","Atividade: O Texto Dissertativo","1FgXnSTHpiSn3_HHGDgXUc_J0d8PTUgI8",""],["AT2","Atividade: O Texto Narrativo","13EmqDledObIUQlB8AFu38tZfL3FcN7dj",""],["AT3","Atividade: O Texto Descritivo","1tOXPaCMCRIeRo511Ed5_DeHRomnPvFGj",""],["AT4","Atividade: O Texto Injuntivo","16z7puAcq9RaG4VmIHx6U5u1kkwgtLdVP",""],["AT5","Atividade: O Texto Prescritivo","12OH2BpqEdzxejlEMhtOYDApRvCtGqwNQ",""]],"est":null},"PJ 23":{"a":[["151","A Charge","1Pbq28gN_JXxDZAgjxkhR95s3ZPpDi2On",""],["152","A Tirinha","1OZYGldlcas6gzJWx7YaU3pYWruYiWtR1",""],["153","O Poema","1j8dlQevJxDzDPzvj-59TfLnvCTfEka7K",""],["154","Funções da Linguagem","1QePtek2mJDCnBqyU_MVi6OpkP0ZA7-Hz",""],["155","Conotação x Denotação","1JUmDV3_DQY9qxEn24lS5Sdl9jmmCvrON",""],["156","As Figuras de Linguagem","1-i5BjYBUUgR3RwVc_5MlJIeDwMDEz-UF",""],["157","Tradução de Sentido","1bRY7YOspOb80pAimYCpIcEEddzSTzyPl",""],["AT6","Atividade: A Charge","1bfjpfi0BXrrWpmpWWH1Z7NH-XPE8tC9M",""],["AT7","Atividade: A Tirinha","11nHev12Gl-bK10aDzpXH_mZMTRVSpwI6",""],["AT8","Atividade: O Poema","1x3xcurenJHdKv6P5M7O1Hg_QjjcheLIs",""]],"est":null},"PJ 24":{"a":[["158","Ortografia, parte I","1P-acs7_zcK7vRbXhhH2SGHcv2jzz1wYy",""],["159","Ortografia, parte II","1TBYcIuNptiwv_qUQbb8hSsYZWkdm9WxP",""],["160","Ortografia, parte III","1oSAcrQAep0UCFf4U6r28rp8AJedsodI7",""],["161","Ortografia, parte IV","1zpeLc8doYhEVL6FnfmuArPD6KwiVNsi-",""],["162","Ortografia, parte V","1fEQgh0I8qW0veVTpWJtOf7BMGXRoHDoY",""],["163","Ortografia, parte VI","1jcW2hNbydcdgpISikvUK2xidrOSWuqQM",""]],"est":null},"PJ 25":{"a":[],"est":"https://www.estrategiaconcursos.com.br/app/dashboard/cursos/222191/aulas/2036972"},"PJ 26":{"a":[],"est":"https://www.estrategiaconcursos.com.br/app/dashboard/cursos/222191/aulas/2041302"},"PJ 27":{"a":[["RO1","Redação Oficial, aula 01","1XzlU0BRaeW2HWgYcRP-awhtumuL3bXtP",""],["RO2","Redação Oficial, aula 02","1VoVnHLc7IApFq9GUount-kucEh-gsF7s",""],["RO3","Redação Oficial, aula 03","1WFvzrua0AvRIUyGjkfVxXcB2dSHvLQCC",""],["RO4","Redação Oficial, aula 04","19sT0_tuDk_ad6hRh-iYNO6-bs0J2PlvR",""],["RO5","Redação Oficial, aula 05","1LdNRg2GeWWnz-44iUrHQ_qr92z8vsGYi",""]],"est":null}};
+const I_ID=0,I_MAT=1,I_AULA=2,I_TIT=3,I_BL=4,I_ED=5,I_OBS=6,I_CUR=7;
+
+/* ---------- estado ---------- */
+const KEY = "planoCFO.v2";
+let S = {t:{}, w:{}};
+let mem = true;
+try { const raw = localStorage.getItem(KEY); if (raw) S = JSON.parse(raw); localStorage.setItem(KEY+".probe","1"); mem = false; } catch(e){ mem = true; }
+S.t = S.t || {}; S.w = S.w || {}; S.tm = S.tm || {run:null, days:{}};
+function keep(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+function save(){ S.u = Date.now(); keep(); syncSoon(); }
+
+/* ---------- sincronização (Google Apps Script) ---------- */
+const SYNC_DEF = {url:"__SYNC_URL__", k:"__SYNC_KEY__"};
+const SKEY = KEY + ".sync";
+(function(){
+  try {
+    const m = (location.hash||"").match(/cfg=([^&]+)/);
+    if (m){ const c = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); if (c && c.url && c.k) localStorage.setItem(SKEY, JSON.stringify({url:c.url, k:c.k})); history.replaceState(null, "", location.pathname + location.search); }
+    else if (!localStorage.getItem(SKEY) && SYNC_DEF.k.indexOf("__")!==0) localStorage.setItem(SKEY, JSON.stringify(SYNC_DEF));
+  } catch(e){}
+})();
+function syncCfg(){ let c = null; try { c = JSON.parse(localStorage.getItem(SKEY)||"null"); } catch(e){} c = c || SYNC_DEF; return (c.url && c.url.indexOf("https://script.google.com/")===0 && c.k && c.k.indexOf("__")!==0) ? c : null; }
+let syncSt = {last:0, err:"", busy:false}, syncT = null, syncAgain = false;
+function syncSoon(){ if (!syncCfg()) return; clearTimeout(syncT); syncT = setTimeout(() => syncNow(true), 1500); }
+function norm(o){ o = o || {}; o.t = o.t||{}; o.w = o.w||{}; o.tm = o.tm||{run:null,days:{}}; o.tm.days = o.tm.days||{}; return o; }
+function hasData(o){ return o && (Object.keys(o.t||{}).length || Object.keys((o.tm||{}).days||{}).length || Object.values(o.w||{}).some(Boolean)); }
+function mergeFirst(local, remote){
+  const m = norm(JSON.parse(JSON.stringify(remote)));
+  for (const id in local.t) if (!m.t[id] || !m.t[id].f) m.t[id] = local.t[id];
+  for (const d in local.tm.days) m.tm.days[d] = Math.max(m.tm.days[d]||0, local.tm.days[d]);
+  for (const w in local.w) if (local.w[w]) m.w[w] = true;
+  if (!m.tm.run && local.tm.run) m.tm.run = local.tm.run;
+  return m;
+}
+function adopt(r){
+  const cur = JSON.stringify(S); S = norm(r); S.sy = 1; keep();
+  if (JSON.stringify(S) !== cur) { const dl = document.getElementById("dlg"); if (!dl || !dl.classList.contains("open")) render(); }
+}
+async function syncNow(pushOnly){
+  const c = syncCfg(); if (!c) return;
+  if (syncSt.busy){ syncAgain = true; return; }
+  if (!navigator.onLine){ syncSt.err = "sem internet"; paintSync(); return; }
+  syncSt.busy = true; paintSync();
+  try {
+    if (!pushOnly || !S.sy){
+      const g = await (await fetch(c.url + "?k=" + encodeURIComponent(c.k) + "&_=" + Date.now(), {redirect:"follow"})).json();
+      if (!g.ok) throw new Error(g.erro||"erro");
+      const r = g.s;
+      if (!S.sy){
+        try { if (hasData(S)) localStorage.setItem(KEY+".antes-sync", JSON.stringify(S)); } catch(e){}
+        if (r && hasData(r)) { const m = mergeFirst(norm(S), r); m.u = Date.now(); S = m; }
+        S.sy = 1; S.u = S.u || Date.now(); keep(); render();
+      } else if (r && (r.u||0) > (S.u||0)) { adopt(r); syncSt.last = Date.now(); syncSt.err = ""; return; }
+      else if (r && (r.u||0) === (S.u||0)) { syncSt.last = Date.now(); syncSt.err = ""; return; }
+    }
+    const p = await (await fetch(c.url, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({k:c.k, s:S}), redirect:"follow", keepalive: JSON.stringify(S).length < 60000})).json();
+    if (!p.ok) throw new Error(p.erro||"erro");
+    if (p.antigo && p.s) adopt(p.s);
+    syncSt.last = Date.now(); syncSt.err = "";
+  } catch(e){ syncSt.err = e && e.message === "chave" ? "chave inválida" : "falhou, tento de novo"; }
+  finally { syncSt.busy = false; paintSync(); if (syncAgain){ syncAgain = false; syncSoon(); } }
+}
+function syncTxt(){
+  if (!syncCfg()) return "Desligada";
+  if (syncSt.busy) return "Sincronizando…";
+  if (syncSt.err) return "Sem sincronizar (" + syncSt.err + ")";
+  if (syncSt.last){ const d = new Date(syncSt.last); return "Sincronizado às " + String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0"); }
+  return "Aguardando";
+}
+function paintSync(){ const e = document.getElementById("syncSt"); if (e) e.textContent = syncTxt(); }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") syncNow(false); else if (syncT){ clearTimeout(syncT); syncNow(true); } });
+window.addEventListener("online", () => syncNow(false));
+setInterval(() => { if (document.visibilityState === "visible") syncNow(false); }, 60000);
+function st(id){ return S.t[id] || (S.t[id] = {}); }
+const byId = id => T.find(x => x[I_ID]===id);
+const DRV = id => "https://drive.google.com/file/d/"+id+"/view";
+const isPJ = x => !!PJ[x[I_ID]];
+function cursoUrl(x){
+  if (isPJ(x)){ const p = PJ[x[I_ID]]; const f = p.a.find(a => a[2]) || p.a[0]; return f ? DRV(f[2]||f[3]) : p.est; }
+  return EC + CURSO[x[I_CUR] || x[I_MAT]] + "/aulas";
+}
+const ondeAbrir = x => isPJ(x) ? (PJ[x[I_ID]].a.length ? "abrir 1º PDF no Drive" : "abrir no Estratégia") : "abrir no Estratégia";
+
+/* ---------- datas ---------- */
+function parse(d){ const [y,m,dd] = d.split("-").map(Number); return new Date(y, m-1, dd); }
+function iso(dt){ const p = n => String(n).padStart(2,"0"); return dt.getFullYear()+"-"+p(dt.getMonth()+1)+"-"+p(dt.getDate()); }
+function add(d,n){ const x = parse(d); x.setDate(x.getDate()+n); return iso(x); }
+function today(){ return iso(new Date()); }
+function br(d){ const x = parse(d); return String(x.getDate()).padStart(2,"0")+"/"+String(x.getMonth()+1).padStart(2,"0"); }
+const WD = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+
+/* revisões do método: 48h = 1ª vez + 2 dias; 7 dias = 48h + 7; 30 dias = 7d + 30 */
+function revs(id){
+  const s = S.t[id]; if (!s || !s.f) return null;
+  const r48 = add(s.f,2), r7 = add(r48,7), r30 = add(r7,30);
+  return [{k:"d48",n:"48h",tipo:"caderno de questões",d:r48,ok:!!s.d48},{k:"d7",n:"7 dias",tipo:"caderno de erros",d:r7,ok:!!s.d7},{k:"d30",n:"30 dias",tipo:"caderno de erros",d:r30,ok:!!s.d30}];
+}
+function nextRev(id){ const r = revs(id); if (!r) return null; return r.find(x => !x.ok) || null; }
+function status(id){
+  const s = S.t[id]; if (!s || !s.f) return {cls:"", txt:"não estudada"};
+  const n = nextRev(id), t = today();
+  if (!n) return {cls:"done", txt:"revisões ok"};
+  if (n.d < t) return {cls:"late", txt:"rev "+n.n+" atrasada"};
+  if (n.d === t) return {cls:"due", txt:"rev "+n.n+" hoje"};
+  return {cls:"", txt:"rev "+n.n+" "+br(n.d)};
+}
+function currentBlock(){
+  for (const b of ["I","II","III"]) if (T.some(x => x[I_BL]===b && !(S.t[x[I_ID]]||{}).f)) return b;
+  return null;
+}
+function nextOf(mat, block){ return T.find(x => x[I_MAT]===mat && x[I_BL]===block && !(S.t[x[I_ID]]||{}).f); }
+
+/* ---------- cabeçalho ---------- */
+function header(){
+  const seen = T.filter(x => (S.t[x[I_ID]]||{}).f).length;
+  let done = 0; for (const c in S.t){ const s=S.t[c]; done += (s.d48?1:0)+(s.d7?1:0)+(s.d30?1:0); }
+  document.getElementById("progBar").style.width = (seen/T.length*100).toFixed(1)+"%";
+  document.getElementById("stSeen").textContent = seen+" de "+T.length+" aulas estudadas";
+  document.getElementById("stRev").textContent = done+" revisões feitas";
+}
+
+/* ---------- cronômetro de horas líquidas ---------- */
+const META_DIA = 4*3600, META_SEM = 20*3600;
+function tmDay(d){ let v = S.tm.days[d] || 0; if (S.tm.run && d===today()) v += Math.max(0,(Date.now()-S.tm.run)/1000); return v; }
+function tmStart(){ if (!S.tm.run){ S.tm.run = Date.now(); save(); } }
+function tmStop(){ if (S.tm.run){ const d = today(); S.tm.days[d] = (S.tm.days[d]||0) + Math.max(0,(Date.now()-S.tm.run)/1000); S.tm.run = null; save(); } }
+function tmAdd(d, sec){ S.tm.days[d] = Math.max(0,(S.tm.days[d]||0) + sec); save(); }
+function weekStart(d){ const x = parse(d); const wd = (x.getDay()+6)%7; x.setDate(x.getDate()-wd); return iso(x); }
+function tmWeek(){ const ws = weekStart(today()); let s = 0; for (let i=0;i<7;i++) s += tmDay(add(ws,i)); return s; }
+const hms = s => { s = Math.floor(s); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60; return h+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0"); };
+const hm = s => { s = Math.round(s/60); return Math.floor(s/60)+"h"+String(s%60).padStart(2,"0"); };
+function timerCard(full){
+  const t = today(), d = tmDay(t), w = tmWeek(), run = !!S.tm.run;
+  let h = `<section class="card timer"><div class="row" style="justify-content:space-between;align-items:center"><h2>Horas líquidas</h2><span class="pill ${run?"due":""}">${run?"contando":"pausado"}</span></div>
+    <div class="clock" id="tmClock">${hms(d)}</div>
+    <div class="bar2" aria-hidden="true"><i id="tmBar" style="width:${Math.min(100,d/META_DIA*100).toFixed(1)}%"></i></div>
+    <div class="muted" id="tmInfo">Hoje ${hm(d)} de 4h · semana ${hm(w)} de 20h</div>
+    <div class="row"><button class="btn" id="tmToggle">${run?"Pausar":"Iniciar"}</button>${full?`<button class="btn small ghost" data-tmadd="900">+15 min</button><button class="btn small ghost" data-tmadd="-900">−15 min</button>`:""}</div>
+    <div class="muted">Pause em qualquer interrupção: só conta tempo de estudo de verdade. A contagem continua mesmo com o app fechado.</div></section>`;
+  return h;
+}
+function vHoras(){
+  const t = today();
+  let h = timerCard(true);
+  const ws = weekStart(t);
+  h += `<section class="card"><h2>Esta semana</h2>`;
+  const dn = ["seg","ter","qua","qui","sex","sáb","dom"];
+  for (let i=0;i<7;i++){ const d = add(ws,i), v = tmDay(d);
+    h += `<div class="hrow${d===t?" now":""}"><span class="hd">${dn[i]} ${br(d)}</span><span class="hb"><i style="width:${Math.min(100,v/META_DIA*100).toFixed(1)}%"></i></span><span class="hv">${hm(v)}</span></div>`; }
+  h += `<div class="muted">Meta do plano: 4h por dia, de segunda a sexta (20h na semana).</div></section>`;
+  const days = Object.keys(S.tm.days).filter(d => d < ws && S.tm.days[d] > 0).sort().reverse().slice(0,28);
+  h += `<section class="card"><h2>Semanas anteriores</h2>`;
+  if (!days.length) h += `<div class="empty">Ainda não há registros anteriores.</div>`;
+  const byW = {}; for (const d of days){ const k = weekStart(d); byW[k] = (byW[k]||0) + S.tm.days[d]; }
+  for (const k of Object.keys(byW).sort().reverse()) h += `<div class="hrow"><span class="hd">sem. ${br(k)}</span><span class="hb"><i style="width:${Math.min(100,byW[k]/META_SEM*100).toFixed(1)}%"></i></span><span class="hv">${hm(byW[k])}</span></div>`;
+  h += `</section><section class="card"><h2>Lançar horas manualmente</h2><div class="muted">Esqueceu de ligar o cronômetro? Lance aqui (use número negativo para tirar).</div>
+    <div class="row"><label class="f" for="mhD" style="flex:1">Dia<input type="date" id="mhD" value="${t}"></label><label class="f" for="mhM" style="flex:1">Minutos<input type="number" id="mhM" inputmode="numeric" placeholder="ex.: 30"></label></div>
+    <button class="btn small" id="mhGo" style="align-self:flex-start">Lançar</button></section>`;
+  return h;
+}
+function tickTimer(){
+  const c = document.getElementById("tmClock"); if (!c) return;
+  const d = tmDay(today());
+  c.textContent = hms(d);
+  const b = document.getElementById("tmBar"); if (b) b.style.width = Math.min(100,d/META_DIA*100).toFixed(1)+"%";
+  const i = document.getElementById("tmInfo"); if (i) i.textContent = "Hoje "+hm(d)+" de 4h · semana "+hm(tmWeek())+" de 20h";
+}
+setInterval(tickTimer, 1000);
+
+/* ---------- telas ---------- */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let tab = "hoje", fBloco = "todos", fBusca = "";
+const label = x => esc(SHORT[x[I_MAT]])+" · "+esc(x[I_AULA]);
+
+function vHoje(){
+  const t = today(), dt = new Date();
+  const due = T.map(x => ({x, n: nextRev(x[I_ID])})).filter(o => o.n && o.n.d <= t).sort((a,b)=> a.n.d < b.n.d ? -1 : 1);
+  let h = timerCard(false) + `<section class="card"><h2>Revisões de hoje</h2><div class="muted">Faça antes de qualquer aula nova.${due.length ? " "+due.length+" pendente"+(due.length>1?"s":"")+"." : ""}</div>`;
+  if (!due.length) h += `<div class="empty">Nenhuma revisão vencida. Pode ir direto para a aula nova.</div>`;
+  for (const o of due){
+    const late = o.n.d < t;
+    h += `<div class="item"><div class="txt"><div class="code">${label(o.x)}</div><div class="tt">${esc(o.x[I_TIT])}</div>
+      <div style="margin-top:4px"><span class="pill ${late?"late":"due"}">Rev ${o.n.n}${late?" · desde "+br(o.n.d):""}</span> <span class="muted">${o.n.tipo}</span></div></div>
+      <button class="btn small" data-rev="${o.x[I_ID]}">Concluí</button></div>`;
+  }
+  h += `</section>`;
+
+  const b = currentBlock(), wd = dt.getDay();
+  h += `<section class="card"><h2>Aula nova · ${WD[wd]}</h2>`;
+  if (!b){ h += `<div class="empty">Edital fechado. Siga a manutenção do cronograma: refazer cadernos (meta 90%), discursiva e simulados.</div>`; }
+  else if (wd===0 || wd===6){ h += `<div class="empty">Fim de semana: descanso. Se quiser adiantar, só revisões.</div>`; }
+  else {
+    let mats = ROT[b][wd].filter(m => nextOf(m,b));
+    for (const m of Object.keys(MAT)) if (mats.length < 2 && !mats.includes(m) && nextOf(m,b)) mats.push(m);
+    h += `<div class="muted">Bloco ${b} · metade do tempo de conteúdo para cada matéria. Se a aula não acabar hoje, ela continua amanhã.</div>`;
+    for (const m of mats){
+      const x = nextOf(m,b);
+      h += `<div class="item"><div class="txt"><div class="code">${label(x)}</div><div class="tt">${esc(x[I_TIT])}</div>
+        <div class="muted">Edital: ${esc(x[I_ED])} · <a href="${cursoUrl(x)}" target="_blank" rel="noopener">${ondeAbrir(x)}</a>${isPJ(x)&&PJ[x[I_ID]].a.length?" · "+PJ[x[I_ID]].a.length+" aulas do Pablo":""}</div>${x[I_OBS]?`<div class="muted">${esc(x[I_OBS])}</div>`:""}</div>
+        <button class="btn small ghost" data-first="${x[I_ID]}">Terminei</button></div>`;
+    }
+  }
+  h += `</section>`;
+
+  const w = curWeek();
+  if (w){ h += `<section class="card"><h2>Semana ${w[0]} · ${w[2]}</h2><div class="muted">${esc(w[3])}</div><div>${esc(w[4])}</div></section>`; }
+  else { const f = WEEKS[0]; h += `<section class="card"><h2>Começa em ${br(f[1])}</h2><div class="muted">${esc(f[3])}</div><div>${esc(f[4])}</div></section>`; }
+  return h;
+}
+function curWeek(){ const t = today(); let cur = null; for (const w of WEEKS) if (w[1] <= t) cur = w; return cur; }
+
+function vAulas(){
+  let h = `<section class="card"><input type="search" id="busca" placeholder="Buscar aula, lei ou item do edital" value="${esc(fBusca)}" aria-label="Buscar aula">
+    <div class="chips" role="group" aria-label="Filtrar por bloco">${["todos","I","II","III"].map(b=>`<button class="chip" data-bloco="${b}" aria-pressed="${fBloco===b}">${b==="todos"?"Todos":"Bloco "+b}</button>`).join("")}</div>
+    <div class="muted">Aulas dos cursos PM-GO (Cadete) do Estratégia e, em Português, unidades do curso do Pablo Jamilk (seu Drive), na ordem de estudo. Toque numa aula para lançar a data, as revisões, o % de acerto e o "não domino".</div></section>`;
+  const q = fBusca.trim().toLowerCase();
+  const groups = [];
+  for (const x of T){
+    if (fBloco!=="todos" && x[I_BL]!==fBloco) continue;
+    if (q && !(x[I_ID]+" "+x[I_AULA]+" "+x[I_TIT]+" "+x[I_ED]).toLowerCase().includes(q)) continue;
+    const key = x[I_MAT]+"|"+x[I_BL];
+    let g = groups.find(g => g.key===key); if (!g){ g = {key, m:x[I_MAT], b:x[I_BL], items:[]}; groups.push(g); }
+    g.items.push(x);
+  }
+  if (!groups.length) h += `<div class="empty">Nenhuma aula encontrada.</div>`;
+  for (const g of groups){
+    const seen = g.items.filter(x => (S.t[x[I_ID]]||{}).f).length;
+    h += `<details class="mat"${q?" open":""}><summary><span>${esc(MAT[g.m])} <span class="muted">· Bloco ${g.b}</span></span><span class="pill">${seen}/${g.items.length}</span></summary><div class="list">`;
+    for (const x of g.items){
+      const s = S.t[x[I_ID]]||{}, stt = status(x[I_ID]);
+      h += `<button class="topic${s.nd?" nd":""}" data-open="${x[I_ID]}"><span class="code">${esc(x[I_AULA].replace("Aula ",""))}</span><span class="tt">${esc(x[I_TIT])}</span><span class="pill ${stt.cls}">${stt.txt}</span></button>`;
+    }
+    h += `</div></details>`;
+  }
+  return h;
+}
+
+function vCrono(){
+  const cw = curWeek(), b = currentBlock();
+  const left = b ? T.filter(x => x[I_BL]===b && !(S.t[x[I_ID]]||{}).f).length : 0;
+  let h = `<section class="card"><h2>Cronograma</h2><div class="muted">Base: Edital 003/2022 (AOCP). Quando o novo edital sair, confira o conteúdo. As datas supõem cerca de 2 aulas por dia no Bloco I; se o seu ritmo for outro, o app segue o seu ritmo e o cronograma estica.</div>${b?`<div><b>Bloco ${b}:</b> faltam ${left} aulas.</div>`:""}`;
+  for (const w of WEEKS){
+    h += `<div class="week${cw && cw[0]===w[0]?" now":""}"><input type="checkbox" data-week="${w[0]}" ${S.w[w[0]]?"checked":""} aria-label="Semana ${w[0]} feita">
+      <div class="txt"><div><span class="wk">${w[0]}</span> <b>${w[2]}</b> · ${esc(w[3])}</div><div>${esc(w[4])}</div>${w[5]?`<div class="muted">Curso Sarah Delma: ${esc(w[5])}</div>`:""}</div></div>`;
+  }
+  return h + `</section>`;
+}
+
+function vRotina(){
+  return `<section class="card"><h2>O dia de 4 horas</h2><ol class="steps">
+    <li><b>Revisões do dia</b> (~1h, cresce até ~2h). Rev 48h: monte o caderno de questões da aula no Sistema de Questões do Estratégia e resolva tudo, copiando erros e dúvidas com o comentário para o caderno de erros. Rev 7 e 30 dias: releia o caderno de erros e o resumo, ou o Passo Estratégico da matéria.</li>
+    <li><b>Aula nova, matéria A</b> (~1h15). PDF ou videoaula acelerada (em Português, as aulas do Pablo Jamilk de cada unidade), resumo curto pensando em como cai na prova, lei seca nas matérias jurídicas.</li>
+    <li><b>Aula nova, matéria B</b> (~1h15). Mesmo processo. Terminou a aula: toque em "Terminei" e as revisões entram na agenda.</li>
+    <li><b>Fechamento</b> (10 min). O que ficou pela metade é a primeira coisa de amanhã.</li>
+    <li><b>Sexta</b> (+15 min). Planeje a semana seguinte no Cronograma.</li></ol>
+    <div class="muted">Se as revisões tomarem as 4h, não comece aula nova naquele dia. Pausas ficam fora das 4h líquidas.</div></section>
+  <section class="card"><h2>Filtros do caderno de questões</h2><div class="kv">
+    <b>Assunto</b><span>Os itens do edital da aula (um caderno por aula)</span>
+    <b>Banca</b><span>AOCP. Se vierem poucas, inclua outras de 5 alternativas (FCC, FGV, Vunesp)</span>
+    <b>Ano</b><span>Últimos 5 anos; depois, os 5 anteriores</span>
+    <b>Excluir</b><span>Desatualizadas e anuladas, sempre</span>
+    <b>Meta</b><span>90% só ao refazer as erradas, depois da revisão de 30 dias</span></div></section>
+  <section class="card"><h2>Rodízio de matérias</h2><div class="kv">
+    <b>Bloco I</b><span>Seg e qua: Português + Constitucional. Ter e qui: Administrativo + Penal. Sex: Português + Administrativo</span>
+    <b>Bloco II</b><span>Seg, qua e sex: Processo Penal + Leg. Penal Especial. Ter e qui: Penal Militar + Proc. Penal Militar</span>
+    <b>Bloco III</b><span>Realidade de Goiás, Redação Oficial, Constituição de GO e Estatuto dos PMs de GO</span></div>
+    <div class="muted">Quando uma matéria do dia acaba, o app puxa a próxima do mesmo bloco.</div></section>
+  <section class="card"><h2>Sincronização celular ↔ PC</h2>
+    <div class="kv"><b>Status</b><span id="syncSt">${esc(syncTxt())}</span><b>Versão do app</b><span>${APP_V}${window.CFO ? " · atualiza sozinho" : ""}</span></div>
+    <div class="muted">${syncCfg() ? "Seu progresso e suas horas vão para a sua conta Google e aparecem no celular e no PC. Sincroniza ao abrir o app, a cada alteração e a cada minuto." : "Cole abaixo o link do script e a chave para ligar a sincronização."}</div>
+    <div class="row"><button class="btn small" id="syncGo">Sincronizar agora</button></div>
+    <details><summary class="muted">Configurar link</summary>
+      <input type="url" id="syncUrl" placeholder="https://script.google.com/macros/s/…/exec" value="${esc((syncCfg()||{}).url||"")}" aria-label="Link do script">
+      <input type="text" id="syncKey" placeholder="Chave" value="${esc((syncCfg()||{}).k||"")}" aria-label="Chave">
+      <button class="btn small ghost" id="syncSave">Salvar link</button></details></section>
+  <section class="card"><h2>Backup dos seus dados</h2>
+    <div class="muted">${mem ? "Este navegador não está guardando dados: o progresso some ao fechar. " : ""}O progresso fica salvo neste aparelho${syncCfg() ? " e na sincronização" : ""}. Copie o backup de vez em quando e guarde em lugar seguro (por exemplo, mande para você mesmo no WhatsApp).</div>
+    <div class="row"><button class="btn small" id="bkCopy">Copiar backup</button><button class="btn small ghost" id="bkRestore">Restaurar backup</button></div>
+    <textarea id="bkText" rows="4" placeholder="Para restaurar, cole o backup aqui e toque em Restaurar backup" aria-label="Texto do backup"></textarea>
+    <button class="btn small danger" id="bkReset" style="align-self:flex-start">Apagar todo o progresso</button></section>`;
+}
+
+/* ---------- detalhe da aula ---------- */
+function pjList(x){
+  const p = PJ[x[I_ID]];
+  if (!p.a.length) return `<div><a class="btn small ghost" href="${p.est}" target="_blank" rel="noopener">Abrir no Estratégia</a></div>`;
+  return `<div class="pjl"><div class="muted">Aulas do Pablo Jamilk nesta unidade</div>` + p.a.map(a => `<div class="pjrow"><span class="code">${esc(a[0].length<4?a[0]:"")}</span><span class="tt">${esc(a[1])}</span><span class="pjlinks">${a[2]?`<a href="${DRV(a[2])}" target="_blank" rel="noopener">PDF</a>`:""}${a[3]?`<a href="${DRV(a[3])}" target="_blank" rel="noopener">vídeo</a>`:""}</span></div>`).join("") + `</div>`;
+}
+function openAula(id){
+  const x = byId(id), s = st(id), r = revs(id), m = x[I_MAT];
+  let h = `<div class="code">${esc(MAT[m])} · ${esc(x[I_AULA])} · Bloco ${x[I_BL]}</div><h2 style="text-transform:none;letter-spacing:0">${esc(x[I_TIT])}</h2>
+    <div class="muted">Edital: ${esc(x[I_ED])}</div>`;
+  if (x[I_OBS]) h += `<div class="muted">${esc(x[I_OBS])}</div>`;
+  h += `<div class="row" style="flex-wrap:wrap">${isPJ(x) ? "" : `<a class="btn small ghost" href="${cursoUrl(x)}" target="_blank" rel="noopener">Abrir no Estratégia</a>`}${PASSO[m]?`<a class="btn small ghost" href="${EC+PASSO[m]}/aulas" target="_blank" rel="noopener">Passo Estratégico</a>`:""}</div>
+    ${isPJ(x) ? pjList(x) : ""}
+    <label class="switch"><input type="checkbox" id="dNd" ${s.nd?"checked":""}> Não domino (marcar em vermelho)</label>
+    <label class="f" for="dF">Data em que terminei a aula<input type="date" id="dF" value="${s.f||""}"></label>
+    <div class="row"><button class="btn small" id="dToday">Terminei hoje</button>${s.f?`<button class="btn small danger" id="dClear">Limpar datas</button>`:""}</div>`;
+  if (r){
+    h += `<div>`;
+    for (const v of r){
+      const t = today(), cls = v.ok ? "done" : (v.d < t ? "late" : v.d===t ? "due" : "");
+      h += `<div class="revrow"><span><b>Rev ${v.n}</b> <span class="muted">${v.tipo}</span></span><span class="pill ${cls}">${br(v.d)}</span><input type="checkbox" data-rk="${v.k}" ${v.ok?"checked":""} aria-label="Rev ${v.n} feita" style="width:22px;height:22px;accent-color:var(--accent)"></div>`;
+    }
+    h += `</div>`;
+  }
+  h += `<label class="f" for="dPct">% de acerto no caderno<input type="number" id="dPct" min="0" max="100" inputmode="numeric" value="${s.pct ?? ""}"></label>
+    <label class="f" for="dObs">Observações<textarea id="dObs" rows="2">${esc(s.obs||"")}</textarea></label>
+    <button class="btn" id="dClose">Fechar</button>`;
+  const sh = document.getElementById("sheet"); sh.innerHTML = h;
+  document.getElementById("dlg").classList.add("open");
+  const reopen = () => { save(); render(); openAula(id); };
+  sh.querySelector("#dNd").onchange = e => { s.nd = e.target.checked; save(); render(); };
+  sh.querySelector("#dF").onchange = e => { s.f = e.target.value || undefined; if (!s.f){ s.d48=s.d7=s.d30=false; } reopen(); };
+  sh.querySelector("#dToday").onclick = () => { s.f = today(); s.d48=s.d7=s.d30=false; reopen(); toast("Revisões programadas"); };
+  const c = sh.querySelector("#dClear"); if (c) c.onclick = () => { delete s.f; s.d48=s.d7=s.d30=false; reopen(); };
+  sh.querySelectorAll("[data-rk]").forEach(el => el.onchange = e => { s[el.dataset.rk] = e.target.checked; reopen(); });
+  sh.querySelector("#dPct").oninput = e => { const v = e.target.value; s.pct = v===""?undefined:Math.max(0,Math.min(100,Number(v))); save(); };
+  sh.querySelector("#dObs").oninput = e => { s.obs = e.target.value; save(); };
+  sh.querySelector("#dClose").onclick = closeDlg;
+}
+function closeDlg(){ document.getElementById("dlg").classList.remove("open"); render(); }
+document.getElementById("dlg").addEventListener("click", e => { if (e.target.id==="dlg") closeDlg(); });
+window.appBack = function(){ const d = document.getElementById("dlg"); if (d.classList.contains("open")){ closeDlg(); return true; } if (tab!=="hoje"){ tab="hoje"; render(); return true; } return false; };
+
+/* ---------- render ---------- */
+function render(){
+  header();
+  const v = document.getElementById("view"), main = document.getElementById("main");
+  const keep = main.scrollTop;
+  const open = [...v.querySelectorAll("details.mat")].map(d => d.open);
+  v.innerHTML = tab==="hoje" ? vHoje() : tab==="aulas" ? vAulas() : tab==="horas" ? vHoras() : tab==="crono" ? vCrono() : vRotina();
+  if (tab==="aulas"){ v.querySelectorAll("details.mat").forEach((d,i) => { if (open[i]) d.open = true; }); }
+  main.scrollTop = keep;
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===tab));
+  bind();
+}
+function bind(){
+  const v = document.getElementById("view");
+  v.querySelectorAll("[data-rev]").forEach(b => b.onclick = () => { const n = nextRev(b.dataset.rev); if (n){ st(b.dataset.rev)[n.k] = true; save(); render(); toast("Rev "+n.n+" concluída"); } });
+  v.querySelectorAll("[data-first]").forEach(b => b.onclick = () => { const s = st(b.dataset.first); s.f = today(); s.d48=s.d7=s.d30=false; save(); render(); toast("Feito. Rev 48h em "+br(add(s.f,2))); });
+  v.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openAula(b.dataset.open));
+  v.querySelectorAll("[data-bloco]").forEach(b => b.onclick = () => { fBloco = b.dataset.bloco; render(); });
+  const tg = v.querySelector("#tmToggle"); if (tg) tg.onclick = () => { if (S.tm.run){ tmStop(); toast("Pausado: "+hm(tmDay(today()))+" hoje"); } else { tmStart(); toast("Cronômetro rodando"); } render(); };
+  v.querySelectorAll("[data-tmadd]").forEach(b => b.onclick = () => { tmStop(); tmAdd(today(), Number(b.dataset.tmadd)); render(); });
+  const mg = v.querySelector("#mhGo"); if (mg) mg.onclick = () => { const d = v.querySelector("#mhD").value, m = Number(v.querySelector("#mhM").value); if (!d || !m){ toast("Informe o dia e os minutos"); return; } if (d===today()) tmStop(); tmAdd(d, m*60); render(); toast("Lançado: "+(m>0?"+":"")+m+" min em "+br(d)); };
+  const busca = v.querySelector("#busca");
+  if (busca) busca.oninput = e => { fBusca = e.target.value; const pos = e.target.selectionStart; render(); const nb = document.getElementById("busca"); nb.focus(); try{ nb.setSelectionRange(pos,pos); }catch(_){} };
+  v.querySelectorAll("[data-week]").forEach(c => c.onchange = e => { S.w[c.dataset.week] = e.target.checked; save(); });
+  const sg = v.querySelector("#syncGo"); if (sg) sg.onclick = () => { if (!syncCfg()) { toast("Configure o link primeiro"); return; } syncNow(false); };
+  const ss = v.querySelector("#syncSave"); if (ss) ss.onclick = () => { const url = v.querySelector("#syncUrl").value.trim(), k = v.querySelector("#syncKey").value.trim(); try { localStorage.setItem(SKEY, JSON.stringify({url, k})); } catch(e){} if (!syncCfg()){ toast("Link ou chave inválidos"); return; } S.sy = 0; keep(); toast("Link salvo"); syncNow(false); render(); };
+  const bc = v.querySelector("#bkCopy");
+  if (bc){
+    bc.onclick = async () => {
+      const txt = JSON.stringify(S), ta = document.getElementById("bkText");
+      try { await navigator.clipboard.writeText(txt); toast("Backup copiado"); }
+      catch(e){ ta.value = txt; ta.select(); toast("Selecione o texto e copie"); }
+    };
+    v.querySelector("#bkRestore").onclick = () => {
+      try { const o = JSON.parse(document.getElementById("bkText").value); if (!o || typeof o.t!=="object") throw 0; S = {t:o.t, w:o.w||{}, tm:o.tm||{run:null,days:{}}, sy:S.sy}; save(); render(); toast("Backup restaurado"); }
+      catch(e){ toast("Backup inválido: cole o texto completo"); }
+    };
+    let armed = false;
+    v.querySelector("#bkReset").onclick = e => {
+      if (!armed){ armed = true; e.target.textContent = "Toque de novo para apagar tudo"; setTimeout(()=>{ armed=false; if (e.target.isConnected) e.target.textContent="Apagar todo o progresso"; }, 4000); return; }
+      S = {t:{}, w:{}, tm:{run:null,days:{}}, sy:S.sy}; save(); render(); toast("Progresso apagado");
+    };
+  }
+}
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { tab = b.dataset.tab; document.getElementById("main").scrollTop = 0; render(); try{ history.replaceState(null,"","#"+tab); }catch(e){} });
+let tt; function toast(m){ const el = document.getElementById("toast"); el.textContent = m; el.classList.add("show"); clearTimeout(tt); tt = setTimeout(()=>el.classList.remove("show"), 2200); }
+const h0 = (location.hash||"").slice(1); if (["hoje","aulas","horas","crono","rotina"].includes(h0)) tab = h0;
+render();
+syncNow(false);
+/* ---------- atualização automática (GitHub Pages) ---------- */
+const APP_V = 4, PAGES = "https://jeasanta.github.io/plano-cfo/";
+async function checkUpdate(){
+  if (!window.CFO || !navigator.onLine) return;
+  try {
+    const r = await (await fetch(PAGES + "version.json?_=" + Date.now(), {cache:"no-store"})).json();
+    if (!(r && r.v > APP_V)) return;
+    const html = await (await fetch(PAGES + "index.html?_=" + Date.now(), {cache:"no-store"})).text();
+    if (html.indexOf("const APP_V = " + r.v) < 0) return;
+    clearTimeout(syncT); await syncNow(true);
+    if (window.CFO.saveApp(r.v, html)) { toast("App atualizado"); setTimeout(() => window.CFO.reload(), 800); }
+  } catch(e){}
+}
+setTimeout(checkUpdate, 2500);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkUpdate(); });
+</script>
+</body>
+</html>
