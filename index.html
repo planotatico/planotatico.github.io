@@ -664,13 +664,18 @@ const XP_AULA = 50, XP_REV = {d48:20, d7:25, d30:35}, XP_HORA = 20, XP_META = 40
 // Escala hierárquica do Estatuto da PMDF (Lei 7.289/1984) e insígnias do Regulamento de Uniformes da PMDF (Decreto 42.923/2022).
 // Bombeiro: mesma escala; estrelas do Regulamento de Uniformes do CBMDF (simples de 4 pontas, composta de 8 pontas).
 // [nível mínimo, nome, sigla, desenho]
-const PAT_MIL = [
-  [1,"Soldado de 2ª Classe","SD 2ª CL","rec"],[2,"Soldado","SD","d1"],[3,"Cabo","CB","d2"],
-  [4,"3º Sargento","3º SGT","d3"],[5,"2º Sargento","2º SGT","d4"],[6,"1º Sargento","1º SGT","d5"],[7,"Subtenente","ST","tri"],
-  [8,"Cadete CFO I","CAD I","b1"],[10,"Cadete CFO II","CAD II","b2"],[12,"Cadete CFO III","CAD III","b3"],[14,"Aspirante a Oficial","ASP","asp"],
-  [16,"2º Tenente","2º TEN","s1"],[18,"1º Tenente","1º TEN","s2"],[20,"Capitão","CAP","s3"],
-  [22,"Major","MAJ","c1s2"],[24,"Tenente-Coronel","TC","c2s1"],[26,"Coronel","CEL","c3"]
+// Praças: concurso de Soldado começa como Soldado de 2ª Classe e sobe até Subtenente (topo da carreira de praça).
+const PAT_PRACA = [
+  [1,"Soldado de 2ª Classe","SD 2ª CL","rec"],[3,"Soldado","SD","d1"],[6,"Cabo","CB","d2"],
+  [9,"3º Sargento","3º SGT","d3"],[13,"2º Sargento","2º SGT","d4"],[17,"1º Sargento","1º SGT","d5"],[22,"Subtenente","ST","tri"]
 ];
+// Oficiais: concurso de Cadete (CFO) começa como Cadete CFO I e sobe até Coronel.
+const PAT_OF = [
+  [1,"Cadete CFO I","CAD I","b1"],[3,"Cadete CFO II","CAD II","b2"],[5,"Cadete CFO III","CAD III","b3"],[8,"Aspirante a Oficial","ASP","asp"],
+  [10,"2º Tenente","2º TEN","s1"],[13,"1º Tenente","1º TEN","s2"],[16,"Capitão","CAP","s3"],
+  [19,"Major","MAJ","c1s2"],[22,"Tenente-Coronel","TC","c2s1"],[26,"Coronel","CEL","c3"]
+];
+const PAT_MIL = PAT_OF;
 // PRF: carreira por classes e padrões (Lei 9.654/1998). A PRF não usa insígnias de patente: os símbolos são do app.
 const PAT_PRF = [
   [1,"3ª Classe · Padrão I","3ª CL I","p3-1"],[2,"3ª Classe · Padrão II","3ª CL II","p3-2"],[3,"3ª Classe · Padrão III","3ª CL III","p3-3"],
@@ -678,10 +683,12 @@ const PAT_PRF = [
   [10,"1ª Classe · Padrão I","1ª CL I","p1-1"],[12,"1ª Classe · Padrão II","1ª CL II","p1-2"],[14,"1ª Classe · Padrão III","1ª CL III","p1-3"],[16,"1ª Classe · Padrão IV","1ª CL IV","p1-4"],[18,"1ª Classe · Padrão V","1ª CL V","p1-5"],[20,"1ª Classe · Padrão VI","1ª CL VI","p1-6"],
   [22,"Classe Especial · Padrão I","ESP I","pe-1"],[24,"Classe Especial · Padrão II","ESP II","pe-2"],[26,"Classe Especial · Padrão III","ESP III","pe-3"]
 ];
-let PATENTES = PAT_MIL;
+let PATENTES = PAT_OF;
+function trilha(){ const C = CONC[cargoAtual()]; return (C && C.trilha) || "praca"; }
+function patList(){ return carreira() === "prf" ? PAT_PRF : trilha() === "oficial" ? PAT_OF : PAT_PRACA; }
 const xpNivel = L => 45*L*(L-1);              // XP total para chegar ao nível L
 function nivelDe(xp){ let L = 1; while (xpNivel(L+1) <= xp) L++; return L; }
-function patente(L){ PATENTES = carreira() === "prf" ? PAT_PRF : PAT_MIL; let i = 0; PATENTES.forEach((x,k) => { if (L >= x[0]) i = k; }); const p = PATENTES[i]; return {n:i, nome:p[1], sigla:p[2], tipo:p[3], prox: PATENTES[i+1] || null}; }
+function patente(L){ PATENTES = patList(); let i = 0; PATENTES.forEach((x,k) => { if (L >= x[0]) i = k; }); const p = PATENTES[i]; return {n:i, nome:p[1], sigla:p[2], tipo:p[3], prox: PATENTES[i+1] || null}; }
 function carreiraPadrao(){ const k = cargoAtual(); if (k === "prf") return "prf"; const C = CONC[k]; return (C && C.car) || "pm"; }
 function carreira(){ return ["pm","bm","prf"].includes(S.car) ? S.car : carreiraPadrao(); }
 function estrela(x, y, r, pontas, cor, rot){
@@ -890,8 +897,8 @@ function abrirConquistas(){
   const novo = id => S.ach && S.ach[id] === today();
   const sh = $("sheet");
   sh.innerHTML = `<div class="lvhead"><span class="ins" role="button" aria-label="Ver insígnia em 3D">${insig(g.L)}</span><div style="flex:1"><b>${esc(g.pat.nome)}</b><div class="muted">Nível ${g.L} · ${g.xp} XP no total · faltam ${fim-g.xp} XP para o nível ${g.L+1}</div><div class="bar2" style="margin-top:6px"><i style="width:${((g.xp-ini)/(fim-ini)*100).toFixed(1)}%"></i></div></div></div>
-    <div class="ladder">${(carreira() === "prf" ? PAT_PRF : PAT_MIL).map(p => `<div class="${g.L >= p[0] ? (patente(g.L).nome===p[1]?"cur":"") : "lock"}"><span class="ins">${insig(p[0])}</span>${esc(p[1])}<br><span class="muted">nív. ${p[0]}</span></div>`).join("")}</div>
-    <div class="muted">${carreira()==="prf" ? "Carreira de Policial Rodoviário Federal: classes e padrões da Lei 9.654/1998 (os símbolos são do app; a PRF não usa insígnia de patente)." : (carreira()==="bm" ? "Carreira de Bombeiro Militar" : "Carreira de Polícia Militar") + ": escala do Estatuto da PMDF; insígnias conforme o Regulamento de Uniformes da PMDF."} ${patente(g.L).prox ? "Próxima promoção: <b>" + esc(patente(g.L).prox[1]) + "</b> no nível " + patente(g.L).prox[0] + "." : "Você chegou ao topo da carreira."}</div>
+    <div class="ladder">${patList().map(p => `<div class="${g.L >= p[0] ? (patente(g.L).nome===p[1]?"cur":"") : "lock"}"><span class="ins">${insig(p[0])}</span>${esc(p[1])}<br><span class="muted">nív. ${p[0]}</span></div>`).join("")}</div>
+    <div class="muted">${carreira()==="prf" ? "Carreira de Policial Rodoviário Federal: classes e padrões da Lei 9.654/1998 (os símbolos são do app; a PRF não usa insígnia de patente)." : (carreira()==="bm" ? "Carreira de Bombeiro Militar" : "Carreira de Polícia Militar") + " · " + (trilha() === "oficial" ? "trilha de oficial: quem entra pelo CFO começa como Cadete" : "trilha de praça: quem entra como Soldado começa como Soldado de 2ª Classe") + ". Escala do Estatuto da PMDF; insígnias conforme o Regulamento de Uniformes da PMDF."} ${patente(g.L).prox ? "Próxima promoção: <b>" + esc(patente(g.L).prox[1]) + "</b> no nível " + patente(g.L).prox[0] + "." : "Você chegou ao topo da carreira."}</div>
     <h2 style="margin:4px 0 0">Sequência: ${g.streak} dia${g.streak===1?"":"s"}</h2>
     <div class="muted">Dias com 30 min ou mais de estudo líquido. Sábado e domingo não quebram a sequência. Recorde: ${g.melhor}.</div>
     ${heat(S.tm.days)}
@@ -930,16 +937,20 @@ const CONC = {
         edital:"Edital-base: Cebraspe 2021", info:"120 itens de certo ou errado em 3 blocos (55, 30 e 35 itens) e prova discursiva. Mínimo de 15, 10 e 10 pontos por bloco e 50 no total; um item errado anula um certo. O plano segue o edital de 2021 até sair o novo.",
         banca:"Cebraspe (certo ou errado). Se vierem poucas, inclua outras provas Cebraspe de nível superior da área policial", gnome:{}}
 };
-CONC.cfo.emb = "CFO"; CONC.prf.emb = "PRF";
-Object.assign(CONC, {pmgosd: {nome:"Soldado · PMGO", curto:"Plano Soldado PMGO", kicker:"Rumo à farda", car:"pm", emb:"PM", T:T_CFO, MAT:MAT_CFO, PESO:{PORT:6, GO:4, CONST:6, ADM:5, PEN:7, PP:6, LPE:5, DPM:3, DPPM:3}, links:true,
+CONC.cfo.emb = "CFO"; CONC.prf.emb = "PRF"; CONC.cfo.trilha = "oficial";
+Object.assign(CONC, {pmgosd: {nome:"Soldado · PMGO", curto:"Plano Soldado PMGO", kicker:"Rumo à farda", car:"pm", emb:"PM", trilha:"praca", T:T_CFO, MAT:MAT_CFO, PESO:{PORT:6, GO:4, CONST:6, ADM:5, PEN:7, PP:6, LPE:5, DPM:3, DPPM:3}, links:true,
   edital:"Edital-base: Instituto AOCP 2022 (Soldado)", info:"50 questões objetivas (15 de conhecimentos gerais e 35 específicos) e redação. Os específicos são os mesmos do Cadete: Penal, Constitucional, Processo Penal, Administrativo, Penal Militar, Processo Penal Militar e legislação. O plano usa as aulas do curso de Cadete do Estratégia, que cobrem esse conteúdo.",
   banca:CONC.cfo.banca, gnome:CONC.cfo.gnome}});
-for (const k in CONC_EXTRA){ CONC[k] = Object.assign({emb: k.indexOf("of")>0 || k.indexOf("cfo")>0 ? "CFO" : CONC_EXTRA[k].car === "bm" ? "BM" : "PM"}, CONC_EXTRA[k]); }
+for (const k in CONC_EXTRA){ CONC[k] = Object.assign({trilha: /cfo|of$|cad$/.test(k) ? "oficial" : "praca"}, {emb: k.indexOf("of")>0 || k.indexOf("cfo")>0 ? "CFO" : CONC_EXTRA[k].car === "bm" ? "BM" : "PM"}, CONC_EXTRA[k]); }
 Object.assign(SHORT, SHORT_EXTRA);
+CONC.cbmgo.nome = "Soldado · Bombeiro GO (CBMGO)"; CONC.cbmgo.curto = "Plano Soldado CBMGO"; CONC.cbmgo.kicker = "Rumo ao quartel"; CONC.cbmgo.trilha = "praca"; CONC.cbmgo.emb = "BM";
+CONC.cbmgocad = Object.assign({}, CONC.cbmgo, {nome:"Cadete · Bombeiro GO (CBMGO)", curto:"Plano CFO CBMGO", kicker:"Rumo ao oficialato", trilha:"oficial", emb:"CFO",
+  info: CONC.cbmgo.info.replace("Soldado e Cadete seguem o mesmo plano até sair o novo edital.", "O Cadete fez prova com as mesmas matérias do Soldado no edital de 2022; o plano é o mesmo até sair o novo edital.")});
+{ const ordem = ["cfo","pmgosd","cbmgocad","cbmgo","pmdfcfo","pmdfsd","cbmdfof","cbmdfsd","prf"], o = {}; ordem.forEach(k => { if (CONC[k]) o[k] = CONC[k]; }); for (const k in CONC) if (!o[k]) o[k] = CONC[k]; for (const k in CONC) delete CONC[k]; Object.assign(CONC, o); }
 function cargoAtual(){ return (QZ && QZ.d.cargo) || (S.perfil && S.perfil.cargo) || "cfo"; }
 function aplicaConcurso(c){
   c = CONC[c || cargoAtual()] ? (c || cargoAtual()) : "cfo"; const C = CONC[c];
-  T = C.T; MAT = C.MAT; PESO = C.PESO; PATENTES = c === "prf" ? PAT_PRF : PAT_MIL;
+  T = C.T; MAT = C.MAT; PESO = C.PESO; PATENTES = patList();
   const h1 = document.querySelector(".top h1"); if (h1) h1.innerHTML = `<small>${esc(C.kicker)}</small>${esc(C.curto)}`;
   document.title = C.curto;
   document.querySelectorAll(".brand svg text, #auth .crest svg text").forEach(e => e.textContent = C.emb || "CFO");
@@ -1581,7 +1592,7 @@ if (syncCfg() && !S.perfil) setTimeout(abrirDiagnostico, 300);
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 11, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 12, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
