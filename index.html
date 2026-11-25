@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#041e42">
-<title>Plano CFO PMGO</title>
+<title>Plano Tático — Estudos para Concursos</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -42,7 +46,7 @@ button{cursor:pointer}
 header.top{background:linear-gradient(160deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;padding:14px 16px 12px;border-bottom:3px solid var(--ouro)}
 .stripe{height:var(--stripe-h);background:var(--stripe)}
 .brand{display:flex;align-items:center;gap:12px}
-.brand svg{width:46px;height:52px;flex:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.brand svg{width:48px;height:48px;flex:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
 .top h1 small{display:block;font:600 12px/1.2 var(--body);letter-spacing:.14em;color:var(--ouro);text-transform:uppercase}
 .top h1{font:700 22px/1.1 var(--display);letter-spacing:.04em;text-transform:uppercase;margin:0}
 .top .sub{font-size:13px;opacity:.85;margin-top:2px}
@@ -125,9 +129,9 @@ nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
 .auth.on{display:block}
 .auth .in{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:28px 16px calc(24px + env(safe-area-inset-bottom))}
 .auth .crest{display:flex;flex-direction:column;align-items:center;gap:8px;color:#fff;text-align:center;margin:8px 0 18px}
-.auth .crest svg{width:72px;height:82px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.45))}
-.auth .crest small{font:600 12px/1 var(--body);letter-spacing:.2em;color:var(--ouro);text-transform:uppercase}
-.auth .crest b{font:700 30px/1 var(--display);letter-spacing:.05em;text-transform:uppercase}
+.auth .crest svg{width:78px;height:78px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.45))}
+.auth .crest small{font:600 11px/1 var(--body);letter-spacing:.26em;color:#EDE6D3;text-transform:uppercase}
+.auth .crest b{font:700 32px/1 var(--display);letter-spacing:.05em;text-transform:uppercase;color:#D4A72C}
 .auth .crest span{font-size:14px;opacity:.8}
 .auth .stripe{width:100%;max-width:420px;border-radius:3px 3px 0 0}
 .abox{width:100%;max-width:420px;background:#fff;color:#0f1b2d;border-radius:0 0 14px 14px;box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hidden}
@@ -316,8 +320,8 @@ html[data-tema="prf"]{--navy:#0a2657;--navy2:#123a7a;--navy3:#1b4b98;--navy0:#03
 <body>
 <header class="top">
   <div class="brand">
-    <svg viewBox="0 0 46 52" aria-hidden="true"><path d="M23 1.5 44 8v17c0 12.5-8.6 21.3-21 25.5C10.6 46.3 2 37.5 2 25V8Z" style="fill:var(--navy);stroke:var(--ouro)" stroke-width="2.5"/><path d="M23 6.5 39.5 11.6V25c0 10-6.7 17.2-16.5 20.8C13.2 42.2 6.5 35 6.5 25V11.6Z" fill="none" stroke="#c9a227" stroke-width=".8" opacity=".7"/><path d="m23 11.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8Z" fill="#f2c300"/><text x="23" y="39.5" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="10.5" letter-spacing="1" fill="#ffffff">CFO</text></svg>
-    <h1><small>Rumo ao oficialato</small>Plano CFO PMGO</h1>
+    <svg viewBox="0 0 200 200" aria-hidden="true" class="ptlogo"><polygon points="100,6 182,53 182,147 100,194 18,147 18,53" fill="rgba(0,0,0,.25)" stroke="#D4A72C" stroke-width="9" stroke-linejoin="round"/><polyline points="56,141 100,114 144,141" fill="none" stroke="#D4A72C" stroke-width="16" opacity=".45"/><polyline points="56,111 100,84 144,111" fill="none" stroke="#D4A72C" stroke-width="16" opacity=".7"/><polyline points="56,81 100,54 144,81" fill="none" stroke="#D4A72C" stroke-width="16"/></svg>
+    <h1><small>Plano Tático</small>CFO PMGO</h1>
     <button class="acct" id="acct" aria-label="Minha conta" hidden></button>
   </div>
   <button class="player" id="player" aria-label="Ver nível e conquistas">
@@ -342,7 +346,7 @@ html[data-tema="prf"]{--navy:#0a2657;--navy2:#123a7a;--navy3:#1b4b98;--navy0:#03
 
 
 <div class="auth" id="auth" role="dialog" aria-modal="true" aria-labelledby="authTitle"><div class="in">
-  <div class="crest"><svg viewBox="0 0 46 52" aria-hidden="true"><path d="M23 1.5 44 8v17c0 12.5-8.6 21.3-21 25.5C10.6 46.3 2 37.5 2 25V8Z" style="fill:var(--navy);stroke:var(--ouro)" stroke-width="2.5"/><path d="M23 6.5 39.5 11.6V25c0 10-6.7 17.2-16.5 20.8C13.2 42.2 6.5 35 6.5 25V11.6Z" fill="none" stroke="#c9a227" stroke-width=".8" opacity=".7"/><path d="m23 11.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8Z" fill="#f2c300"/><text x="23" y="39.5" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="10.5" letter-spacing="1" fill="#ffffff">CFO</text></svg><small>Rumo ao oficialato</small><b id="authTitle">Plano CFO PMGO</b><span>Cadete Combatente · área do aluno</span></div>
+  <div class="crest"><svg viewBox="0 0 200 200" aria-hidden="true" class="ptlogo"><polygon points="100,6 182,53 182,147 100,194 18,147 18,53" fill="rgba(0,0,0,.25)" stroke="#D4A72C" stroke-width="9" stroke-linejoin="round"/><polyline points="56,141 100,114 144,141" fill="none" stroke="#D4A72C" stroke-width="16" opacity=".45"/><polyline points="56,111 100,84 144,111" fill="none" stroke="#D4A72C" stroke-width="16" opacity=".7"/><polyline points="56,81 100,54 144,81" fill="none" stroke="#D4A72C" stroke-width="16"/></svg><b id="authTitle">Plano Tático</b><small>Estudos para concursos</small><span>Área do aluno</span></div>
   <div class="stripe" aria-hidden="true"></div>
   <div class="abox" id="abox">
     <div class="atabs" role="tablist"><button role="tab" id="t_login" aria-selected="true">Entrar</button><button role="tab" id="t_cad" aria-selected="false">Criar conta</button></div>
@@ -993,8 +997,8 @@ function cargoAtual(){ return (QZ && QZ.d.cargo) || (S.perfil && S.perfil.cargo)
 function aplicaConcurso(c){
   c = CONC[c || cargoAtual()] ? (c || cargoAtual()) : "cfo"; const C = CONC[c];
   T = C.T; MAT = C.MAT; PESO = C.PESO; PATENTES = patList();
-  const h1 = document.querySelector(".top h1"); if (h1) h1.innerHTML = `<small>${esc(C.kicker)}</small>${esc(C.curto)}`;
-  document.title = C.curto;
+  const curto = C.curto.replace(/^Plano /,""), h1 = document.querySelector(".top h1"); if (h1) h1.innerHTML = `<small>Plano Tático</small>${esc(curto)}`;
+  document.title = "Plano Tático · " + curto;
   const tema = C.tema || {pmdfsd:"pmdf", pmdfcfo:"pmdf", cbmdfsd:"cbmdf", cbmdfof:"cbmdf", cbmgo:"cbmgo", cbmgocad:"cbmgo", prf:"prf"}[c] || "pmgo";
   document.documentElement.dataset.tema = tema;
   const mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.content = getComputedStyle(document.documentElement).getPropertyValue("--navy").trim() || "#041e42";
@@ -1813,7 +1817,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 17, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 18, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
