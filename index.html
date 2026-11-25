@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-tema="pt">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#041e42">
+<meta name="theme-color" content="#0a0a0a">
 <title>Plano Tático — Estudos para Concursos</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -331,6 +331,13 @@ html[data-tema="cbmgo"]{--navy:#7a0c17;--navy2:#9b111e;--navy3:#b5202d;--navy0:#
 /* PRF: azul e amarelo */
 html[data-tema="prf"]{--navy:#0a2657;--navy2:#123a7a;--navy3:#1b4b98;--navy0:#030d22;--ouro:#ffcc00;--brilho:#ffd633;--tsoft:#e2e8f4;--tgold:#b38f00;--darkacc:#ffcc00;--dsoft:#14223d;
   --stripe:linear-gradient(180deg,#ffcc00 0 60%,#0a2657 60% 100%);--stripe-h:8px}
+/* Plano Tático: preto e ouro em todo o app; só as insígnias mudam de cor conforme a corporação */
+:root[data-tema="pt"]{--navy:#0a0a0a;--navy2:#1b1b1b;--navy3:#262626;--navy0:#000000;--ouro:#d4a72c;--brilho:#e8c25a;--tsoft:#2a2416;--tgold:#d4a72c;--darkacc:#d4a72c;--dsoft:#2a2416;
+  --stripe:linear-gradient(90deg,#8a6a12,#d4a72c 50%,#8a6a12);--stripe-h:3px;
+  --bg:#0a0a0a;--surface:#151515;--ink:#ede6d3;--muted:#a59e8b;--line:#2c2a25;
+  --accent:#d4a72c;--accent-soft:#2a2416;--gold:#d4a72c;--ok:#7fcf9c;--warn:#f0b14e;--bad:#f2877d;--bad-soft:#3a1d1a;--warn-soft:#3a2c12;color-scheme:dark}
+:root[data-tema="pt"] .viz{--s1:#338ced;--s2:#e76624;--s3:#00a888;--s4:#d28e05;--s5:#e24d8b;--s6:#0aac23;--s7:#9887ef;--s-outros:#6f7682;--s-sem:#4a505b}
+:root[data-tema="pt"] .qok{color:#3cc45a}:root[data-tema="pt"] .qerr{color:#f07070}:root[data-tema="pt"] .qbar i.ok{background:#3cc45a}:root[data-tema="pt"] .qbar i.er{background:#e05555}
 </style>
 </head>
 <body>
@@ -1018,8 +1025,8 @@ function aplicaConcurso(c){
   T = C.T; MAT = C.MAT; PESO = C.PESO; PATENTES = patList();
   const curto = C.curto.replace(/^Plano /,""), h1 = document.querySelector(".top h1"); if (h1) h1.innerHTML = `<small>Plano Tático</small>${esc(curto)}`;
   document.title = "Plano Tático · " + curto;
-  const tema = C.tema || {pmdfsd:"pmdf", pmdfcfo:"pmdf", cbmdfsd:"cbmdf", cbmdfof:"cbmdf", cbmgo:"cbmgo", cbmgocad:"cbmgo", prf:"prf"}[c] || "pmgo";
-  document.documentElement.dataset.tema = tema;
+  // visual único do Plano Tático (preto e ouro); as cores da corporação ficam só nas insígnias
+  document.documentElement.dataset.tema = "pt";
   const mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.content = getComputedStyle(document.documentElement).getPropertyValue("--navy").trim() || "#041e42";
   document.querySelectorAll(".brand svg text, #auth .crest svg text").forEach(e => e.textContent = C.emb || "CFO");
 }
@@ -1997,7 +2004,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 22, PAGES = "https://planotatico.github.io/";
+const APP_V = 23, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
