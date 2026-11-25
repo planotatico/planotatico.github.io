@@ -1123,7 +1123,7 @@ function provaCard(){
 let QZ = null;
 function abrirDiagnostico(){
   const pf = S.perfil || {};
-  QZ = {step:0, d: {cargo: CURSO_LINK || (CONC[pf.cargo] ? pf.cargo : "cfo"), motivo: pf.motivo || "", ident: pf.ident ?? null, prova: pf.prova || "", semEdital: pf.semEdital ?? true, leu: pf.leu ?? null, plat: pf.plat || "",
+  QZ = {step:0, d: {cargo: CURSO_LINK || (!pf.cargo && cursoComprado()) || (CONC[pf.cargo] ? pf.cargo : "cfo"), motivo: pf.motivo || "", ident: pf.ident ?? null, prova: pf.prova || "", semEdital: pf.semEdital ?? true, leu: pf.leu ?? null, plat: pf.plat || "",
     horas: pf.horas || 4, dias: pf.dias ? [...pf.dias] : [1,2,3,4,5], q: Object.assign({tempo:null, rev:null, quest:null, edital:null}, pf.q || {}), dom: Object.assign({}, pf.dom || {})}};
   let w = $("quiz"); if (!w){ w = document.createElement("div"); w.id = "quiz"; w.className = "auth"; document.body.appendChild(w); }
   w.classList.add("on"); aplicaConcurso(QZ.d.cargo); qzRender();
@@ -1867,7 +1867,7 @@ async function authCall(btn, body, campos){
 async function aposEntrar(r, lembrar, msg){
   setConta({t:r.t, u:r.u, nome:r.nome, email:r.email}, lembrar); S.sy = 0; GR = null; ACC = {dono:!!r.dono, acessos:r.acessos||{}}; guardaV(); keep();
   ["lSenha","cSenha","cSenha2","eSenha","eSenha2","eCod"].forEach(id => $(id).value = "");
-  toast(msg); await syncNow(false); G = null; aplicaConcurso(); aplicaMetas(); render(); if (!S.perfil || cursoLinkPendente()) abrirDiagnostico(); else { limpaCursoLink(); paywall(); }
+  toast(msg); await syncNow(false); G = null; aplicaConcurso(); aplicaMetas(); render(); if (!S.perfil && precisaComprar()) loja(); else if (!S.perfil || cursoLinkPendente()) abrirDiagnostico(); else { limpaCursoLink(); paywall(); }
 }
 function initAuth(){
   $("t_login").onclick = () => authPane("login"); $("t_cad").onclick = () => authPane("cad");
@@ -1956,8 +1956,30 @@ function vitrineAuth(){
   box.innerHTML = (cl ? `<div class="vcard vlink"><div><b>Você está entrando no ${esc(CONC[cl].nome)}</b><span>Entre ou crie sua conta com o mesmo e-mail usado na compra. O plano deste concurso abre automaticamente.</span></div></div>` : "") + (ks.length ? `<h3 class="vt">Planos de estudo por concurso</h3><p class="vl">Assine o plano do seu concurso. Depois, crie a conta com o mesmo e-mail da compra e o acesso é liberado na hora.</p>` +
     ks.map(k => `<div class="vcard"><div><b>${esc(CONC[k].nome)}</b><span>${esc(CONC[k].edital.replace("Edital-base: ","Base: "))} · ${CONC[k].T.length} unidades</span></div><div class="vp">${esc(precoDe(k))}<small>/mês</small></div><a class="abtn" href="${esc(VENDAS.cursos[k].checkout)}" target="_blank" rel="noopener">Assinar</a></div>`).join("") : "");
 }
+/* venda logo após criar a conta: sem nenhum plano ativo, a pessoa escolhe e assina antes do diagnóstico */
+function precisaComprar(){ return !!syncCfg() && VENDAS.ativa && !ACC.dono && !Object.keys(CONC).some(k => { const a = (ACC.acessos||{})[k]; return a && a.ate > Date.now(); }); }
+function cursoComprado(){ const ks = Object.keys(CONC).filter(k => { const a = (ACC.acessos||{})[k]; return a && a.ate > Date.now(); }); return ks.includes(CURSO_LINK) ? CURSO_LINK : ks[0] || ""; }
+function loja(){
+  let w = $("pay"); if (!w){ w = document.createElement("div"); w.id = "pay"; w.className = "auth"; document.body.appendChild(w); }
+  if (QZ){ const q = $("quiz"); if (q) q.classList.remove("on"); QZ = null; }
+  const ks = cursosAVenda().sort((a,b) => (b === CURSO_LINK) - (a === CURSO_LINK)), em = (syncCfg()||{}).email || (syncCfg()||{}).u || "";
+  w.innerHTML = `<div class="in"><div class="crest">${document.querySelector("#auth .crest svg") ? document.querySelector("#auth .crest svg").outerHTML : ""}<b>Escolha seu plano</b><small>Conta criada</small><span>Assine o plano do seu concurso para liberar o acesso</span></div><div class="stripe" aria-hidden="true"></div>
+    <div class="abox"><div class="apane"><h3>Planos disponíveis</h3>
+      ${ks.length ? ks.map(k => `<div class="vcard${k === CURSO_LINK ? " vlink" : ""}"><div><b>${esc(CONC[k].nome)}</b><span>${esc(CONC[k].edital.replace("Edital-base: ","Base: "))} · ${CONC[k].T.length} unidades</span></div><div class="vp">${esc(precoDe(k))}<small>/mês</small></div><a class="abtn" href="${esc(linkCompra(k))}" target="_blank" rel="noopener">Assinar</a></div>`).join("") : `<div class="alert on bad">As vendas ainda não abriram.</div>`}
+      <div class="muted" style="font-size:13px">Use na compra o mesmo e-mail da sua conta: <b>${esc(em)}</b>. Depois do pagamento, volte para esta tela: o acesso é liberado sozinho e o diagnóstico começa.</div>
+      <button type="button" class="qback" id="payChk">Já assinei: verificar meu acesso</button>
+      <div class="arow"><button type="button" class="alink" id="paySair">Sair da conta</button></div>
+    </div></div></div>`;
+  w.classList.add("on");
+  $("payChk").onclick = async () => { $("payChk").textContent = "Verificando…"; await carregaAcesso(); if (precisaComprar()) $("payChk").textContent = "Ainda não encontrei a compra. Tente em 1 minuto"; };
+  $("paySair").onclick = () => { w.classList.remove("on"); sair(); };
+}
 function paywall(){
   let w = $("pay");
+  if (syncCfg() && !S.perfil){
+    if (precisaComprar()){ loja(); return; }
+    if (w && w.classList.contains("on") && VENDAS.ativa && !ACC.dono){ w.classList.remove("on"); if (!QZ){ toast("Acesso liberado. Vamos montar seu plano!"); abrirDiagnostico(); } return; }
+  }
   const precisa = syncCfg() && S.perfil && !QZ && !cursoLinkPendente() && !temAcesso(cargoAtual());
   if (!precisa){ if (w) w.classList.remove("on"); return; }
   if (!w){ w = document.createElement("div"); w.id = "pay"; w.className = "auth"; document.body.appendChild(w); }
@@ -2058,11 +2080,12 @@ function openConta(){
 initAuth();
 vitrineAuth(); carregaVitrine(); if (syncCfg()) carregaAcesso(); setTimeout(paywall, 400);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && syncCfg()) carregaAcesso(); });
-if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico, 300); else if (syncCfg() && CURSO_LINK) limpaCursoLink();
+setInterval(() => { const w = $("pay"); if (w && w.classList.contains("on") && syncCfg()) carregaAcesso(); }, 20000);
+if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(() => { if (!S.perfil && precisaComprar()) loja(); else abrirDiagnostico(); }, 300); else if (syncCfg() && CURSO_LINK) limpaCursoLink();
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 28, PAGES = "https://planotatico.github.io/";
+const APP_V = 29, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
