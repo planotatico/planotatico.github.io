@@ -226,6 +226,9 @@ nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
 .rank .pos{font:700 18px var(--display);color:var(--muted);text-align:center}.rank .pos.p1{color:#c9a227}.rank .pos.p2{color:#9aa7bd}.rank .pos.p3{color:#b0703c}
 .rank .ins{width:34px;height:34px}.rank .xs{font:700 16px var(--display);color:var(--accent);text-align:right}
 
+/* insígnias metálicas: contorno escuro dá relevo ao dourado */
+.met path,.met rect,.met circle{paint-order:stroke}
+.met path[fill^="url"],.met rect,.met circle[fill^="url"]{stroke:#5c4000;stroke-width:.45px}
 /* ---------- promoção em 3D ---------- */
 .p3d{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px;overflow:hidden;color:#fff;text-align:center;
   background:radial-gradient(60% 45% at 50% 40%,#1e468c 0%,#041e42 55%,#010814 100%);animation:p3bg .35s ease-out}
@@ -700,25 +703,26 @@ let INS_N = 0;
 function insig(L, cls, car){
   car = car || carreira();
   const P = patente(L), t = P.tipo, id = "i" + (++INS_N);
-  const OURO = `url(#${id}o)`, OURO2 = "#c9a227", PRATA = `url(#${id}p)`, fx = `filter="url(#${id}s)"`;
+  const OURO = `url(#${id}o)`, OURO2 = "#c9a227", PRATA = OURO, fx = `filter="url(#${id}s)"`;
   const f1 = car === "bm" ? "#9b1c20" : car === "prf" ? "#123f8c" : "#0b3470", f2 = car === "bm" ? "#3d0507" : car === "prf" ? "#061a3d" : "#020f26";
   // mesmas insígnias da PM para as duas carreiras; Bombeiro muda só a cor do fundo
   const simples = (x,y,r) => estrela(x,y,r,5,PRATA);
-  const composta = (x,y,r) => estrela(x,y,r,5,OURO) + estrela(x,y,r*.78,5,"#fff3b0",Math.PI/5).replace('fill="#fff3b0"','fill="#fff3b0" opacity=".55"');
-  const div = (y) => `<path d="M12 ${y+7}L24 ${y}L36 ${y+7}" fill="none" stroke="${OURO}" stroke-width="3.6" stroke-linejoin="miter"/>`;
+  const composta = (x,y,r) => estrela(x,y,r*1.12,5,"#8a6400",Math.PI/5) + estrela(x,y,r*1.05,5,OURO);   // estrela composta: dupla, com pontas intercaladas
+  const div = (y, w) => `<path d="M12.5 ${y+6.5}L24 ${y}L35.5 ${y+6.5}" fill="none" stroke="${OURO}" stroke-width="${w||3.6}" stroke-linejoin="miter"/>`;
   let g = "";
   if (t === "rec") g = `<path d="M12 27L24 20L36 27" fill="none" stroke="${OURO2}" stroke-width="1.6" stroke-dasharray="3 2.2"/>`;
   else if (/^d\d$/.test(t)){
-    const n = +t[1], top = n <= 3 ? n : 3, low = n - top, h = top*6 + (low ? 4 + low*6 : 0), y0 = 26 - h/2;
-    for (let i=0;i<top;i++) g += div(y0 + i*6);
-    for (let i=0;i<low;i++) g += div(y0 + top*6 + 4 + i*6);
+    const n = +t[1], top = n <= 3 ? n : 3, low = n - top, sp = n > 3 ? 4.6 : 6, gap = n > 3 ? 3 : 4, h = top*sp + (low ? gap + low*sp : 0) + 7, y0 = 27 - h/2;
+    const w = n > 3 ? 2.6 : 3.6, sp2 = n > 3 ? 5 : sp;
+    for (let i=0;i<top;i++) g += div(y0 + i*sp2, w);
+    for (let i=0;i<low;i++) g += div(y0 + top*sp2 + gap + i*sp2, w);
   }
   else if (/^p/.test(t)){
     const [cl, pd] = t.slice(1).split("-"), n = +pd;
     if (cl === "e"){ g = `<path d="M13 33c2.5 5 6.5 7 11 7s8.5-2 11-7" fill="none" stroke="${OURO}" stroke-width="2.2"/>` + estrela(24,22,9,5,OURO); }
     else { const k = 4 - +cl; for (let i=0;i<k;i++) g += `<rect x="13" y="${24 - k*4 + i*7}" width="22" height="4.6" rx="1" fill="${OURO}"/>`; }
     const tot = cl === "e" || cl === "3" ? 3 : 6, y = 41, w = 4.2;
-    for (let i=0;i<tot;i++){ const x = 24 - (tot-1)*w/2 + i*w; g += `<circle cx="${x.toFixed(1)}" cy="${y}" r="1.35" fill="${i < n ? "#ffffff" : "none"}" stroke="#ffffff" stroke-opacity=".7" stroke-width=".6"/>`; }
+    for (let i=0;i<tot;i++){ const x = 24 - (tot-1)*w/2 + i*w; g += `<circle cx="${x.toFixed(1)}" cy="${y}" r="1.35" fill="${i < n ? OURO : "none"}" stroke="#f2c300" stroke-opacity=".8" stroke-width=".6"/>`; }
   }
   else if (t === "tri") g = `<path d="M24 15L35 34H13Z" fill="none" stroke="${OURO}" stroke-width="3" stroke-linejoin="miter"/>`;
   else if (/^b\d$/.test(t)){ const n = +t[1]; for (let i=0;i<n;i++) g += `<rect x="14" y="${26 - n*4 + i*8}" width="20" height="4.4" rx=".8" fill="${OURO}"/>`; }
@@ -726,7 +730,7 @@ function insig(L, cls, car){
   else if (/^s\d$/.test(t)){ const n = +t[1], ys = n===1?[26]:n===2?[19,33]:[14,26,38]; g = ys.map(y => simples(24,y,n===3?5.6:6.6)).join(""); }
   else { const sN = t.length > 2 ? +t[3] : 0, ys = [14,26,38]; ys.forEach((y,i) => { g += i < sN ? simples(24,y,5.6) : composta(24,y,6); }); }
   return `<svg class="${cls||""}" viewBox="0 0 48 52" aria-hidden="true"><defs>
-    <linearGradient id="${id}o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7c4"/><stop offset=".45" stop-color="#f2c300"/><stop offset="1" stop-color="#9a7200"/></linearGradient>
+    <linearGradient id="${id}o" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="#fffbe0"/><stop offset=".18" stop-color="#ffe27a"/><stop offset=".38" stop-color="#d9a915"/><stop offset=".52" stop-color="#fff0a8"/><stop offset=".7" stop-color="#c8960e"/><stop offset="1" stop-color="#7a5600"/></linearGradient>
     <linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#d3dae4"/><stop offset="1" stop-color="#7f8a9b"/></linearGradient>
     <linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#c9a227"/><stop offset="1" stop-color="#6e5200"/></linearGradient>
     <radialGradient id="${id}f" cx=".35" cy=".25" r=".9"><stop offset="0" stop-color="${f1}"/><stop offset="1" stop-color="${f2}"/></radialGradient>
@@ -734,7 +738,7 @@ function insig(L, cls, car){
     <path d="M24 2 45 9v17c0 12.5-8.6 21.3-21 25C11.6 47.3 3 38.5 3 26V9Z" fill="url(#${id}f)" stroke="url(#${id}b)" stroke-width="2.8"/>
     <path d="M24 5.2 42 11v14.8C42 37 34.6 44.8 24 48.4" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="1"/>
     <path d="M6 11.5 24 5.6 42 11.5V18C33 14 15 14 6 18Z" fill="#ffffff" opacity=".07"/>
-    <g ${fx}>${g}</g></svg>`;
+    <g ${fx} stroke-linejoin="round"><g class="met">${g}</g></g></svg>`;
 }
 function diaUtil(d){ const w = parse(d).getDay(); return w !== 0 && w !== 6; }
 function jogo(t, days, extra){
@@ -1592,7 +1596,7 @@ if (syncCfg() && !S.perfil) setTimeout(abrirDiagnostico, 300);
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 12, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 13, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
