@@ -1692,7 +1692,7 @@ let CURSO_LINK = (() => { try {
   const g = localStorage.getItem(CKEY); return CONC[g] ? g : "";
 } catch(e){ return ""; } })();
 function limpaCursoLink(){ CURSO_LINK = ""; try { localStorage.removeItem(CKEY); } catch(e){} }
-function linkAcesso(k){ return "https://jeasanta.github.io/plano-cfo/?curso=" + k; }
+function linkAcesso(k){ return "https://planotatico.github.io/?curso=" + k; }
 function cursoLinkPendente(){ return !!CURSO_LINK && !!S.perfil && S.perfil.cargo !== CURSO_LINK; }
 let VENDAS = (() => { try { return JSON.parse(localStorage.getItem(VKEY)||"null"); } catch(e){ return null; } })() || {ativa:false, cursos:{}};
 let ACC = (() => { try { return JSON.parse(localStorage.getItem(VKEY+".acc")||"null"); } catch(e){ return null; } })() || {dono:false, acessos:{}};
@@ -1817,7 +1817,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 18, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 19, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
