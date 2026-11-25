@@ -265,6 +265,19 @@ nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
 @keyframes slam{0%{opacity:0;transform:scale(2.6)}100%{opacity:1;transform:scale(1)}}
 @media (prefers-reduced-motion: reduce){.p3d *, .p3d{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}.p3d .pk,.p3d .pt,.p3d .pr,.p3d .pl,.p3d .abtn{opacity:1}}
 
+/* ---------- vitrine e assinatura ---------- */
+.vit{width:100%;max-width:420px;margin-top:16px;display:flex;flex-direction:column;gap:10px}
+.vit .vt{margin:0;color:#fff;font:700 20px var(--display);letter-spacing:.05em;text-transform:uppercase}
+.vit .vl{margin:0;color:rgba(255,255,255,.8);font-size:14px}
+.vcard{background:#fff;border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.vcard b{display:block;color:var(--navy);font-size:15px}.vcard span{font-size:12px;color:#55627a}
+.vcard .abtn{grid-column:1/-1;height:42px;font-size:16px;text-decoration:none}
+.vp{font:700 22px var(--display);color:var(--navy);white-space:nowrap}.vp small{font:500 12px var(--body);color:#55627a}
+.vp.big{font-size:34px;text-align:center}
+.vben{margin:0;padding-left:20px;color:#33415c;font-size:14px;line-height:1.6}
+#pay .abtn{text-decoration:none}
+details.adm{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:6px}details.adm summary{cursor:pointer}
+details.adm label.f{margin-top:6px}
 /* ---------- questionário ---------- */
 .qprog{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:10px 12px 0}
 .qprog span{font-size:10px;text-align:center;color:#8a96ab;padding-top:6px;border-top:4px solid #e3e8f0;letter-spacing:.02em}
@@ -364,6 +377,7 @@ html[data-tema="prf"]{--navy:#0a2657;--navy2:#123a7a;--navy3:#1b4b98;--navy0:#03
       <div class="arow"><button type="button" class="alink" id="goLogin3">Voltar para o login</button><button type="button" class="alink" id="reenv" hidden>Reenviar código</button></div>
     </form>
   </div>
+  <div class="vit" id="vitrine" hidden></div>
   <div class="asec">Senhas são guardadas com criptografia. Seu progresso fica salvo na sua conta e também neste aparelho.</div>
 </div></div>
 <div class="dlg" id="dlg" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
@@ -579,7 +593,7 @@ function setConta(c, lembrar){
 }
 function updConta(p){ const c = syncCfg(); if (!c) return; let lemb = true; try { lemb = !!localStorage.getItem(SKEY); } catch(e){} setConta(Object.assign({t:c.t, u:c.u, nome:c.nome, email:c.email}, p), lemb); }
 async function api(body){ const r = await fetch(SYNC_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body), redirect:"follow"}); return r.json(); }
-async function sair(){ const c = syncCfg(); closeDlgQuiet(); setConta(null); authPane("login"); S.sy = 0; GR = null; keep(); render(); try { if (c) await api({acao:"sair", t:c.t}); } catch(e){} }
+async function sair(){ const c = syncCfg(); closeDlgQuiet(); ACC = {dono:false, acessos:{}}; guardaV(); const pw = $("pay"); if (pw) pw.classList.remove("on"); setConta(null); authPane("login"); S.sy = 0; GR = null; keep(); render(); try { if (c) await api({acao:"sair", t:c.t}); } catch(e){} }
 let syncSt = {last:0, err:"", busy:false}, syncT = null, syncAgain = false;
 function syncSoon(){ if (!syncCfg()) return; clearTimeout(syncT); syncT = setTimeout(() => syncNow(true), 1500); }
 function norm(o){ o = o || {}; o.t = o.t||{}; o.w = o.w||{}; o.tm = o.tm||{run:null,days:{}}; o.tm.days = o.tm.days||{}; return o; }
@@ -982,7 +996,7 @@ function aplicaConcurso(c){
   const mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.content = getComputedStyle(document.documentElement).getPropertyValue("--navy").trim() || "#041e42";
   document.querySelectorAll(".brand svg text, #auth .crest svg text").forEach(e => e.textContent = C.emb || "CFO");
 }
-/* ---------- plano adaptado pelo diagnóstico (método Sarah Delma, dias 1 a 4) ---------- */
+/* ---------- plano adaptado pelo diagnóstico (método de blocos e revisões espaçadas) ---------- */
 const DOM = ["Não sei / nunca estudei","Estudei, mas não domino","Tenho resumo e faço questões","Acerto 90% ou mais"];
 const NIVEIS = {
   zerado:{nome:"Zerado", n:2, txt:"Comece com apenas 2 matérias e fique só com elas por cerca de 1 mês, aplicando o método: teoria, resumo objetivo, questões e as revisões de 48h, 7 e 30 dias."},
@@ -1050,16 +1064,16 @@ function qzRender(){
   const passos = ["Cargo","Edital","Rotina","Nível","Domínio","Seu plano"];
   let corpo = "", ok = true;
   if (st === 0){
-    corpo = `<small class="qk">Desafio 01 · Escolha do cargo</small><h3>Qual é o seu cargo?</h3>
+    corpo = `<small class="qk">Passo 1 · Escolha do cargo</small><h3>Qual é o seu cargo?</h3>
       <p class="lead">Foque em um cargo só. Quando terminar todas as matérias dele, aí sim você inclui outro.</p>
-      ${chips("cargo", Object.keys(CONC).map(k => [k, CONC[k].nome]), d.cargo)}
+      ${chips("cargo", Object.keys(CONC).map(k => [k, CONC[k].nome + (VENDAS.ativa && !temAcesso(k) ? (precoDe(k) ? " · " + precoDe(k) + "/mês" : " · assinatura") : "")]), d.cargo)}
       <div class="muted" style="font-size:13px">Outros concursos chegam em breve.</div>
       <div class="fld"><label for="qMotivo">Por que você escolheu este cargo? (não vale só dinheiro)</label><textarea id="qMotivo" rows="3" class="qta" placeholder="Seus motivos aparecem para você nos dias difíceis.">${esc(d.motivo)}</textarea></div>
       <div class="fld"><label>Você se identifica com uns 80% das matérias do edital?</label>${chips("ident", [["sim","Sim, gosto de estudá-las"],["nao","Não muito"]], d.ident)}</div>
-      ${d.ident === "nao" ? `<div class="alert on bad">A Sarah recomenda analisar melhor a escolha: trabalhar com o que não gosta corrói com o tempo. Se mesmo assim este é o cargo, siga em frente.</div>` : ""}`;
+      ${d.ident === "nao" ? `<div class="alert on bad">O método recomenda analisar melhor a escolha: trabalhar com o que não gosta corrói com o tempo. Se mesmo assim este é o cargo, siga em frente.</div>` : ""}`;
     ok = !!d.ident;
   } else if (st === 1){
-    corpo = `<small class="qk">Desafio 02 · Conheça seu edital</small><h3>${esc(CONC[d.cargo].edital)}</h3>
+    corpo = `<small class="qk">Passo 2 · Conheça seu edital</small><h3>${esc(CONC[d.cargo].edital)}</h3>
       <p class="lead">${esc(CONC[d.cargo].info)}</p>
       <div class="fld"><label>Já tem data de prova?</label>${chips("semEdital", [["false","Sim, tenho a data"],["true","Ainda não (vou usar uma previsão)"]], String(d.semEdital))}</div>
       <div class="fld"><label for="qProva">${d.semEdital ? "Data prevista da prova" : "Data da prova"}</label><div class="box"><input type="date" id="qProva" value="${esc(d.prova)}" min="${today()}" style="padding:0 12px"></div></div>
@@ -1067,14 +1081,14 @@ function qzRender(){
       ${d.leu === "nao" ? `<div class="alert on ok">Sem problema: a aba Aulas já traz o edital verticalizado e enumerado. Leia os detalhes da prova (tempo, número e peso das questões, discursiva) assim que puder.</div>` : ""}`;
     ok = !!d.prova && !!d.leu;
   } else if (st === 2){
-    corpo = `<small class="qk">Rotina</small><h3>Quanto tempo você tem?</h3>
+    corpo = `<small class="qk">Passo 3 · Rotina</small><h3>Quanto tempo você tem?</h3>
       <p class="lead">Conte só o tempo líquido: pausas e interrupções ficam de fora.</p>
       <div class="fld"><label>Horas líquidas por dia</label>${chips("horas", [1,2,3,4,5,6,8].map(h => [h, h+"h"]), d.horas)}</div>
       <div class="fld"><label>Dias de estudo na semana</label>${chips("dias", [[1,"Seg"],[2,"Ter"],[3,"Qua"],[4,"Qui"],[5,"Sex"],[6,"Sáb"],[0,"Dom"]], d.dias, true)}</div>
       <div class="muted">Meta: ${d.horas}h por dia · ${d.horas*d.dias.length}h por semana.</div>`;
     ok = d.dias.length > 0;
   } else if (st === 3){
-    corpo = `<small class="qk">Dia 04 · Em que nível você está?</small><h3>Seja sincero(a)</h3>
+    corpo = `<small class="qk">Passo 4 · Em que nível você está?</small><h3>Seja sincero(a)</h3>
       <p class="lead">Seu nível decide quantas matérias entram no Bloco I.</p>
       <div class="fld"><label>Há quanto tempo estuda para concursos?</label>${chips("tempo", [["nunca","Estou começando agora"],["m6","Menos de 6 meses"],["a2","De 6 meses a 2 anos"],["mais","Mais de 2 anos"]], d.q.tempo)}</div>
       <div class="fld"><label>Você faz revisões programadas (48h, 7 e 30 dias)?</label>${chips("rev", [["nao","Não"],["asvezes","Às vezes"],["sim","Sim, sempre"]], d.q.rev)}</div>
@@ -1082,7 +1096,7 @@ function qzRender(){
       <div class="fld"><label>Já revisou o edital inteiro?</label>${chips("edital", [["nao","Ainda não"],["uma","Pelo menos 1 vez"],["tres","3 vezes, com 90% de acerto"]], d.q.edital)}</div>`;
     ok = d.q.tempo && d.q.rev && d.q.quest && d.q.edital;
   } else if (st === 4){
-    corpo = `<small class="qk">Desafio 03 · A hora da verdade</small><h3>Quanto você domina cada matéria?</h3>
+    corpo = `<small class="qk">Passo 5 · A hora da verdade</small><h3>Quanto você domina cada matéria?</h3>
       <p class="lead">Sem medo (e sem arrogância): o que você não sabe ou não domina fica em vermelho e vira micrometa.</p>
       ${Object.keys(MAT).map(m => `<div class="fld qmat${(d.dom[m] ?? 9) <= 1 ? " red" : ""}"><label>${esc(MAT[m].replace(/ \(.*\)/,""))}</label>${chips("dom:"+m, DOM.map((t,i) => [i, t]), d.dom[m])}</div>`).join("")}`;
     ok = Object.keys(MAT).every(m => d.dom[m] !== undefined);
@@ -1097,7 +1111,7 @@ function qzRender(){
       <div class="muted" style="font-size:13px">Ordem pelos pesos do edital e pelo seu domínio: as matérias mais importantes e mais fracas vêm primeiro. Só passe ao próximo bloco quando esgotar os tópicos do atual.</div>`;
   }
   const last = st === QZ_PASSOS - 1;
-  w.innerHTML = `<div class="in"><div class="crest" style="margin-bottom:12px"><small>Diagnóstico · método Sarah Delma</small><b style="font-size:24px">Monte seu plano</b></div>
+  w.innerHTML = `<div class="in"><div class="crest" style="margin-bottom:12px"><small>Diagnóstico de estudos</small><b style="font-size:24px">Monte seu plano</b></div>
     <div class="stripe" aria-hidden="true"></div>
     <div class="abox"><div class="qprog">${passos.map((p,i) => `<span class="${i<st?"ok":i===st?"cur":""}">${esc(p)}</span>`).join("")}</div>
     <form class="apane" id="qForm" novalidate>${corpo}
@@ -1128,7 +1142,7 @@ function qzRender(){
     const nivel = qzNivel(d.q), pf = {cargo:d.cargo, motivo:d.motivo.trim(), ident:d.ident, prova:d.prova, semEdital:d.semEdital, leu:d.leu, horas:d.horas, dias:d.dias.sort(), q:d.q, dom:d.dom, nivel, feito:today()};
     pf.bl = montaBlocos(pf); S.perfil = pf; delete S.car; QZ = null; aplicaConcurso(); aplicaMetas(); save();
     $("quiz").classList.remove("on"); QZ = null; tab = "hoje"; G = null; render();
-    toast("Plano montado: nível " + NIVEIS[nivel].nome + ". Comece pelo Bloco I.");
+    toast("Plano montado: nível " + NIVEIS[nivel].nome + ". Comece pelo Bloco I."); paywall();
   };
 }
 /* ---------- cronômetro de horas líquidas ---------- */
@@ -1251,7 +1265,7 @@ function vAulas(){
 
 function vCronoBlocos(){
   const b0 = currentBlock(), porDia = S.perfil && S.perfil.horas <= 2 ? 1 : 2, R = blocosOrd();
-  let d = today(), h = `<section class="card"><h2>Cronograma por blocos</h2><div class="muted">${esc(CONC[cargoAtual()].edital)}. Método Sarah Delma: fique só com as matérias do bloco até esgotar os tópicos, depois passe ao próximo. Datas estimadas com ${porDia} aula${porDia>1?"s":""} por dia de estudo; o app segue o seu ritmo real.</div></section>`;
+  let d = today(), h = `<section class="card"><h2>Cronograma por blocos</h2><div class="muted">${esc(CONC[cargoAtual()].edital)}. Método de blocos: fique só com as matérias do bloco até esgotar os tópicos, depois passe ao próximo. Datas estimadas com ${porDia} aula${porDia>1?"s":""} por dia de estudo; o app segue o seu ritmo real.</div></section>`;
   for (const b of R){
     const its = T.filter(x => blocoDe(x) === b), left = its.filter(x => !(S.t[x[I_ID]]||{}).f).length;
     let n = Math.ceil(left / porDia); const ini = d; while (n > 0 && S.perfil){ d = add(d,1); if (S.perfil.dias.includes(parse(d).getDay())) n--; }
@@ -1269,7 +1283,7 @@ function vCrono(){
   let h = `<section class="card"><h2>Cronograma</h2><div class="muted">Base: Edital 003/2022 (AOCP). Quando o novo edital sair, confira o conteúdo. As datas supõem cerca de 2 aulas por dia no Bloco I; se o seu ritmo for outro, o app segue o seu ritmo e o cronograma estica.</div>${b?`<div><b>Bloco ${b}:</b> faltam ${left} aulas.</div>`:""}`;
   for (const w of WEEKS){
     h += `<div class="week${cw && cw[0]===w[0]?" now":""}"><input type="checkbox" data-week="${w[0]}" ${S.w[w[0]]?"checked":""} aria-label="Semana ${w[0]} feita">
-      <div class="txt"><div><span class="wk">${w[0]}</span> <b>${w[2]}</b> · ${esc(w[3])}</div><div>${esc(w[4])}</div>${w[5]?`<div class="muted">Curso Sarah Delma: ${esc(w[5])}</div>`:""}</div></div>`;
+      <div class="txt"><div><span class="wk">${w[0]}</span> <b>${w[2]}</b> · ${esc(w[3])}</div><div>${esc(w[4])}</div>${w[5].replace(/^Dias? [\d, e]+:?\s*/,"")?`<div class="muted">Dica: ${esc(w[5].replace(/^Dias? [\d, e]+:?\s*/,""))}</div>`:""}</div></div>`;
   }
   return h + `</section>`;
 }
@@ -1523,9 +1537,9 @@ async function authCall(btn, body, campos){
   finally { busy(btn, false); }
 }
 async function aposEntrar(r, lembrar, msg){
-  setConta({t:r.t, u:r.u, nome:r.nome, email:r.email}, lembrar); S.sy = 0; GR = null; keep();
+  setConta({t:r.t, u:r.u, nome:r.nome, email:r.email}, lembrar); S.sy = 0; GR = null; ACC = {dono:!!r.dono, acessos:r.acessos||{}}; guardaV(); keep();
   ["lSenha","cSenha","cSenha2","eSenha","eSenha2","eCod"].forEach(id => $(id).value = "");
-  toast(msg); await syncNow(false); G = null; aplicaConcurso(); aplicaMetas(); render(); if (!S.perfil) abrirDiagnostico();
+  toast(msg); await syncNow(false); G = null; aplicaConcurso(); aplicaMetas(); render(); if (!S.perfil) abrirDiagnostico(); else paywall();
 }
 function initAuth(){
   $("t_login").onclick = () => authPane("login"); $("t_cad").onclick = () => authPane("cad");
@@ -1584,6 +1598,88 @@ function initAuth(){
   $("acct").onclick = openConta; $("player").onclick = abrirConquistas;
   authGate();
 }
+
+/* ---------- plataforma de vendas: vitrine, assinatura e painel do administrador ---------- */
+const VKEY = KEY + ".vendas";
+let VENDAS = (() => { try { return JSON.parse(localStorage.getItem(VKEY)||"null"); } catch(e){ return null; } })() || {ativa:false, cursos:{}};
+let ACC = (() => { try { return JSON.parse(localStorage.getItem(VKEY+".acc")||"null"); } catch(e){ return null; } })() || {dono:false, acessos:{}};
+function guardaV(){ try { localStorage.setItem(VKEY, JSON.stringify(VENDAS)); localStorage.setItem(VKEY+".acc", JSON.stringify(ACC)); } catch(e){} }
+async function carregaVitrine(){ try { const r = await (await fetch(SYNC_URL + "?vitrine=1&_=" + Date.now(), {redirect:"follow"})).json(); if (r.ok){ VENDAS = {ativa:!!r.ativa, cursos:r.cursos||{}}; guardaV(); vitrineAuth(); paywall(); } } catch(e){} }
+async function carregaAcesso(){ const c = syncCfg(); if (!c) return; try { const r = await api({acao:"acesso", t:c.t}); if (r.ok){ ACC = {dono:!!r.dono, acessos:r.acessos||{}}; VENDAS.ativa = !!r.ativa; guardaV(); paywall(); } } catch(e){} }
+function precoDe(k){ const c = (VENDAS.cursos||{})[k]; return c && c.preco ? c.preco : ""; }
+function temAcesso(k){ if (!VENDAS.ativa || ACC.dono) return true; const a = (ACC.acessos||{})[k]; return !!(a && a.ate > Date.now()); }
+function linkCompra(k){ const c = (VENDAS.cursos||{})[k]; if (!c || !c.checkout) return ""; const cf = syncCfg(), e = cf ? (cf.email || (String(cf.u).includes("@") ? cf.u : "")) : ""; return c.checkout + (e ? (c.checkout.includes("?") ? "&" : "?") + "email=" + encodeURIComponent(e) : ""); }
+function cursosAVenda(){ return Object.keys(CONC).filter(k => (VENDAS.cursos[k]||{}).checkout && (VENDAS.cursos[k]||{}).visivel !== false); }
+function vitrineAuth(){
+  const box = $("vitrine"); if (!box) return;
+  const ks = VENDAS.ativa ? cursosAVenda() : [];
+  box.hidden = !ks.length;
+  box.innerHTML = ks.length ? `<h3 class="vt">Planos de estudo por concurso</h3><p class="vl">Assine o plano do seu concurso. Depois, crie a conta com o mesmo e-mail da compra e o acesso é liberado na hora.</p>` +
+    ks.map(k => `<div class="vcard"><div><b>${esc(CONC[k].nome)}</b><span>${esc(CONC[k].edital.replace("Edital-base: ","Base: "))} · ${CONC[k].T.length} unidades</span></div><div class="vp">${esc(precoDe(k))}<small>/mês</small></div><a class="abtn" href="${esc(VENDAS.cursos[k].checkout)}" target="_blank" rel="noopener">Assinar</a></div>`).join("") : "";
+}
+function paywall(){
+  let w = $("pay");
+  const precisa = syncCfg() && S.perfil && !QZ && !temAcesso(cargoAtual());
+  if (!precisa){ if (w) w.classList.remove("on"); return; }
+  if (!w){ w = document.createElement("div"); w.id = "pay"; w.className = "auth"; document.body.appendChild(w); }
+  const k = cargoAtual(), C = CONC[k], a = (ACC.acessos||{})[k], link = linkCompra(k);
+  w.innerHTML = `<div class="in"><div class="crest"><small>${esc(C.kicker)}</small><b>${esc(C.curto)}</b><span>${a ? "Sua assinatura venceu" : "Assinatura necessária"}</span></div><div class="stripe" aria-hidden="true"></div>
+    <div class="abox"><div class="apane"><h3>${esc(C.nome)}</h3>
+      <p class="lead">${a && a.status === "estornada" ? "O pagamento foi estornado e o acesso foi encerrado." : a ? "Renove para continuar de onde parou: seu progresso, suas horas e suas conquistas estão guardados." : "Assine para liberar o plano completo deste concurso."}</p>
+      <ul class="vben"><li>Plano por blocos montado pelo seu diagnóstico</li><li>Revisões de 48h, 7 e 30 dias no dia certo</li><li>Cronômetro de horas líquidas e metas</li><li>Níveis, conquistas e grupo de estudos</li><li>Sincronização no celular e no computador</li></ul>
+      ${precoDe(k) ? `<div class="vp big">${esc(precoDe(k))}<small>/mês</small></div>` : ""}
+      ${link ? `<a class="abtn" href="${esc(link)}" target="_blank" rel="noopener">Assinar agora</a>` : `<div class="alert on bad">As vendas deste curso ainda não abriram.</div>`}
+      <button type="button" class="qback" id="payChk">Já assinei: verificar meu acesso</button>
+      <div class="arow"><button type="button" class="alink" id="payTroca">Escolher outro concurso</button><button type="button" class="alink" id="paySair">Sair da conta</button></div>
+      <div class="muted" style="font-size:13px">Use na compra o mesmo e-mail da sua conta: ${esc((syncCfg()||{}).email || (syncCfg()||{}).u || "")}.</div>
+    </div></div></div>`;
+  w.classList.add("on");
+  $("payChk").onclick = async () => { $("payChk").textContent = "Verificando…"; await carregaAcesso(); if (!temAcesso(k)){ $("payChk").textContent = "Ainda não encontrei a compra. Tente em 1 minuto"; } else toast("Acesso liberado. Bons estudos!"); };
+  $("payTroca").onclick = () => { w.classList.remove("on"); abrirDiagnostico(); };
+  $("paySair").onclick = () => { w.classList.remove("on"); sair(); };
+}
+async function abrirAdminVendas(){
+  const c = syncCfg(); if (!c || !ACC.dono) return;
+  const sh = $("sheet"); sh.innerHTML = `<h2 style="margin:0">Painel de vendas</h2><div class="muted">Carregando…</div>`; $("dlg").classList.add("open");
+  let r; try { r = await api({acao:"admin_cfg", t:c.t}); } catch(e){ sh.innerHTML = `<h2>Painel de vendas</h2><div class="alert on bad">Sem conexão.</div>`; return; }
+  if (!r.ok){ sh.innerHTML = `<h2>Painel de vendas</h2><div class="alert on bad">${esc(r.erro||"Erro")}</div>`; return; }
+  const cfg = r.cfg || {ativa:false, cursos:{}}, wh = SYNC_URL + "?wh=" + r.wh;
+  const linha = k => { const v = cfg.cursos[k] || {}; return `<details class="adm"><summary><b>${esc(CONC[k].nome)}</b> <span class="pill">${v.checkout ? (v.visivel === false ? "oculto" : "à venda") : "sem link"}</span></summary>
+    <label class="f">Preço mensal (como aparece)<input type="text" data-k="${k}" data-f="preco" value="${esc(v.preco||"")}" placeholder="R$ 39,90"></label>
+    <label class="f">Link do checkout (Hotmart ou Kiwify)<input type="url" data-k="${k}" data-f="checkout" value="${esc(v.checkout||"")}" placeholder="https://pay.hotmart.com/..."></label>
+    <label class="f">ID do produto na plataforma<input type="text" data-k="${k}" data-f="produto" value="${esc(v.produto||"")}" placeholder="Ex.: 1234567"></label>
+    <label class="chk" style="color:inherit"><input type="checkbox" data-k="${k}" data-f="visivel" ${v.visivel === false ? "" : "checked"}> Mostrar na vitrine</label></details>`; };
+  sh.innerHTML = `<h2 style="margin:0">Painel de vendas</h2>
+    <label class="chk" style="color:inherit;font-weight:600"><input type="checkbox" id="vAtiva" ${cfg.ativa ? "checked" : ""}> Cobrança ativa (sem assinatura, o aluno vê a tela de assinar)</label>
+    <div class="muted">Você, como administrador, sempre tem acesso a todos os cursos.</div>
+    ${Object.keys(CONC).map(linha).join("")}
+    <div class="row"><button class="btn small" id="vSalvar">Salvar configuração</button></div>
+    <h2 style="margin:8px 0 0">Webhook</h2>
+    <div class="muted">Cole este endereço na Hotmart (Ferramentas › Webhook, versão 2.0) ou na Kiwify (Apps › Webhooks), marcando compra aprovada, renovação, cancelamento, reembolso e chargeback. Não compartilhe: quem tiver o link pode liberar acessos.</div>
+    <textarea readonly rows="3" id="vWh">${esc(wh)}</textarea><div class="row"><button class="btn small ghost" id="vCopia">Copiar endereço</button></div>
+    <h2 style="margin:8px 0 0">Liberar acesso manualmente</h2>
+    <div class="muted">Para cortesias, alunos do seu grupo ou compras fora da plataforma. Use 0 dias para retirar o acesso.</div>
+    <input type="email" id="vEmail" placeholder="email@do-aluno.com" aria-label="E-mail do aluno">
+    <select id="vCurso" style="height:44px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 10px;margin-top:8px" aria-label="Curso">${Object.keys(CONC).map(k => `<option value="${k}">${esc(CONC[k].nome)}</option>`).join("")}</select>
+    <input type="number" id="vDias" value="30" min="0" max="3650" aria-label="Dias de acesso">
+    <div class="row"><button class="btn small" id="vLib">Liberar</button></div>
+    <h2 style="margin:8px 0 0">Últimos avisos da plataforma</h2>
+    <div class="kv">${(r.whlog||[]).map(l => `<b>${new Date(l.em).toLocaleString("pt-BR").slice(0,16)}</b><span>${esc([l.plat, l.ev, l.email, l.curso, l.res].filter(Boolean).join(" · "))}</span>`).join("") || "<span class='muted'>Nenhum aviso recebido ainda.</span>"}</div>
+    <div class="row"><button class="btn small ghost" id="vFechar">Fechar</button></div>`;
+  $("vFechar").onclick = closeDlg;
+  $("vCopia").onclick = async () => { try { await navigator.clipboard.writeText(wh); toast("Endereço copiado"); } catch(e){ $("vWh").select(); toast("Selecione e copie"); } };
+  $("vSalvar").onclick = async () => {
+    const n = {ativa: $("vAtiva").checked, cursos: {}};
+    sh.querySelectorAll("[data-k]").forEach(i => { const k = i.dataset.k; n.cursos[k] = n.cursos[k] || {}; n.cursos[k][i.dataset.f] = i.type === "checkbox" ? i.checked : i.value.trim(); });
+    for (const k in n.cursos){ if (n.cursos[k].checkout && !/^https:\/\//.test(n.cursos[k].checkout)){ toast("O link do checkout precisa começar com https://"); return; } }
+    try { const x = await api({acao:"admin_cfg", t:c.t, cfg:n}); if (!x.ok){ toast(x.erro); return; } VENDAS = {ativa:n.ativa, cursos:n.cursos}; guardaV(); toast("Configuração salva"); } catch(e){ toast("Sem conexão"); }
+  };
+  $("vLib").onclick = async () => {
+    const em = $("vEmail").value.trim(), d = Number($("vDias").value||0);
+    if (!EMAIL_RE.test(em)){ toast("E-mail inválido"); return; }
+    try { const x = await api({acao:"admin_liberar", t:c.t, email:em, curso:$("vCurso").value, dias:d}); toast(x.ok ? (d > 0 ? "Acesso liberado por " + d + " dias" : "Acesso retirado") : x.erro); } catch(e){ toast("Sem conexão"); }
+  };
+}
 function closeDlgQuiet(){ $("dlg").classList.remove("open"); }
 function openConta(){
   const c = syncCfg(); if (!c) return;
@@ -1598,11 +1694,12 @@ function openConta(){
       <input type="password" id="pAtual" placeholder="Senha atual" autocomplete="current-password" aria-label="Senha atual">
       <input type="password" id="pNova" placeholder="Nova senha (mínimo 6)" autocomplete="new-password" aria-label="Nova senha">
       <button class="btn small ghost" id="pTroca" style="margin-top:8px">Trocar senha</button></details>
+    ${ACC.dono ? `<div class="row"><button class="btn small" id="pVendas">Painel de vendas</button></div>` : ""}
     <div class="row"><button class="btn small ghost" id="pDiag">${S.perfil ? "Refazer diagnóstico" : "Fazer diagnóstico"}</button></div>
     <div class="row"><button class="btn small danger" id="pSair">Sair da conta</button><button class="btn small ghost" id="pFechar">Fechar</button></div>
     <div class="muted">Ao sair, o progresso continua salvo na conta e neste aparelho.</div>`;
   $("dlg").classList.add("open");
-  $("pFechar").onclick = closeDlg; $("pSair").onclick = sair; $("pDiag").onclick = () => { closeDlgQuiet(); abrirDiagnostico(); };
+  $("pFechar").onclick = closeDlg; $("pSair").onclick = sair; $("pDiag").onclick = () => { closeDlgQuiet(); abrirDiagnostico(); }; if ($("pVendas")) $("pVendas").onclick = abrirAdminVendas;
   if ($("pCar")) $("pCar").onchange = e => { S.car = e.target.value; G = null; save(); render(); toast("Carreira: " + {pm:"Polícia Militar", bm:"Bombeiro Militar", prf:"Policial Rodoviário Federal"}[S.car]); };
   $("pSalvar").onclick = async () => {
     try { const r = await api({acao:"perfil", t:c.t, nome:$("pNome").value, email:$("pEmail").value}); if (!r.ok){ toast(r.erro); return; } updConta({nome:r.nome, email:r.email}); toast("Dados salvos"); }
@@ -1615,11 +1712,13 @@ function openConta(){
   };
 }
 initAuth();
+vitrineAuth(); carregaVitrine(); if (syncCfg()) carregaAcesso(); setTimeout(paywall, 400);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && syncCfg()) carregaAcesso(); });
 if (syncCfg() && !S.perfil) setTimeout(abrirDiagnostico, 300);
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 14, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 15, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
