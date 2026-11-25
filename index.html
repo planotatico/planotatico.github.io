@@ -115,6 +115,116 @@ a.btn{text-decoration:none;display:inline-block}
 .pjrow{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
 .pjlinks{display:flex;gap:10px;white-space:nowrap}
 nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
+
+/* ---------- tela de acesso ---------- */
+[hidden]{display:none!important}
+#esq2{display:flex;flex-direction:column;gap:14px}
+.auth{position:fixed;inset:0;z-index:30;display:none;overflow-y:auto;background:radial-gradient(120% 70% at 50% 0%,#123a73 0%,var(--navy) 55%,#020f24 100%)}
+.auth.on{display:block}
+.auth .in{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:28px 16px calc(24px + env(safe-area-inset-bottom))}
+.auth .crest{display:flex;flex-direction:column;align-items:center;gap:8px;color:#fff;text-align:center;margin:8px 0 18px}
+.auth .crest svg{width:72px;height:82px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.45))}
+.auth .crest small{font:600 12px/1 var(--body);letter-spacing:.2em;color:var(--ouro);text-transform:uppercase}
+.auth .crest b{font:700 30px/1 var(--display);letter-spacing:.05em;text-transform:uppercase}
+.auth .crest span{font-size:14px;opacity:.8}
+.auth .stripe{width:100%;max-width:420px;border-radius:3px 3px 0 0}
+.abox{width:100%;max-width:420px;background:#fff;color:#0f1b2d;border-radius:0 0 14px 14px;box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hidden}
+.atabs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #d8dee8}
+.atabs button{border:0;background:#f4f6fa;padding:14px 8px;font:700 16px var(--display);letter-spacing:.08em;text-transform:uppercase;color:#55627a;border-bottom:3px solid transparent}
+.atabs button[aria-selected="true"]{background:#fff;color:#041e42;border-bottom-color:#c9a227}
+.apane{padding:20px 20px 22px;display:flex;flex-direction:column;gap:14px}
+.apane h3{margin:0;font:700 20px var(--display);letter-spacing:.04em;text-transform:uppercase;color:#041e42}
+.apane p.lead{margin:-6px 0 0;color:#55627a;font-size:14px}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:13px;font-weight:600;color:#33415c;letter-spacing:.02em}
+.fld .box{position:relative;display:flex;align-items:center}
+.fld .box svg.ic{position:absolute;left:12px;width:18px;height:18px;color:#8a96ab;pointer-events:none}
+.fld input{width:100%;height:48px;border:1.5px solid #c9d2e0;border-radius:10px;background:#fbfcfe;padding:0 44px 0 40px;font-size:16px;color:#0f1b2d;transition:border-color .15s, box-shadow .15s}
+.fld input:focus{outline:none;border-color:#041e42;box-shadow:0 0 0 3px rgba(4,30,66,.15);background:#fff}
+.fld.err input{border-color:#b3261e;box-shadow:0 0 0 3px rgba(179,38,30,.12)}
+.fld .msg{font-size:13px;color:#b3261e;min-height:0}
+.fld .msg:empty{display:none}
+.eye{position:absolute;right:6px;width:36px;height:36px;border:0;background:none;color:#55627a;display:grid;place-items:center;border-radius:8px}
+.eye svg{width:20px;height:20px}
+.arow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.chk{display:flex;align-items:center;gap:8px;color:#33415c}
+.chk input{width:18px;height:18px;accent-color:#041e42}
+.alink{border:0;background:none;padding:0;color:#041e42;font-weight:700;text-decoration:underline;text-underline-offset:3px;font-size:14px}
+.abtn{height:50px;border:0;border-radius:10px;background:linear-gradient(180deg,#0b2d5c,#041e42);color:#fff;font:700 18px var(--display);letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 2px 0 #c9a227 inset, 0 4px 12px rgba(4,30,66,.3)}
+.abtn:disabled{opacity:.7}
+.abtn .spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#f2c300;border-radius:50%;animation:sp .7s linear infinite;display:none}
+.abtn.busy .spin{display:block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.afoot{text-align:center;font-size:14px;color:#55627a;padding-top:2px}
+.alert{border-radius:10px;padding:10px 12px;font-size:14px;display:none}
+.alert.on{display:block}.alert.bad{background:#fbe9e7;color:#8c1d16;border:1px solid #f3c3bd}.alert.ok{background:#e7f4ec;color:#1d5e38;border:1px solid #bfe0cb}
+.meter{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:2px}.meter i{height:5px;border-radius:3px;background:#e3e8f0}
+.meter[data-n="1"] i:nth-child(-n+1){background:#b3261e}.meter[data-n="2"] i:nth-child(-n+2){background:#d97a00}.meter[data-n="3"] i:nth-child(-n+3){background:#7fa02a}.meter[data-n="4"] i{background:#2e7d4f}
+.mtxt{font-size:12px;color:#55627a}
+.code6{letter-spacing:.5em;font:700 22px var(--display)!important;text-align:center;padding:0 12px!important}
+.shake{animation:shk .35s}
+@keyframes shk{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@media (prefers-reduced-motion: reduce){.shake{animation:none}.abtn .spin{animation-duration:2s}}
+.asec{font-size:12px;color:rgba(255,255,255,.7);text-align:center;margin-top:16px;max-width:420px}
+.acct{margin-left:auto;width:40px;height:40px;border-radius:50%;border:2px solid var(--ouro);background:rgba(255,255,255,.1);color:#fff;font:700 15px var(--display);letter-spacing:.04em;flex:none}
+
+/* ---------- jogo: nível, XP, sequência, conquistas ---------- */
+.player{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:10px 12px;border:1px solid rgba(201,162,39,.45);border-radius:12px;background:rgba(255,255,255,.07);color:#fff;text-align:left}
+.player .ins{width:44px;height:44px;flex:none}
+.player .ins svg,.ins svg{width:100%;height:100%}
+.pinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.prow{display:flex;align-items:center;gap:8px;min-width:0}
+.prow b{font:700 18px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plv{font-size:12px;font-weight:600;color:var(--ouro);white-space:nowrap}
+.streak{margin-left:auto;display:flex;align-items:center;gap:3px;font:700 16px var(--display);color:#ffb648;white-space:nowrap}
+.streak svg{width:18px;height:18px}
+.streak.off{color:rgba(255,255,255,.45)}
+.xpbar{height:9px;border-radius:5px;background:rgba(255,255,255,.18);overflow:hidden;display:block}
+.xpbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c9a227,#f2c300);border-radius:5px;transition:width .6s ease}
+.prow2{display:flex;justify-content:space-between;font-size:12px;opacity:.85;font-variant-numeric:tabular-nums}
+.xpfloat{position:fixed;left:50%;top:38%;transform:translate(-50%,0);font:700 30px var(--display);color:#f2c300;text-shadow:0 2px 0 #041e42,0 0 14px rgba(0,0,0,.4);pointer-events:none;z-index:40;animation:xpf 1.4s ease-out forwards}
+@keyframes xpf{0%{opacity:0;transform:translate(-50%,10px) scale(.8)}15%{opacity:1;transform:translate(-50%,0) scale(1.1)}100%{opacity:0;transform:translate(-50%,-70px) scale(1)}}
+.celebra{position:fixed;inset:0;z-index:45;background:rgba(2,15,36,.82);display:flex;align-items:center;justify-content:center;padding:20px;animation:fin .25s}
+@keyframes fin{from{opacity:0}}
+.cbox{position:relative;width:100%;max-width:360px;background:linear-gradient(180deg,#0b2d5c,#041e42);border:2px solid #c9a227;border-radius:16px;color:#fff;text-align:center;padding:26px 20px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.cbox .big{width:110px;height:110px;margin:0 auto 10px;filter:drop-shadow(0 4px 14px rgba(242,195,0,.45))}
+.cbox small{display:block;font:600 12px var(--body);letter-spacing:.2em;text-transform:uppercase;color:#f2c300}
+.cbox h3{margin:6px 0 4px;font:700 28px/1.05 var(--display);letter-spacing:.04em;text-transform:uppercase}
+.cbox p{margin:0 0 16px;opacity:.85;font-size:15px}
+.cbox .abtn{width:100%}
+.conf{position:absolute;top:-10px;width:8px;height:14px;border-radius:2px;opacity:0;animation:cf 1.8s ease-in forwards}
+@keyframes cf{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(420px) rotate(540deg)}}
+@media (prefers-reduced-motion: reduce){.xpfloat,.cbox,.conf,.celebra{animation:none}.conf{display:none}}
+.lvhead{display:flex;gap:14px;align-items:center}
+.lvhead .ins{width:64px;height:64px;flex:none}
+.lvhead b{display:block;font:700 22px/1.1 var(--display);letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
+.ladder{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px}
+.ladder div{flex:none;width:74px;text-align:center;font-size:11px;line-height:1.15;color:var(--muted)}
+.ladder div .ins{width:40px;height:40px;display:block;margin:0 auto 4px}
+.ladder div.lock{opacity:.35;filter:grayscale(1)}
+.ladder div.cur{color:var(--accent);font-weight:700}
+.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:280px}
+.heat i{aspect-ratio:1;border-radius:4px;background:var(--accent-soft)}
+.heat i.l1{background:#e9d38a}.heat i.l2{background:#d9b23d}.heat i.l3{background:#b8901c}.heat i.l4{background:#7a5c00}.heat i.hj{outline:2px solid var(--accent);outline-offset:1px}
+.heatlbl{max-width:280px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:11px;color:var(--muted);text-align:center}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.badge{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:10px 6px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:12px;line-height:1.2}
+.badge svg{width:54px;height:54px}
+.badge b{font-size:13px;color:var(--ink)}
+.badge.lock svg{filter:grayscale(1);opacity:.35}
+.badge.lock b{color:var(--muted)}
+.badge .bp{width:100%;height:5px;border-radius:3px;background:var(--accent-soft);overflow:hidden}.badge .bp i{display:block;height:100%;background:var(--gold)}
+.badge.novo{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,39,.3)}
+.missao{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.missao:last-child{border-bottom:0}
+.missao .ck{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none;color:#fff}
+.missao.ok .ck{background:var(--ok);border-color:var(--ok)}
+.missao.ok span.t{text-decoration:line-through;color:var(--muted)}
+.missao .t{flex:1}.missao .x{font:700 14px var(--display);color:var(--gold);white-space:nowrap}
+.rank{display:grid;grid-template-columns:26px 34px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.rank .pos{font:700 18px var(--display);color:var(--muted);text-align:center}.rank .pos.p1{color:#c9a227}.rank .pos.p2{color:#9aa7bd}.rank .pos.p3{color:#b0703c}
+.rank .ins{width:34px;height:34px}.rank .xs{font:700 16px var(--display);color:var(--accent);text-align:right}
 </style>
 </head>
 <body>
@@ -122,10 +232,14 @@ nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
   <div class="brand">
     <svg viewBox="0 0 46 52" aria-hidden="true"><path d="M23 1.5 44 8v17c0 12.5-8.6 21.3-21 25.5C10.6 46.3 2 37.5 2 25V8Z" fill="#041e42" stroke="#c9a227" stroke-width="2.5"/><path d="M23 6.5 39.5 11.6V25c0 10-6.7 17.2-16.5 20.8C13.2 42.2 6.5 35 6.5 25V11.6Z" fill="none" stroke="#c9a227" stroke-width=".8" opacity=".7"/><path d="m23 11.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8Z" fill="#f2c300"/><text x="23" y="39.5" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="10.5" letter-spacing="1" fill="#ffffff">CFO</text></svg>
     <h1><small>Rumo ao oficialato</small>Plano CFO PMGO</h1>
+    <button class="acct" id="acct" aria-label="Minha conta" hidden></button>
   </div>
-  <div class="sub" id="hdrSub">Cadete Combatente · 4h por dia, seg a sex · Método Sarah Delma</div>
-  <div class="bar" aria-hidden="true"><i id="progBar" style="width:0%"></i></div>
-  <div class="stats"><span id="stSeen">0 aulas estudadas</span><span id="stRev">0 revisões feitas</span></div>
+  <button class="player" id="player" aria-label="Ver nível e conquistas">
+    <span class="ins" id="pIns"></span>
+    <span class="pinfo"><span class="prow"><b id="pRank">Candidato</b><span class="plv" id="pLv">Nível 1</span><span class="streak" id="pStreak" title="Sequência de dias de estudo"><svg viewBox="0 0 24 24"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 2 1 3 2 3.2C11 8.5 10.8 5 12 2Z" fill="currentColor"/></svg><span id="pStreakN">0</span></span></span>
+      <span class="xpbar"><i id="pXpBar"></i></span>
+      <span class="prow2"><span id="pXp">0 / 100 XP</span><span id="pSeen">0 de 139 aulas</span></span></span>
+  </button>
 </header>
 <div class="stripe" aria-hidden="true"></div>
 
@@ -140,6 +254,47 @@ nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
   <button role="tab" data-tab="grupo" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c3 .2 5.5 2.3 5.5 5.8"/></svg>Grupo</button>
 </nav>
 
+
+<div class="auth" id="auth" role="dialog" aria-modal="true" aria-labelledby="authTitle"><div class="in">
+  <div class="crest"><svg viewBox="0 0 46 52" aria-hidden="true"><path d="M23 1.5 44 8v17c0 12.5-8.6 21.3-21 25.5C10.6 46.3 2 37.5 2 25V8Z" fill="#041e42" stroke="#c9a227" stroke-width="2.5"/><path d="M23 6.5 39.5 11.6V25c0 10-6.7 17.2-16.5 20.8C13.2 42.2 6.5 35 6.5 25V11.6Z" fill="none" stroke="#c9a227" stroke-width=".8" opacity=".7"/><path d="m23 11.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8Z" fill="#f2c300"/><text x="23" y="39.5" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="10.5" letter-spacing="1" fill="#ffffff">CFO</text></svg><small>Rumo ao oficialato</small><b id="authTitle">Plano CFO PMGO</b><span>Cadete Combatente · área do aluno</span></div>
+  <div class="stripe" aria-hidden="true"></div>
+  <div class="abox" id="abox">
+    <div class="atabs" role="tablist"><button role="tab" id="t_login" aria-selected="true">Entrar</button><button role="tab" id="t_cad" aria-selected="false">Criar conta</button></div>
+    <form class="apane" id="p_login" novalidate>
+      <h3>Acesse sua conta</h3><p class="lead">Seu plano, suas revisões e suas horas em qualquer aparelho.</p>
+      <div class="alert" id="a_login" role="alert"></div>
+      <div class="fld" id="f_lEmail"><label for="lEmail">E-mail ou usuário</label><div class="box"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><input id="lEmail" type="text" placeholder="seuemail@exemplo.com" autocomplete="username" autocapitalize="none" spellcheck="false" inputmode="email" class=""></div><div class="msg" id="m_lEmail"></div></div>
+      <div class="fld" id="f_lSenha"><label for="lSenha">Senha</label><div class="box"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="lSenha" type="password" placeholder="Sua senha" autocomplete="current-password"  class=""><button type="button" class="eye" data-eye aria-label="Mostrar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div class="msg" id="m_lSenha"></div></div>
+      <div class="arow"><label class="chk"><input type="checkbox" id="lLembrar" checked> Manter conectado</label><button type="button" class="alink" id="goEsq">Esqueci minha senha</button></div>
+      <button class="abtn" id="bLogin" type="submit"><span class="spin"></span><span>Entrar</span></button>
+      <div class="afoot">Ainda não tem conta? <button type="button" class="alink" id="goCad">Cadastre-se grátis</button></div>
+    </form>
+    <form class="apane" id="p_cad" novalidate hidden>
+      <h3>Crie sua conta</h3><p class="lead">Leva menos de um minuto. O progresso deste aparelho vai junto para a conta.</p>
+      <div class="alert" id="a_cad" role="alert"></div>
+      <div class="fld" id="f_cNome"><label for="cNome">Nome completo</label><div class="box"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><input id="cNome" type="text" placeholder="Como você quer ser chamado" autocomplete="name" autocapitalize="words" class=""></div><div class="msg" id="m_cNome"></div></div>
+      <div class="fld" id="f_cEmail"><label for="cEmail">E-mail</label><div class="box"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><input id="cEmail" type="email" placeholder="seuemail@exemplo.com" autocomplete="email" autocapitalize="none" spellcheck="false" class=""></div><div class="msg" id="m_cEmail"></div></div>
+      <div class="fld" id="f_cSenha"><label for="cSenha">Senha</label><div class="box"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="cSenha" type="password" placeholder="Mínimo de 6 caracteres" autocomplete="new-password"  class=""><button type="button" class="eye" data-eye aria-label="Mostrar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div class="msg" id="m_cSenha"></div></div>
+      <div class="meter" id="meter" data-n="0" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="mtxt" id="mtxt">Use letras e números. Quanto mais longa, melhor.</div>
+      <div class="fld" id="f_cSenha2"><label for="cSenha2">Confirme a senha</label><div class="box"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="cSenha2" type="password" placeholder="Repita a senha" autocomplete="new-password"  class=""><button type="button" class="eye" data-eye aria-label="Mostrar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div class="msg" id="m_cSenha2"></div></div>
+      <button class="abtn" id="bCad" type="submit"><span class="spin"></span><span>Criar minha conta</span></button>
+      <div class="afoot">Já tem conta? <button type="button" class="alink" id="goLogin2">Entrar</button></div>
+    </form>
+    <form class="apane" id="p_esq" novalidate hidden>
+      <h3>Recuperar senha</h3><p class="lead" id="esqLead">Informe o e-mail da sua conta. Enviaremos um código de 6 dígitos.</p>
+      <div class="alert" id="a_esq" role="alert"></div>
+      <div class="fld" id="f_eEmail"><label for="eEmail">E-mail</label><div class="box"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><input id="eEmail" type="email" placeholder="seuemail@exemplo.com" autocomplete="email" autocapitalize="none" spellcheck="false" class=""></div><div class="msg" id="m_eEmail"></div></div>
+      <div id="esq2" hidden>
+        <div class="fld" id="f_eCod"><label for="eCod">Código recebido</label><div class="box"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3"/></svg><input id="eCod" type="text" placeholder="000000" autocomplete="one-time-code" inputmode="numeric" maxlength="6" class="code6"></div><div class="msg" id="m_eCod"></div></div>
+        <div class="fld" id="f_eSenha"><label for="eSenha">Nova senha</label><div class="box"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="eSenha" type="password" placeholder="Mínimo de 6 caracteres" autocomplete="new-password"  class=""><button type="button" class="eye" data-eye aria-label="Mostrar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div class="msg" id="m_eSenha"></div></div>
+        <div class="fld" id="f_eSenha2"><label for="eSenha2">Confirme a nova senha</label><div class="box"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="eSenha2" type="password" placeholder="Repita a nova senha" autocomplete="new-password"  class=""><button type="button" class="eye" data-eye aria-label="Mostrar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div class="msg" id="m_eSenha2"></div></div>
+      </div>
+      <button class="abtn" id="bEsq" type="submit"><span class="spin"></span><span id="bEsqT">Enviar código</span></button>
+      <div class="arow"><button type="button" class="alink" id="goLogin3">Voltar para o login</button><button type="button" class="alink" id="reenv" hidden>Reenviar código</button></div>
+    </form>
+  </div>
+  <div class="asec">Senhas são guardadas com criptografia. Seu progresso fica salvo na sua conta e também neste aparelho.</div>
+</div></div>
 <div class="dlg" id="dlg" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -323,6 +478,7 @@ const PJ = {"PJ 01":{"a":[["01","como assistir a este curso","","1PGQHq1dUcCsUwr
 const I_ID=0,I_MAT=1,I_AULA=2,I_TIT=3,I_BL=4,I_ED=5,I_OBS=6,I_CUR=7;
 
 /* ---------- estado ---------- */
+const $ = id => document.getElementById(id);
 const KEY = "planoCFO.v2";
 let S = {t:{}, w:{}};
 let mem = true;
@@ -335,22 +491,14 @@ function save(){ S.u = Date.now(); keep(); syncSoon(); }
 const SYNC_URL = "https://script.google.com/macros/s/AKfycbzuDgI8GnDJx0n_sX8FIx3QiAbfsIBmLqwCGFSvxJmEz2WbqsT8eQtsmOnXN4HD84_NwA/exec";
 const SKEY = KEY + ".conta";
 try { if (/cfg=/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search); } catch(e){}
-function syncCfg(){ let c = null; try { c = JSON.parse(localStorage.getItem(SKEY)||"null"); } catch(e){} return (c && c.t) ? {url:SYNC_URL, t:c.t, u:c.u} : null; }
-function setConta(c){ try { if (c) localStorage.setItem(SKEY, JSON.stringify(c)); else localStorage.removeItem(SKEY); } catch(e){} }
-async function api(body){ const r = await fetch(SYNC_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body), redirect:"follow"}); return r.json(); }
-async function entrar(acao, u, senha){
-  if (!navigator.onLine){ toast("Sem internet"); return; }
-  const btns = document.querySelectorAll("#lgIn,#lgNew"); btns.forEach(b => b.disabled = true);
-  try {
-    const r = await api({acao, u, senha});
-    if (!r.ok){ toast(r.erro || "Não foi possível entrar"); return; }
-    setConta({t:r.t, u:r.u}); S.sy = 0; GR = null; keep();
-    toast(acao === "criar" ? "Conta criada. Bem-vindo, " + r.u : "Entrou como " + r.u);
-    await syncNow(false); render();
-  } catch(e){ toast("Falha de conexão. Tente de novo"); }
-  finally { btns.forEach(b => { if (b.isConnected) b.disabled = false; }); }
+function syncCfg(){ let c = null; try { c = JSON.parse(localStorage.getItem(SKEY) || sessionStorage.getItem(SKEY) || "null"); } catch(e){} return (c && c.t) ? {url:SYNC_URL, t:c.t, u:c.u, nome:c.nome||c.u, email:c.email||""} : null; }
+function setConta(c, lembrar){
+  try { localStorage.removeItem(SKEY); sessionStorage.removeItem(SKEY); if (c) (lembrar === false ? sessionStorage : localStorage).setItem(SKEY, JSON.stringify(c)); } catch(e){}
+  authGate();
 }
-async function sair(){ const c = syncCfg(); setConta(null); S.sy = 0; GR = null; keep(); render(); toast("Você saiu da conta. O progresso continua neste aparelho"); try { if (c) await api({acao:"sair", t:c.t}); } catch(e){} }
+function updConta(p){ const c = syncCfg(); if (!c) return; let lemb = true; try { lemb = !!localStorage.getItem(SKEY); } catch(e){} setConta(Object.assign({t:c.t, u:c.u, nome:c.nome, email:c.email}, p), lemb); }
+async function api(body){ const r = await fetch(SYNC_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body), redirect:"follow"}); return r.json(); }
+async function sair(){ const c = syncCfg(); closeDlgQuiet(); setConta(null); authPane("login"); S.sy = 0; GR = null; keep(); render(); try { if (c) await api({acao:"sair", t:c.t}); } catch(e){} }
 let syncSt = {last:0, err:"", busy:false}, syncT = null, syncAgain = false;
 function syncSoon(){ if (!syncCfg()) return; clearTimeout(syncT); syncT = setTimeout(() => syncNow(true), 1500); }
 function norm(o){ o = o || {}; o.t = o.t||{}; o.w = o.w||{}; o.tm = o.tm||{run:null,days:{}}; o.tm.days = o.tm.days||{}; return o; }
@@ -388,7 +536,7 @@ async function syncNow(pushOnly){
     if (!p.ok) throw new Error(p.erro||"erro");
     if (p.antigo && p.s) adopt(p.s);
     syncSt.last = Date.now(); syncSt.err = "";
-  } catch(e){ if (e && e.message === "sessao"){ setConta(null); syncSt.err = ""; toast("Sessão expirada: entre de novo"); render(); } else syncSt.err = "falhou, tento de novo"; }
+  } catch(e){ if (e && e.message === "sessao"){ setConta(null); syncSt.err = ""; authMsg("login","Sua sessão expirou. Entre novamente.","bad"); } else syncSt.err = "falhou, tento de novo"; }
   finally { syncSt.busy = false; paintSync(); if (syncAgain){ syncAgain = false; syncSoon(); } }
 }
 function syncTxt(){
@@ -442,14 +590,182 @@ function currentBlock(){
 function nextOf(mat, block){ return T.find(x => x[I_MAT]===mat && x[I_BL]===block && !(S.t[x[I_ID]]||{}).f); }
 
 /* ---------- cabeçalho ---------- */
-function header(){
-  const seen = T.filter(x => (S.t[x[I_ID]]||{}).f).length;
-  let done = 0; for (const c in S.t){ const s=S.t[c]; done += (s.d48?1:0)+(s.d7?1:0)+(s.d30?1:0); }
-  document.getElementById("progBar").style.width = (seen/T.length*100).toFixed(1)+"%";
-  document.getElementById("stSeen").textContent = seen+" de "+T.length+" aulas estudadas";
-  document.getElementById("stRev").textContent = done+" revisões feitas";
-}
+function header(){ gameHeader(); }
 
+
+/* ---------- jogo: XP, patentes, sequência e conquistas (sem moedas) ---------- */
+// XP sai só dos dados do estudo, então é igual em todos os aparelhos e pode ser comparado no grupo
+const XP_AULA = 50, XP_REV = {d48:20, d7:25, d30:35}, XP_HORA = 20, XP_META = 40, XP_90 = 30;
+const PATENTES = [[1,"Candidato"],[3,"Aluno"],[5,"Cadete 1º Ano"],[8,"Cadete 2º Ano"],[11,"Cadete 3º Ano"],[14,"Aspirante a Oficial"],[16,"2º Tenente"],[18,"1º Tenente"],[20,"Capitão"],[22,"Major"],[24,"Tenente-Coronel"],[26,"Coronel"]];
+const xpNivel = L => 50*L*(L-1);              // XP total para chegar ao nível L
+function nivelDe(xp){ let L = 1; while (xpNivel(L+1) <= xp) L++; return L; }
+function patente(L){ let p = PATENTES[0]; for (const x of PATENTES) if (L >= x[0]) p = x; return {n:PATENTES.indexOf(p), nome:p[1]}; }
+function insig(L, cls){
+  const k = patente(L).n;
+  let inner = "";
+  const star = (x,y,r) => { let d = ""; for (let i=0;i<10;i++){ const a = Math.PI/5*i - Math.PI/2, rr = i%2 ? r*.45 : r; d += (i?"L":"M")+(x+Math.cos(a)*rr).toFixed(1)+" "+(y+Math.sin(a)*rr).toFixed(1); } return `<path d="${d}Z" fill="#f2c300"/>`; };
+  if (k === 0) inner = `<path d="M15 26l9 6 9-6" fill="none" stroke="#c9a227" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  else if (k === 1) inner = `<path d="M15 22l9 6 9-6M15 30l9 6 9-6" fill="none" stroke="#c9a227" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  else if (k <= 4){ const n = k-1; for (let i=0;i<n;i++) inner += `<rect x="13" y="${17+i*7}" width="22" height="4" rx="1.5" fill="#f2c300"/>`; inner += `<path d="M24 ${19+n*7}l3 3h-6Z" fill="#c9a227"/>`; }
+  else if (k === 5) inner = star(24,26,8).replace('fill="#f2c300"','fill="none" stroke="#f2c300" stroke-width="1.8"');
+  else if (k <= 8){ const n = k-5; const xs = n===1?[24]:n===2?[17,31]:[14,24,34]; inner = xs.map(x => star(x,26,n===3?5.5:7)).join(""); }
+  else { const n = k-8; inner = `<path d="M10 34c3 5 9 7 14 7s11-2 14-7" fill="none" stroke="#c9a227" stroke-width="2"/>`; const xs = n===1?[24]:n===2?[18,30]:n===3?[14,24,34]:[12,20,28,36]; inner += xs.map(x => star(x,24,n>=3?4.6:6)).join(""); }
+  return `<svg class="${cls||""}" viewBox="0 0 48 52" aria-hidden="true"><path d="M24 2 45 9v17c0 12.5-8.6 21.3-21 25C11.6 47.3 3 38.5 3 26V9Z" fill="#041e42" stroke="#c9a227" stroke-width="2.5"/>${inner}</svg>`;
+}
+function diaUtil(d){ const w = parse(d).getDay(); return w !== 0 && w !== 6; }
+function jogo(t, days, extra){
+  // t: mapa de aulas {f,d48,d7,d30,pct}; days: segundos líquidos por dia
+  t = t || {}; days = days || {};
+  let aulas = 0, revs = 0, ciclos = 0, p90 = 0, xp = 0; const porMat = {}, porBl = {I:[0,0],II:[0,0],III:[0,0]};
+  for (const x of T){
+    const s = t[x[I_ID]], m = x[I_MAT];
+    porMat[m] = porMat[m] || [0,0]; porMat[m][1]++; porBl[x[I_BL]][1]++;
+    if (!s || !s.f) continue;
+    aulas++; porMat[m][0]++; porBl[x[I_BL]][0]++; xp += XP_AULA;
+    for (const k in XP_REV) if (s[k]){ revs++; xp += XP_REV[k]; }
+    if (s.d48 && s.d7 && s.d30) ciclos++;
+    if (typeof s.pct === "number" && s.pct >= 90){ p90++; xp += XP_90; }
+  }
+  const hoje = today(); let seg = 0, metas = 0, semanas20 = 0; const sem = {};
+  for (const d in days){ const v = days[d] + (extra && d === hoje ? extra : 0); seg += v; if (v >= META_DIA) metas++; const w = weekStart(d); sem[w] = (sem[w]||0) + v; }
+  if (extra && !(hoje in days)){ seg += extra; if (extra >= META_DIA) metas++; }
+  for (const w in sem) if (sem[w] >= META_SEM) semanas20++;
+  xp += Math.floor(seg/900) * (XP_HORA/4) + metas*XP_META;
+  // sequência: dias úteis seguidos com 30 min ou mais (sábado e domingo não quebram; hoje ainda conta como "em andamento")
+  const estudou = d => ((days[d]||0) + (extra && d === hoje ? extra : 0)) >= 1800;
+  let streak = 0, d = hoje; if (!estudou(d)) d = add(d,-1);
+  for (let i=0;i<400;i++){ if (estudou(d)) streak++; else if (diaUtil(d)) break; d = add(d,-1); }
+  let melhor = 0, run = 0; const ds = Object.keys(days).sort(); if (ds.length){ for (let x = ds[0]; x <= hoje; x = add(x,1)){ if (estudou(x)){ run++; melhor = Math.max(melhor, run); } else if (diaUtil(x)) run = 0; } }
+  const L = nivelDe(xp);
+  return {xp, L, pat: patente(L), aulas, revs, ciclos, p90, horas: seg/3600, metas, semanas20, streak, melhor: Math.max(melhor, streak), porMat, porBl};
+}
+function meuJogo(){ const run = S.tm.run ? Math.max(0,(Date.now()-S.tm.run)/1000) : 0; return jogo(S.t, S.tm.days, run); }
+
+// conquistas: [id, nome, descrição, ícone, valor atual, meta]
+function conquistas(g){
+  const late = T.filter(x => { const n = nextRev(x[I_ID]); return n && n.d < today(); }).length;
+  const A = [
+    ["a1","Primeiro passo","Conclua sua primeira aula","livro",g.aulas,1],
+    ["a10","Pegando o ritmo","Conclua 10 aulas","livro",g.aulas,10],
+    ["a25","Um quarto do caminho","Conclua 25 aulas","livro",g.aulas,25],
+    ["a70","Metade do edital","Conclua 70 aulas","livro",g.aulas,70],
+    ["a139","Edital fechado","Conclua todas as 139 aulas","coroa",g.aulas,T.length],
+    ["bI","Bloco I concluído","Português, Constitucional, Administrativo e Penal","escudo",g.porBl.I[0],g.porBl.I[1]],
+    ["bII","Bloco II concluído","Processo Penal, LPE, Penal Militar e Proc. Penal Militar","escudo",g.porBl.II[0],g.porBl.II[1]],
+    ["bIII","Bloco III concluído","Goiás, Redação Oficial e legislação estadual","escudo",g.porBl.III[0],g.porBl.III[1]],
+    ["r1","Revisar é vencer","Faça sua primeira revisão","ciclo",g.revs,1],
+    ["r50","Memória de elefante","Faça 50 revisões","ciclo",g.revs,50],
+    ["r150","Fixação total","Faça 150 revisões","ciclo",g.revs,150],
+    ["c1","Ciclo completo","Feche 48h, 7 e 30 dias de uma aula","alvo",g.ciclos,1],
+    ["c20","Mestre dos ciclos","Feche o ciclo de 20 aulas","alvo",g.ciclos,20],
+    ["p1","Na mosca","Registre 90% ou mais em uma aula","mira",g.p90,1],
+    ["p15","Atirador de elite","90% ou mais em 15 aulas","mira",g.p90,15],
+    ["h1","Primeira hora","1 hora líquida de estudo","relogio",g.horas,1],
+    ["h20","Dedicação","20 horas líquidas","relogio",g.horas,20],
+    ["h100","Centurião","100 horas líquidas","relogio",g.horas,100],
+    ["h300","Incansável","300 horas líquidas","relogio",g.horas,300],
+    ["m1","Missão cumprida","Bata a meta de 4h em um dia","medalha",g.metas,1],
+    ["m20","Disciplina militar","Bata a meta de 4h em 20 dias","medalha",g.metas,20],
+    ["s1","Semana de ferro","Feche 20h líquidas em uma semana","medalha",g.semanas20,1],
+    ["q3","Aquecendo","3 dias seguidos de estudo","fogo",g.melhor,3],
+    ["q7","Uma semana firme","7 dias seguidos","fogo",g.melhor,7],
+    ["q15","Constância","15 dias seguidos","fogo",g.melhor,15],
+    ["q30","Inabalável","30 dias seguidos","fogo",g.melhor,30],
+    ["e10","Em dia","10 aulas estudadas e nenhuma revisão atrasada","escudo",(g.aulas >= 10 && !late) ? 1 : 0,1],
+  ];
+  for (const m in MAT){ const pm = g.porMat[m]; if (pm) A.push(["mt_"+m,"Domínio: "+MAT[m].replace(/ \(.*\)/,""),"Conclua todas as aulas da matéria","louro",pm[0],pm[1]]); }
+  return A.map(a => ({id:a[0], nome:a[1], desc:a[2], ic:a[3], v:Math.min(a[4],a[5]), meta:a[5], ok:a[4] >= a[5]}));
+}
+const ICO = {
+  livro:'<path d="M14 16h12a6 6 0 0 1 6 6v20a5 5 0 0 0-5-5H14Z" fill="#f2c300"/><path d="M50 16H38a6 6 0 0 0-6 6v20a5 5 0 0 1 5-5h13Z" fill="#c9a227"/>',
+  coroa:'<path d="M14 42 12 20l10 9 10-14 10 14 10-9-2 22Z" fill="#f2c300"/><rect x="14" y="44" width="36" height="4" rx="2" fill="#c9a227"/>',
+  escudo:'<path d="M32 12 48 18v12c0 10-7 17-16 20-9-3-16-10-16-20V18Z" fill="#f2c300"/><path d="m25 30 5 5 9-10" fill="none" stroke="#041e42" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>',
+  ciclo:'<path d="M44 26a13 13 0 1 0 1 10" fill="none" stroke="#f2c300" stroke-width="5" stroke-linecap="round"/><path d="m46 16 0 11-11 0" fill="none" stroke="#f2c300" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>',
+  alvo:'<circle cx="32" cy="32" r="17" fill="none" stroke="#f2c300" stroke-width="4"/><circle cx="32" cy="32" r="9" fill="none" stroke="#c9a227" stroke-width="4"/><circle cx="32" cy="32" r="3" fill="#f2c300"/>',
+  mira:'<circle cx="32" cy="32" r="15" fill="none" stroke="#f2c300" stroke-width="4"/><path d="M32 10v12M32 42v12M10 32h12M42 32h12" stroke="#c9a227" stroke-width="4" stroke-linecap="round"/>',
+  relogio:'<circle cx="32" cy="34" r="16" fill="none" stroke="#f2c300" stroke-width="4"/><path d="M32 25v10l6 4M27 12h10" stroke="#f2c300" stroke-width="4" stroke-linecap="round"/>',
+  medalha:'<path d="M22 10h8l4 12h-8ZM42 10h-8l-4 12h8Z" fill="#c9a227"/><circle cx="32" cy="38" r="13" fill="#f2c300"/><path d="m32 31 2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7Z" fill="#041e42"/>',
+  fogo:'<path d="M32 10c2 8 12 11 12 23a12 12 0 0 1-24 0c0-6 3-9 6-11 .5 5 2.5 7 5 7.5C29 22 28.5 15 32 10Z" fill="#ff9a2e"/><path d="M32 30c1 4 6 5 6 10a6 6 0 0 1-12 0c0-3 2-5 3-6 .5 2 1.5 3 3 3-.5-3 0-5 0-7Z" fill="#f2c300"/>',
+  louro:'<path d="M20 46c-6-8-6-20 2-28M44 46c6-8 6-20-2-28" fill="none" stroke="#c9a227" stroke-width="3" stroke-linecap="round"/><path d="m32 20 3.3 6.8 7.4 1-5.4 5.2 1.3 7.4L32 37l-6.6 3.4 1.3-7.4-5.4-5.2 7.4-1Z" fill="#f2c300"/>'
+};
+const badgeSvg = ic => `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#041e42" stroke="#c9a227" stroke-width="2.5"/>${ICO[ic]||ICO.medalha}</svg>`;
+
+let G = null; // último estado do jogo mostrado
+function gameHeader(){
+  const g = meuJogo(), ini = xpNivel(g.L), fim = xpNivel(g.L+1);
+  $("pIns").innerHTML = insig(g.L);
+  $("pRank").textContent = g.pat.nome; $("pLv").textContent = "Nível " + g.L;
+  $("pXpBar").style.width = ((g.xp-ini)/(fim-ini)*100).toFixed(1)+"%";
+  $("pXp").textContent = (g.xp-ini) + " / " + (fim-ini) + " XP";
+  $("pSeen").textContent = g.aulas + " de " + T.length + " aulas";
+  $("pStreakN").textContent = g.streak; $("pStreak").classList.toggle("off", !g.streak);
+  gameCheck(g);
+}
+function gameCheck(g){
+  if (!syncCfg()){ G = null; return; }   // só comemora com a conta aberta (a tela de login fica por cima)
+  const lista = conquistas(g).filter(a => a.ok);
+  if (!S.ach){ S.ach = {}; lista.forEach(a => S.ach[a.id] = today()); keep(); G = g; if (lista.length) setTimeout(() => celebra({tipo:"intro", n:lista.length, g}), 600); return; }
+  const novas = lista.filter(a => !S.ach[a.id]);
+  if (G){
+    if (g.xp > G.xp) xpFloat(g.xp - G.xp);
+    if (g.L > G.L) setTimeout(() => celebra({tipo:"nivel", g}), 500);
+  }
+  if (novas.length){ novas.forEach(a => S.ach[a.id] = today()); keep(); syncSoon(); novas.forEach((a,i) => setTimeout(() => celebra({tipo:"conq", a}), 900 + i*120)); }
+  G = g;
+}
+function xpFloat(n){ const e = document.createElement("div"); e.className = "xpfloat"; e.textContent = "+" + n + " XP"; document.body.appendChild(e); setTimeout(() => e.remove(), 1500); }
+const filaC = []; let cAberta = false;
+function celebra(c){ filaC.push(c); if (!cAberta) proxC(); }
+function proxC(){
+  const c = filaC.shift(); if (!c){ cAberta = false; return; } cAberta = true;
+  let ic, sm, tt, pp;
+  if (c.tipo === "nivel"){ ic = insig(c.g.L, "big"); sm = "Promoção!"; tt = "Nível " + c.g.L; pp = c.g.pat.nome + (patente(c.g.L-1).nome !== c.g.pat.nome ? " · nova patente" : "") + ". Continue assim."; }
+  else if (c.tipo === "intro"){ ic = insig(c.g.L, "big"); sm = "Bem-vindo às conquistas"; tt = c.g.pat.nome; pp = "Pelo que você já estudou, começa no nível " + c.g.L + " com " + c.n + " conquista" + (c.n>1?"s":"") + " desbloqueada" + (c.n>1?"s":"") + "."; }
+  else { ic = badgeSvg(c.a.ic).replace("<svg ", '<svg class="big" '); sm = "Conquista desbloqueada"; tt = c.a.nome; pp = c.a.desc; }
+  const w = document.createElement("div"); w.className = "celebra"; w.setAttribute("role","dialog"); w.setAttribute("aria-modal","true");
+  let conf = ""; const cores = ["#f2c300","#c9a227","#0a7a3e","#ffffff","#e0b84a"];
+  for (let i=0;i<26;i++) conf += `<i class="conf" style="left:${Math.random()*100}%;background:${cores[i%5]};animation-delay:${(Math.random()*.5).toFixed(2)}s"></i>`;
+  w.innerHTML = `<div class="cbox">${conf}${ic}<small>${esc(sm)}</small><h3>${esc(tt)}</h3><p>${esc(pp)}</p><button class="abtn" type="button">${c.tipo==="intro"?"Ver conquistas":"Continuar"}</button></div>`;
+  document.body.appendChild(w);
+  const fecha = () => { w.remove(); if (c.tipo === "intro") abrirConquistas(); proxC(); };
+  w.querySelector("button").onclick = fecha; w.onclick = e => { if (e.target === w) fecha(); };
+  w.querySelector("button").focus();
+}
+function heat(days){
+  const t = today(), ws = weekStart(t); let h = `<div class="heatlbl">${["S","T","Q","Q","S","S","D"].map(x=>`<span>${x}</span>`).join("")}</div><div class="heat">`;
+  for (let i=-35;i<7;i++){ const d = add(ws,i); const v = (days[d]||0) + (S.tm.run && d===t ? (Date.now()-S.tm.run)/1000 : 0); const l = d > t ? "" : v >= META_DIA ? "l4" : v >= 3*3600 ? "l3" : v >= 7200 ? "l2" : v >= 1800 ? "l1" : ""; h += `<i class="${l}${d===t?" hj":""}" title="${br(d)}: ${hm(v)}"></i>`; }
+  return h + `</div>`;
+}
+function abrirConquistas(){
+  const g = meuJogo(), A = conquistas(g), ok = A.filter(a => a.ok).length, ini = xpNivel(g.L), fim = xpNivel(g.L+1);
+  const novo = id => S.ach && S.ach[id] === today();
+  const sh = $("sheet");
+  sh.innerHTML = `<div class="lvhead"><span class="ins">${insig(g.L)}</span><div style="flex:1"><b>${esc(g.pat.nome)}</b><div class="muted">Nível ${g.L} · ${g.xp} XP no total · faltam ${fim-g.xp} XP para o nível ${g.L+1}</div><div class="bar2" style="margin-top:6px"><i style="width:${((g.xp-ini)/(fim-ini)*100).toFixed(1)}%"></i></div></div></div>
+    <div class="ladder">${PATENTES.map(p => `<div class="${g.L >= p[0] ? (patente(g.L).nome===p[1]?"cur":"") : "lock"}"><span class="ins">${insig(p[0])}</span>${esc(p[1])}<br><span class="muted">nív. ${p[0]}</span></div>`).join("")}</div>
+    <h2 style="margin:4px 0 0">Sequência: ${g.streak} dia${g.streak===1?"":"s"}</h2>
+    <div class="muted">Dias com 30 min ou mais de estudo líquido. Sábado e domingo não quebram a sequência. Recorde: ${g.melhor}.</div>
+    ${heat(S.tm.days)}
+    <h2 style="margin:6px 0 0">Como ganhar XP</h2>
+    <div class="kv"><b>Aula concluída</b><span>+${XP_AULA} XP</span><b>Revisões</b><span>48h +${XP_REV.d48} · 7 dias +${XP_REV.d7} · 30 dias +${XP_REV.d30}</span><b>Estudo líquido</b><span>+${XP_HORA} XP por hora</span><b>Meta de 4h</b><span>+${XP_META} XP bônus no dia</span><b>90% de acertos</b><span>+${XP_90} XP por aula</span></div>
+    <h2 style="margin:6px 0 0">Conquistas ${ok}/${A.length}</h2>
+    <div class="badges">${A.map(a => `<div class="badge${a.ok?"":" lock"}${a.ok && novo(a.id)?" novo":""}" title="${esc(a.desc)}">${badgeSvg(a.ic)}<b>${esc(a.nome)}</b><span class="muted">${esc(a.desc)}</span>${a.ok ? "" : `<span class="bp"><i style="width:${(a.v/a.meta*100).toFixed(0)}%"></i></span><span class="muted">${a.meta >= 10 && a.ic==="relogio" ? Math.floor(a.v)+"/"+a.meta+"h" : Math.floor(a.v)+"/"+a.meta}</span>`}</div>`).join("")}</div>
+    <div class="row"><button class="btn small ghost" id="cFechar">Fechar</button></div>`;
+  $("dlg").classList.add("open"); sh.scrollTop = 0;
+  $("cFechar").onclick = closeDlg;
+}
+function missoes(){
+  const t = today(), due = T.filter(x => { const n = nextRev(x[I_ID]); return n && n.d <= t; }).length;
+  const novas = T.filter(x => (S.t[x[I_ID]]||{}).f === t).length, h = tmDay(t);
+  const it = [
+    [!due, due ? "Zerar as revisões de hoje (" + due + " pendente" + (due>1?"s":"") + ")" : "Revisões de hoje em dia", "+20 a 35 XP cada"],
+    [novas >= 1, "Estudar 1 aula nova", "+"+XP_AULA+" XP"],
+    [novas >= 2, "Estudar a 2ª aula nova", "+"+XP_AULA+" XP"],
+    [h >= 1800, "30 min líquidos (mantém a sequência)", "sequência"],
+    [h >= META_DIA, "Meta de 4h líquidas (" + hm(h) + ")", "+"+XP_META+" XP bônus"],
+  ];
+  const feitas = it.filter(x => x[0]).length;
+  return `<section class="card"><h2>Missões do dia ${feitas}/${it.length}</h2>${it.map(x => `<div class="missao${x[0]?" ok":""}"><span class="ck">${x[0]?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m5 12 5 5 9-10"/></svg>':""}</span><span class="t">${esc(x[1])}</span><span class="x">${esc(x[2])}</span></div>`).join("")}</section>`;
+}
 /* ---------- cronômetro de horas líquidas ---------- */
 const META_DIA = 4*3600, META_SEM = 20*3600;
 function tmDay(d){ let v = S.tm.days[d] || 0; if (S.tm.run && d===today()) v += Math.max(0,(Date.now()-S.tm.run)/1000); return v; }
@@ -506,7 +822,7 @@ const label = x => esc(SHORT[x[I_MAT]])+" · "+esc(x[I_AULA]);
 function vHoje(){
   const t = today(), dt = new Date();
   const due = T.map(x => ({x, n: nextRev(x[I_ID])})).filter(o => o.n && o.n.d <= t).sort((a,b)=> a.n.d < b.n.d ? -1 : 1);
-  let h = timerCard(false) + `<section class="card"><h2>Revisões de hoje</h2><div class="muted">Faça antes de qualquer aula nova.${due.length ? " "+due.length+" pendente"+(due.length>1?"s":"")+"." : ""}</div>`;
+  let h = timerCard(false) + missoes() + `<section class="card"><h2>Revisões de hoje</h2><div class="muted">Faça antes de qualquer aula nova.${due.length ? " "+due.length+" pendente"+(due.length>1?"s":"")+"." : ""}</div>`;
   if (!due.length) h += `<div class="empty">Nenhuma revisão vencida. Pode ir direto para a aula nova.</div>`;
   for (const o of due){
     const late = o.n.d < t;
@@ -598,12 +914,8 @@ function vRotina(){
     <div class="muted">Quando uma matéria do dia acaba, o app puxa a próxima do mesmo bloco.</div></section>
   <section class="card"><h2>Sincronização celular ↔ PC</h2>
     <div class="kv"><b>Status</b><span id="syncSt">${esc(syncTxt())}</span><b>Versão do app</b><span>${APP_V}${window.CFO ? " · atualiza sozinho" : ""}</span></div>
-    ${syncCfg() ? `<div class="muted">Conectado como <b>${esc(syncCfg().u)}</b>. Seu progresso e suas horas aparecem em qualquer aparelho em que você entrar com essa conta. Sincroniza ao abrir, a cada alteração e a cada minuto.</div>
-    <div class="row"><button class="btn small" id="syncGo">Sincronizar agora</button><button class="btn small ghost" id="lgOut">Sair da conta</button></div>` :
-    `<div class="muted">Entre com seu usuário e senha para ver o mesmo progresso no celular e no PC. Primeira vez? Escolha um usuário e uma senha e toque em Criar conta: o progresso deste aparelho vai junto.</div>
-    <input type="text" id="lgU" placeholder="Usuário" autocomplete="username" autocapitalize="none" spellcheck="false" aria-label="Usuário">
-    <input type="password" id="lgP" placeholder="Senha (mínimo 6 caracteres)" autocomplete="current-password" aria-label="Senha">
-    <div class="row"><button class="btn small" id="lgIn">Entrar</button><button class="btn small ghost" id="lgNew">Criar conta</button></div>`}
+    <div class="muted">Conectado como <b>${esc((syncCfg()||{}).nome||"")}</b>. Seu progresso e suas horas aparecem em qualquer aparelho em que você entrar. Sincroniza ao abrir, a cada alteração e a cada minuto.</div>
+    <div class="row"><button class="btn small" id="syncGo">Sincronizar agora</button><button class="btn small ghost" id="goConta">Minha conta</button></div>
   </section>
   <section class="card"><h2>Backup dos seus dados</h2>
     <div class="muted">${mem ? "Este navegador não está guardando dados: o progresso some ao fechar. " : ""}O progresso fica salvo neste aparelho${syncCfg() ? " e na sincronização" : ""}. Copie o backup de vez em quando e guarde em lugar seguro (por exemplo, mande para você mesmo no WhatsApp).</div>
@@ -654,7 +966,7 @@ function resumoMembro(m){
 function convite(g){ return "Entre no meu grupo de estudos do Plano CFO PMGO. 1) Abra " + PAGES + " (ou instale o app que eu te passar). 2) Na aba Rotina, crie sua conta. 3) Na aba Grupo, digite o código " + g.codigo + "."; }
 function vGrupo(){
   const c = syncCfg();
-  if (!c) return `<section class="card"><h2>Grupo de estudos</h2><div class="muted">Para criar um grupo ou entrar em um, primeiro entre na sua conta.</div><div class="row"><button class="btn small" id="goLogin">Entrar ou criar conta</button></div></section>`;
+  if (!c) return `<section class="card"><h2>Grupo de estudos</h2><div class="muted">Entre na sua conta para usar grupos.</div></section>`;
   if (!GR){ if (!grBusy) setTimeout(grLoad, 0); return `<section class="card"><h2>Grupo de estudos</h2><div class="muted">${grErr ? esc(grErr) : "Carregando…"}</div>${grErr ? `<div class="row"><button class="btn small" id="grRe">Tentar de novo</button></div>` : ""}</section>`; }
   let h = "";
   for (const g of GR.admin){
@@ -663,10 +975,17 @@ function vGrupo(){
       <div class="kv"><b>Código</b><span><span class="code" style="font-size:20px;letter-spacing:3px">${esc(g.codigo)}</span></span><b>Pessoas</b><span>${ms.length}</span></div>
       <div class="row"><button class="btn small" data-conv="${esc(g.codigo)}">Copiar convite</button><button class="btn small ghost" id="grRe">Atualizar</button></div>
       <textarea readonly rows="3" aria-label="Texto do convite" id="cv_${esc(g.codigo)}">${esc(convite(g))}</textarea>`;
+    if (ms.length){
+      const ws = weekStart(today());
+      const rk = ms.map(({m, r}) => { const g = jogo(m.t, m.days, m.run ? Math.max(0,(Date.now()-m.run)/1000) : 0);
+        let xs = 0; for (const id in m.t) if (m.t[id].f >= ws) xs += XP_AULA; let seg = 0, met = 0; for (let i=0;i<7;i++){ const d = add(ws,i), v = (m.days[d]||0); seg += v; if (v >= META_DIA) met++; } xs += Math.floor(seg/900)*(XP_HORA/4) + met*XP_META;
+        return {m, g, xs}; }).sort((a,b) => b.xs - a.xs || b.g.xp - a.g.xp);
+      h += `<h2 style="margin:10px 0 0">Ranking da semana</h2>` + rk.map((x,i) => `<div class="rank"><span class="pos p${i+1}">${i+1}º</span><span class="ins">${insig(x.g.L)}</span><span><b>${esc(x.m.nome||x.m.u)}</b><br><span class="muted">${esc(x.g.pat.nome)} · nível ${x.g.L} · sequência ${x.g.streak}</span></span><span class="xs">${x.xs} XP</span></div>`).join("");
+    }
     if (!ms.length) h += `<div class="empty">Ninguém entrou ainda. Mande o convite: a pessoa cria a conta e digita o código na aba Grupo.</div>`;
     for (const {m, r} of ms){
       const bl = ["I","II","III"].map(b => `Bloco ${b}: ${r.porBl[b][0]}/${r.porBl[b][1]}`).join(" · ");
-      h += `<details class="mat"><summary><div style="flex:1;min-width:0"><div><b>${esc(m.u)}</b>${r.run ? ` <span class="pill due">estudando agora</span>` : ""}${r.late ? ` <span class="pill late">${r.late} rev. atrasada${r.late>1?"s":""}</span>` : ""}</div>
+      h += `<details class="mat"><summary><div style="flex:1;min-width:0"><div><b>${esc(m.nome||m.u)}</b>${r.run ? ` <span class="pill due">estudando agora</span>` : ""}${r.late ? ` <span class="pill late">${r.late} rev. atrasada${r.late>1?"s":""}</span>` : ""}</div>
         <div class="muted">${r.seen}/${T.length} aulas · hoje ${hm(r.hojeH)} · semana ${hm(r.sem)} de 20h · ${esc(quando(m.at))}</div>
         <div class="bar"><i style="width:${(r.seen/T.length*100).toFixed(1)}%"></i></div></div></summary>
         <div class="kv"><b>Revisões</b><span>${r.late} atrasada${r.late===1?"":"s"}, ${r.hoje} para hoje</span>
@@ -674,7 +993,7 @@ function vGrupo(){
         <b>Últimos 7 dias</b><span>${hm(r.ult7)} líquidas</span>
         <b>Blocos</b><span>${bl}</span></div>
         <div class="kv">${Object.keys(r.porMat).map(k => `<b>${esc(MAT[k]||k)}</b><span>${r.porMat[k][0]}/${r.porMat[k][1]}</span>`).join("")}</div>
-        <div class="row"><button class="btn small danger" data-rm="${esc(g.codigo)}|${esc(m.u)}">Remover do grupo</button></div></details>`;
+        <div class="row"><button class="btn small danger" data-rm="${esc(g.codigo)}|${esc(m.u)}" data-nm="${esc(m.nome||m.u)}">Remover do grupo</button></div></details>`;
     }
     h += `</section>`;
   }
@@ -697,7 +1016,7 @@ function bindGrupo(v){
   v.querySelectorAll("[data-leave]").forEach(b => b.onclick = () => grAct({acao:"grupo_sair", codigo:b.dataset.leave}, () => toast("Você saiu do grupo")));
   v.querySelectorAll("[data-rm]").forEach(b => { let armed = false; b.onclick = () => {
     if (!armed){ armed = true; b.textContent = "Toque de novo para remover"; setTimeout(() => { armed = false; if (b.isConnected) b.textContent = "Remover do grupo"; }, 4000); return; }
-    const [c, u] = b.dataset.rm.split("|"); grAct({acao:"grupo_remover", codigo:c, membro:u}, () => toast(u+" removido"));
+    const [c, u] = b.dataset.rm.split("|"); grAct({acao:"grupo_remover", codigo:c, membro:u}, () => toast((b.dataset.nm||u)+" removido"));
   }; });
 }
 /* ---------- detalhe da aula ---------- */
@@ -770,11 +1089,8 @@ function bind(){
   v.querySelectorAll("[data-week]").forEach(c => c.onchange = e => { S.w[c.dataset.week] = e.target.checked; save(); });
   const sg = v.querySelector("#syncGo"); if (sg) sg.onclick = () => syncNow(false);
   const lo = v.querySelector("#lgOut"); if (lo) lo.onclick = sair;
-  const lgv = () => [v.querySelector("#lgU").value.trim(), v.querySelector("#lgP").value];
-  const li = v.querySelector("#lgIn"); if (li) li.onclick = () => { const [u,p] = lgv(); if (!u || !p){ toast("Preencha usuário e senha"); return; } entrar("entrar", u, p); };
-  const ln = v.querySelector("#lgNew"); if (ln) ln.onclick = () => { const [u,p] = lgv(); if (!u || !p){ toast("Preencha usuário e senha"); return; } entrar("criar", u, p); };
-  const lp = v.querySelector("#lgP"); if (lp) lp.onkeydown = e => { if (e.key === "Enter") li.click(); };
-  const gl = v.querySelector("#goLogin"); if (gl) gl.onclick = () => { tab = "rotina"; render(); setTimeout(() => { const u = document.getElementById("lgU"); if (u){ u.scrollIntoView({block:"center"}); u.focus(); } }, 50); };
+  const gc = v.querySelector("#goConta"); if (gc) gc.onclick = openConta;
+
   const bc = v.querySelector("#bkCopy");
   if (bc){
     bc.onclick = async () => {
@@ -783,13 +1099,13 @@ function bind(){
       catch(e){ ta.value = txt; ta.select(); toast("Selecione o texto e copie"); }
     };
     v.querySelector("#bkRestore").onclick = () => {
-      try { const o = JSON.parse(document.getElementById("bkText").value); if (!o || typeof o.t!=="object") throw 0; S = {t:o.t, w:o.w||{}, tm:o.tm||{run:null,days:{}}, sy:S.sy}; save(); render(); toast("Backup restaurado"); }
+      try { const o = JSON.parse(document.getElementById("bkText").value); if (!o || typeof o.t!=="object") throw 0; S = {t:o.t, w:o.w||{}, tm:o.tm||{run:null,days:{}}, ach:o.ach, sy:S.sy}; G = null; save(); render(); toast("Backup restaurado"); }
       catch(e){ toast("Backup inválido: cole o texto completo"); }
     };
     let armed = false;
     v.querySelector("#bkReset").onclick = e => {
       if (!armed){ armed = true; e.target.textContent = "Toque de novo para apagar tudo"; setTimeout(()=>{ armed=false; if (e.target.isConnected) e.target.textContent="Apagar todo o progresso"; }, 4000); return; }
-      S = {t:{}, w:{}, tm:{run:null,days:{}}, sy:S.sy}; save(); render(); toast("Progresso apagado");
+      S = {t:{}, w:{}, tm:{run:null,days:{}}, ach:{}, sy:S.sy}; G = null; save(); render(); toast("Progresso apagado");
     };
   }
 }
@@ -797,9 +1113,127 @@ document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { ta
 let tt; function toast(m){ const el = document.getElementById("toast"); el.textContent = m; el.classList.add("show"); clearTimeout(tt); tt = setTimeout(()=>el.classList.remove("show"), 2200); }
 const h0 = (location.hash||"").slice(1); if (["hoje","aulas","horas","crono","rotina","grupo"].includes(h0)) tab = h0;
 render();
+
+/* ---------- tela de acesso (login, cadastro, recuperação) ---------- */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function authGate(){
+  const c = syncCfg(), a = $("auth"), ac = $("acct");
+  if (a) a.classList.toggle("on", !c);
+  if (ac){ ac.hidden = !c; if (c){ const n = (c.nome||c.u||"?").trim().split(/\s+/); ac.textContent = ((n[0]||"")[0] + (n.length>1 ? n[n.length-1][0] : "")).toUpperCase(); ac.title = c.nome; } }
+}
+function authPane(p){
+  ["login","cad","esq"].forEach(k => $("p_"+k).hidden = k !== p);
+  $("t_login").setAttribute("aria-selected", p !== "cad"); $("t_cad").setAttribute("aria-selected", p === "cad");
+  document.querySelectorAll("#auth .alert").forEach(x => { if (!x.dataset.keep) x.className = "alert"; delete x.dataset.keep; });
+  clearErr(); const f = $("p_"+p).querySelector("input:not([type=checkbox])"); if (f && matchMedia("(min-width:700px)").matches) f.focus();
+}
+function authMsg(p, txt, kind){ const a = $("a_"+p); a.textContent = txt; a.className = "alert on " + kind; a.dataset.keep = "1"; if (p !== "esq") authPane(p); }
+function clearErr(){ document.querySelectorAll("#auth .fld").forEach(f => { f.classList.remove("err"); const m = f.querySelector(".msg"); if (m) m.textContent = ""; }); }
+function fErr(id, txt){ const f = $("f_"+id); f.classList.add("err"); $("m_"+id).textContent = txt; return false; }
+function shake(){ const b = $("abox"); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); }
+function busy(btn, on){ btn.classList.toggle("busy", on); btn.disabled = on; }
+function forca(p){ let n = 0; if (p.length >= 6) n++; if (p.length >= 10) n++; if (/[a-zA-Z]/.test(p) && /\d/.test(p)) n++; if (/[^a-zA-Z0-9]/.test(p) || (/[a-z]/.test(p) && /[A-Z]/.test(p))) n++; return p ? Math.max(1, n) : 0; }
+async function authCall(btn, body, campos){
+  if (!navigator.onLine){ shake(); return {ok:false, erro:"Sem internet. Conecte-se para continuar."}; }
+  busy(btn, true);
+  try { const r = await api(body); if (!r.ok){ shake(); if (r.campo && campos[r.campo]) fErr(campos[r.campo], r.erro); } return r; }
+  catch(e){ shake(); return {ok:false, erro:"Não foi possível conectar. Tente de novo."}; }
+  finally { busy(btn, false); }
+}
+async function aposEntrar(r, lembrar, msg){
+  setConta({t:r.t, u:r.u, nome:r.nome, email:r.email}, lembrar); S.sy = 0; GR = null; keep();
+  ["lSenha","cSenha","cSenha2","eSenha","eSenha2","eCod"].forEach(id => $(id).value = "");
+  toast(msg); await syncNow(false); G = null; render();
+}
+function initAuth(){
+  $("t_login").onclick = () => authPane("login"); $("t_cad").onclick = () => authPane("cad");
+  $("goCad").onclick = () => authPane("cad"); $("goLogin2").onclick = () => authPane("login");
+  $("goLogin3").onclick = () => authPane("login");
+  $("goEsq").onclick = () => { const v = $("lEmail").value.trim(); if (EMAIL_RE.test(v)) $("eEmail").value = v; $("esq2").hidden = true; $("reenv").hidden = true; $("bEsqT").textContent = "Enviar código"; $("esqLead").textContent = "Informe o e-mail da sua conta. Enviaremos um código de 6 dígitos."; authPane("esq"); };
+  document.querySelectorAll("#auth [data-eye]").forEach(b => b.onclick = () => { const i = b.parentNode.querySelector("input"); const show = i.type === "password"; i.type = show ? "text" : "password"; b.setAttribute("aria-label", show ? "Ocultar senha" : "Mostrar senha"); b.style.color = show ? "#041e42" : ""; });
+  document.querySelectorAll("#auth input").forEach(i => i.addEventListener("input", () => { const f = i.closest(".fld"); if (f){ f.classList.remove("err"); f.querySelector(".msg").textContent = ""; } }));
+  $("cSenha").addEventListener("input", e => { const n = forca(e.target.value); $("meter").dataset.n = n; $("mtxt").textContent = ["Use letras e números. Quanto mais longa, melhor.","Senha fraca","Senha razoável","Senha boa","Senha forte"][n]; });
+  $("p_login").onsubmit = async e => {
+    e.preventDefault(); clearErr(); $("a_login").className = "alert";
+    const u = $("lEmail").value.trim(), p = $("lSenha").value; let ok = true;
+    if (!u) ok = fErr("lEmail", "Informe seu e-mail ou usuário");
+    if (!p) ok = fErr("lSenha", "Informe sua senha");
+    if (!ok){ shake(); return; }
+    const r = await authCall($("bLogin"), {acao:"entrar", u, senha:p}, {email:"lEmail", senha:"lSenha"});
+    if (r.ok) aposEntrar(r, $("lLembrar").checked, "Bem-vindo de volta, " + (r.nome||"").split(" ")[0] + "!");
+    else if (!r.campo){ $("a_login").textContent = r.erro; $("a_login").className = "alert on bad"; }
+  };
+  $("p_cad").onsubmit = async e => {
+    e.preventDefault(); clearErr(); $("a_cad").className = "alert";
+    const n = $("cNome").value.trim(), m = $("cEmail").value.trim(), p = $("cSenha").value, p2 = $("cSenha2").value; let ok = true;
+    if (n.length < 3) ok = fErr("cNome", "Digite seu nome");
+    if (!EMAIL_RE.test(m)) ok = fErr("cEmail", "Digite um e-mail válido");
+    if (p.length < 6) ok = fErr("cSenha", "A senha precisa ter pelo menos 6 caracteres");
+    if (p2 !== p) ok = fErr("cSenha2", "As senhas não conferem");
+    if (!ok){ shake(); return; }
+    const r = await authCall($("bCad"), {acao:"criar", u:m, senha:p, nome:n}, {email:"cEmail", senha:"cSenha", nome:"cNome"});
+    if (r.ok) aposEntrar(r, true, "Conta criada! Bons estudos, " + n.split(" ")[0] + ".");
+    else if (!r.campo){ $("a_cad").textContent = r.erro; $("a_cad").className = "alert on bad"; }
+  };
+  let espera = 0, tmr = null;
+  const contagem = () => { clearInterval(tmr); espera = 60; const b = $("reenv"); b.hidden = false; b.disabled = true;
+    tmr = setInterval(() => { espera--; b.textContent = espera > 0 ? "Reenviar em " + espera + "s" : "Reenviar código"; if (espera <= 0){ clearInterval(tmr); b.disabled = false; } }, 1000); b.textContent = "Reenviar em 60s"; };
+  const enviar = async () => {
+    const m = $("eEmail").value.trim();
+    if (!EMAIL_RE.test(m)){ fErr("eEmail", "Digite o e-mail da sua conta"); shake(); return; }
+    const r = await authCall($("bEsq"), {acao:"recuperar", u:m}, {});
+    if (!r.ok){ $("a_esq").textContent = r.erro; $("a_esq").className = "alert on bad"; return; }
+    $("esq2").hidden = false; $("bEsqT").textContent = "Redefinir senha"; $("esqLead").textContent = "Se houver uma conta com esse e-mail, você vai receber o código em instantes. Confira também o spam.";
+    $("a_esq").textContent = "Código enviado para " + m + "."; $("a_esq").className = "alert on ok"; contagem(); $("eCod").focus();
+  };
+  $("reenv").onclick = enviar;
+  $("p_esq").onsubmit = async e => {
+    e.preventDefault(); clearErr();
+    if ($("esq2").hidden) return enviar();
+    const m = $("eEmail").value.trim(), c = $("eCod").value.trim(), p = $("eSenha").value, p2 = $("eSenha2").value; let ok = true;
+    if (!/^\d{6}$/.test(c)) ok = fErr("eCod", "Digite os 6 números do código");
+    if (p.length < 6) ok = fErr("eSenha", "A senha precisa ter pelo menos 6 caracteres");
+    if (p2 !== p) ok = fErr("eSenha2", "As senhas não conferem");
+    if (!ok){ shake(); return; }
+    const r = await authCall($("bEsq"), {acao:"redefinir", u:m, codigo:c, senha:p}, {codigo:"eCod", senha:"eSenha"});
+    if (r.ok){ clearInterval(tmr); aposEntrar(r, true, "Senha redefinida. Você já está conectado."); }
+    else if (!r.campo){ $("a_esq").textContent = r.erro; $("a_esq").className = "alert on bad"; }
+  };
+  $("acct").onclick = openConta; $("player").onclick = abrirConquistas;
+  authGate();
+}
+function closeDlgQuiet(){ $("dlg").classList.remove("open"); }
+function openConta(){
+  const c = syncCfg(); if (!c) return;
+  const sh = $("sheet");
+  sh.innerHTML = `<h2 style="margin:0">Minha conta</h2>
+    <div class="kv"><b>Status</b><span id="syncSt2">${esc(syncTxt())}</span><b>Login</b><span>${esc(c.u)}</span></div>
+    <label class="f">Nome<input type="text" id="pNome" value="${esc(c.nome||"")}" maxlength="60"></label>
+    <label class="f">E-mail para recuperar a senha<input type="email" id="pEmail" value="${esc(c.email||"")}" autocapitalize="none" spellcheck="false" placeholder="seuemail@exemplo.com"></label>
+    <div class="row"><button class="btn small" id="pSalvar">Salvar dados</button></div>
+    <details><summary class="muted">Trocar senha</summary>
+      <input type="password" id="pAtual" placeholder="Senha atual" autocomplete="current-password" aria-label="Senha atual">
+      <input type="password" id="pNova" placeholder="Nova senha (mínimo 6)" autocomplete="new-password" aria-label="Nova senha">
+      <button class="btn small ghost" id="pTroca" style="margin-top:8px">Trocar senha</button></details>
+    <div class="row"><button class="btn small danger" id="pSair">Sair da conta</button><button class="btn small ghost" id="pFechar">Fechar</button></div>
+    <div class="muted">Ao sair, o progresso continua salvo na conta e neste aparelho.</div>`;
+  $("dlg").classList.add("open");
+  $("pFechar").onclick = closeDlg; $("pSair").onclick = sair;
+  $("pSalvar").onclick = async () => {
+    try { const r = await api({acao:"perfil", t:c.t, nome:$("pNome").value, email:$("pEmail").value}); if (!r.ok){ toast(r.erro); return; } updConta({nome:r.nome, email:r.email}); toast("Dados salvos"); }
+    catch(e){ toast("Sem conexão. Tente de novo"); }
+  };
+  $("pTroca").onclick = async () => {
+    const a = $("pAtual").value, n = $("pNova").value; if (n.length < 6){ toast("A nova senha precisa ter pelo menos 6 caracteres"); return; }
+    try { const r = await api({acao:"trocar_senha", t:c.t, atual:a, nova:n}); if (!r.ok){ toast(r.erro); return; } $("pAtual").value = $("pNova").value = ""; toast("Senha alterada"); }
+    catch(e){ toast("Sem conexão. Tente de novo"); }
+  };
+}
+initAuth();
+
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 5, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 6, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
