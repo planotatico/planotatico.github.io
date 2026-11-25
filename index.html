@@ -77,7 +77,7 @@ nav.tabs svg{width:22px;height:22px}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:14px}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--surface);border-color:var(--accent)}
-input[type=search],input[type=date],input[type=number],input[type=url],input[type=text],input[type=password],textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:9px 10px}
+input[type=search],input[type=date],input[type=number],input[type=url],input[type=text],input[type=password],input[type=email],textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:9px 10px}
 details.mat{background:var(--surface);border:1px solid var(--line);border-radius:10px}
 details.mat>summary{list-style:none;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:600}
 details.mat>summary::-webkit-details-marker{display:none}
@@ -681,8 +681,9 @@ const PAT_PRF = [
 let PATENTES = PAT_MIL;
 const xpNivel = L => 45*L*(L-1);              // XP total para chegar ao nível L
 function nivelDe(xp){ let L = 1; while (xpNivel(L+1) <= xp) L++; return L; }
-function patente(L){ let i = 0; PATENTES.forEach((x,k) => { if (L >= x[0]) i = k; }); const p = PATENTES[i]; return {n:i, nome:p[1], sigla:p[2], tipo:p[3], prox: PATENTES[i+1] || null}; }
-function carreira(){ const k = cargoAtual(); if (k === "prf") return "prf"; const C = CONC[k]; if (C && C.car) return C.car; return (S.car === "bm") ? "bm" : "pm"; }
+function patente(L){ PATENTES = carreira() === "prf" ? PAT_PRF : PAT_MIL; let i = 0; PATENTES.forEach((x,k) => { if (L >= x[0]) i = k; }); const p = PATENTES[i]; return {n:i, nome:p[1], sigla:p[2], tipo:p[3], prox: PATENTES[i+1] || null}; }
+function carreiraPadrao(){ const k = cargoAtual(); if (k === "prf") return "prf"; const C = CONC[k]; return (C && C.car) || "pm"; }
+function carreira(){ return ["pm","bm","prf"].includes(S.car) ? S.car : carreiraPadrao(); }
 function estrela(x, y, r, pontas, cor, rot){
   let d = ""; const n = pontas*2, ri = pontas === 4 ? r*.38 : r*.42;
   for (let i=0;i<n;i++){ const a = Math.PI/pontas*i - Math.PI/2 + (rot||0), rr = i%2 ? ri : r; d += (i?"L":"M")+(x+Math.cos(a)*rr).toFixed(2)+" "+(y+Math.sin(a)*rr).toFixed(2); }
@@ -889,7 +890,7 @@ function abrirConquistas(){
   const novo = id => S.ach && S.ach[id] === today();
   const sh = $("sheet");
   sh.innerHTML = `<div class="lvhead"><span class="ins" role="button" aria-label="Ver insígnia em 3D">${insig(g.L)}</span><div style="flex:1"><b>${esc(g.pat.nome)}</b><div class="muted">Nível ${g.L} · ${g.xp} XP no total · faltam ${fim-g.xp} XP para o nível ${g.L+1}</div><div class="bar2" style="margin-top:6px"><i style="width:${((g.xp-ini)/(fim-ini)*100).toFixed(1)}%"></i></div></div></div>
-    <div class="ladder">${PATENTES.map(p => `<div class="${g.L >= p[0] ? (patente(g.L).nome===p[1]?"cur":"") : "lock"}"><span class="ins">${insig(p[0])}</span>${esc(p[1])}<br><span class="muted">nív. ${p[0]}</span></div>`).join("")}</div>
+    <div class="ladder">${(carreira() === "prf" ? PAT_PRF : PAT_MIL).map(p => `<div class="${g.L >= p[0] ? (patente(g.L).nome===p[1]?"cur":"") : "lock"}"><span class="ins">${insig(p[0])}</span>${esc(p[1])}<br><span class="muted">nív. ${p[0]}</span></div>`).join("")}</div>
     <div class="muted">${carreira()==="prf" ? "Carreira de Policial Rodoviário Federal: classes e padrões da Lei 9.654/1998 (os símbolos são do app; a PRF não usa insígnia de patente)." : (carreira()==="bm" ? "Carreira de Bombeiro Militar" : "Carreira de Polícia Militar") + ": escala do Estatuto da PMDF; insígnias conforme o Regulamento de Uniformes da PMDF."} ${patente(g.L).prox ? "Próxima promoção: <b>" + esc(patente(g.L).prox[1]) + "</b> no nível " + patente(g.L).prox[0] + "." : "Você chegou ao topo da carreira."}</div>
     <h2 style="margin:4px 0 0">Sequência: ${g.streak} dia${g.streak===1?"":"s"}</h2>
     <div class="muted">Dias com 30 min ou mais de estudo líquido. Sábado e domingo não quebram a sequência. Recorde: ${g.melhor}.</div>
@@ -1087,7 +1088,7 @@ function qzRender(){
     e.preventDefault(); if (!ok) return;
     if (!last){ QZ.step++; qzRender(); return; }
     const nivel = qzNivel(d.q), pf = {cargo:d.cargo, motivo:d.motivo.trim(), ident:d.ident, prova:d.prova, semEdital:d.semEdital, leu:d.leu, horas:d.horas, dias:d.dias.sort(), q:d.q, dom:d.dom, nivel, feito:today()};
-    pf.bl = montaBlocos(pf); S.perfil = pf; QZ = null; aplicaConcurso(); aplicaMetas(); save();
+    pf.bl = montaBlocos(pf); S.perfil = pf; delete S.car; QZ = null; aplicaConcurso(); aplicaMetas(); save();
     $("quiz").classList.remove("on"); QZ = null; tab = "hoje"; G = null; render();
     toast("Plano montado: nível " + NIVEIS[nivel].nome + ". Comece pelo Bloco I.");
   };
@@ -1553,7 +1554,7 @@ function openConta(){
     <div class="kv"><b>Status</b><span id="syncSt2">${esc(syncTxt())}</span><b>Login</b><span>${esc(c.u)}</span></div>
     <label class="f">Nome<input type="text" id="pNome" value="${esc(c.nome||"")}" maxlength="60"></label>
     <label class="f">E-mail para recuperar a senha<input type="email" id="pEmail" value="${esc(c.email||"")}" autocapitalize="none" spellcheck="false" placeholder="seuemail@exemplo.com"></label>
-    ${CONC[cargoAtual()].car || cargoAtual()==="prf" ? "" : `<label class="f">Carreira (patentes e insígnias)<select id="pCar" style="height:44px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 10px"><option value="pm"${carreira()==="pm"?" selected":""}>Polícia Militar</option><option value="bm"${carreira()==="bm"?" selected":""}>Bombeiro Militar</option></select></label>`}
+    <label class="f">Carreira (patentes e insígnias)<select id="pCar" style="height:44px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 10px">${[["pm","Polícia Militar"],["bm","Bombeiro Militar"],["prf","Policial Rodoviário Federal"]].map(([v,l]) => `<option value="${v}"${carreira()===v?" selected":""}>${l}${carreiraPadrao()===v?" (padrão do seu cargo)":""}</option>`).join("")}</select></label>
     <div class="row"><button class="btn small" id="pSalvar">Salvar dados</button></div>
     <details><summary class="muted">Trocar senha</summary>
       <input type="password" id="pAtual" placeholder="Senha atual" autocomplete="current-password" aria-label="Senha atual">
@@ -1564,7 +1565,7 @@ function openConta(){
     <div class="muted">Ao sair, o progresso continua salvo na conta e neste aparelho.</div>`;
   $("dlg").classList.add("open");
   $("pFechar").onclick = closeDlg; $("pSair").onclick = sair; $("pDiag").onclick = () => { closeDlgQuiet(); abrirDiagnostico(); };
-  if ($("pCar")) $("pCar").onchange = e => { S.car = e.target.value; save(); render(); toast(S.car === "bm" ? "Carreira: Bombeiro Militar" : "Carreira: Polícia Militar"); };
+  if ($("pCar")) $("pCar").onchange = e => { S.car = e.target.value; G = null; save(); render(); toast("Carreira: " + {pm:"Polícia Militar", bm:"Bombeiro Militar", prf:"Policial Rodoviário Federal"}[S.car]); };
   $("pSalvar").onclick = async () => {
     try { const r = await api({acao:"perfil", t:c.t, nome:$("pNome").value, email:$("pEmail").value}); if (!r.ok){ toast(r.erro); return; } updConta({nome:r.nome, email:r.email}); toast("Dados salvos"); }
     catch(e){ toast("Sem conexão. Tente de novo"); }
@@ -1580,7 +1581,7 @@ if (syncCfg() && !S.perfil) setTimeout(abrirDiagnostico, 300);
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 10, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 11, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
