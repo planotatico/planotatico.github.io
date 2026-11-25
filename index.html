@@ -352,17 +352,17 @@ nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
 <div class="toast" id="toast" role="status"></div>
 
 <script>"use strict";
-const MAT = {
+let MAT = {
   PORT:"Língua Portuguesa (Pablo Jamilk)", CONST:"Direito Constitucional", ADM:"Direito Administrativo", PEN:"Direito Penal",
   PP:"Direito Processual Penal", LPE:"Legislação Penal Especial e Extravagante",
   DPM:"Direito Penal Militar", DPPM:"Direito Processual Penal Militar", GO:"Realidade de Goiás"
 };
-const SHORT = {PORT:"Português",CONST:"Constitucional",ADM:"Administrativo",PEN:"Penal",PP:"Processo Penal",LPE:"Leg. Penal Especial",DPM:"Penal Militar",DPPM:"Proc. Penal Militar",GO:"Realidade de Goiás"};
+const SHORT = {PORT:"Português",CONST:"Constitucional",ADM:"Administrativo",PEN:"Penal",PP:"Processo Penal",LPE:"Leg. Penal Especial",DPM:"Penal Militar",DPPM:"Proc. Penal Militar",GO:"Realidade de Goiás",RLM:"Raciocínio Lógico",INFO:"Informática",FIS:"Física",ETI:"Ética e Cidadania",GEO:"Geopolítica",LE:"Língua Estrangeira",TRAN:"Leg. de Trânsito",LEG:"Legislação Especial",DH:"Direitos Humanos"};
 const EC = "https://www.estrategiaconcursos.com.br/app/dashboard/cursos/";
 const CURSO = {PORT:"222191",GO:"222192",ADM:"222215",CONST:"222204",PEN:"222200",DPM:"222216",PP:"222201",DPPM:"222217",LPE:"222199",LEP:"222223"};
 const PASSO = {PORT:"222255",ADM:"222274",CONST:"222275",PEN:"222276",DPM:"222278",PP:"222273",DPPM:"222272",LPE:"222277"};
 // [id, matéria, aula, título, bloco, itens do edital, observação, curso (se diferente)]
-const T = [
+let T = [
 ["PJ 01", "PORT", "Unidade 01", "Introdução e morfologia: classes de palavras, grupos de palavras, artigo", "I", "PORT 09"],
 ["PJ 02", "PORT", "Unidade 02", "Adjetivo: classificação, flexão, grau e posição", "I", "PORT 09"],
 ["PJ 03", "PORT", "Unidade 03", "Advérbio e categorias adverbiais (+ atividades)", "I", "PORT 09"],
@@ -503,6 +503,11 @@ const T = [
 ["LPE 23","LPE","Aula 23","Estatuto dos Policiais Militares de Goiás, parte 2","III","LE 15"],
 ["LPE 24","LPE","Aula 24","Estatuto dos Policiais Militares de Goiás, parte 3","III","LE 15"]
 ];
+const T_CFO = T, MAT_CFO = MAT;
+const T_PRF = [["PRF-PORT-01", "PORT", "Unid. 01", "Compreensão e interpretação de textos de gêneros variados", "I", "LP 1", "", ""], ["PRF-PORT-02", "PORT", "Unid. 02", "Tipos e gêneros textuais", "I", "LP 2", "", ""], ["PRF-PORT-03", "PORT", "Unid. 03", "Ortografia oficial e acentuação gráfica", "I", "LP 3", "", ""], ["PRF-PORT-04", "PORT", "Unid. 04", "Coesão textual: referenciação, substituição e repetição", "I", "LP 4", "", ""], ["PRF-PORT-05", "PORT", "Unid. 05", "Conectores e sequenciação textual", "I", "LP 4", "", ""], ["PRF-PORT-06", "PORT", "Unid. 06", "Classes de palavras e emprego de tempos e modos verbais", "I", "LP 5", "", ""], ["PRF-PORT-07", "PORT", "Unid. 07", "Coordenação e subordinação: relações entre orações e termos", "I", "LP 5", "", ""], ["PRF-PORT-08", "PORT", "Unid. 08", "Pontuação", "I", "LP 5", "", ""], ["PRF-PORT-09", "PORT", "Unid. 09", "Concordância verbal e nominal", "I", "LP 5", "", ""], ["PRF-PORT-10", "PORT", "Unid. 10", "Regência, crase e colocação pronominal", "I", "LP 5", "", ""], ["PRF-PORT-11", "PORT", "Unid. 11", "Reescrita de frases e parágrafos", "I", "LP 6", "", ""], ["PRF-PORT-12", "PORT", "Unid. 12", "Correspondência oficial: Manual de Redação da Presidência", "I", "LP 7", "", ""], ["PRF-RLM-01", "RLM", "Unid. 01", "Equações e sistemas de 1º e 2º graus: modelagem de problemas", "I", "RLM 1", "", ""], ["PRF-RLM-02", "RLM", "Unid. 02", "Razões, proporções, regra de três e porcentagem", "I", "RLM 2", "", ""], ["PRF-RLM-03", "RLM", "Unid. 03", "Sequências numéricas, PA e PG", "I", "RLM 3", "", ""], ["PRF-RLM-04", "RLM", "Unid. 04", "Funções e gráficos", "I", "RLM 4", "", ""], ["PRF-RLM-05", "RLM", "Unid. 05", "Leitura e análise de dados em tabelas e gráficos", "I", "RLM 5", "", ""], ["PRF-RLM-06", "RLM", "Unid. 06", "Conjuntos e problemas de contagem", "I", "RLM 6", "", ""], ["PRF-RLM-07", "RLM", "Unid. 07", "Geometria plana e espacial: medidas, áreas e volumes", "I", "RLM 7", "", ""], ["PRF-RLM-08", "RLM", "Unid. 08", "Noções de probabilidade e estatística descritiva", "I", "RLM 8", "", ""], ["PRF-INFO-01", "INFO", "Unid. 01", "Internet e intranet: conceitos, ferramentas e navegação", "I", "INF 1", "", ""], ["PRF-INFO-02", "INFO", "Unid. 02", "Correio eletrônico, grupos, busca e redes sociais", "I", "INF 2", "", ""], ["PRF-INFO-03", "INFO", "Unid. 03", "Sistemas operacionais e organização de arquivos", "I", "INF 3", "", ""], ["PRF-INFO-04", "INFO", "Unid. 04", "Redes de computadores, acesso remoto e transferência de arquivos", "I", "INF 4", "", ""], ["PRF-INFO-05", "INFO", "Unid. 05", "Tecnologias emergentes: IoT, big data e inteligência artificial", "I", "INF 5", "", ""], ["PRF-INFO-06", "INFO", "Unid. 06", "Segurança da informação: malwares, golpes e ataques", "I", "INF 6", "", ""], ["PRF-INFO-07", "INFO", "Unid. 07", "Ferramentas de proteção: antivírus, firewall e backup", "I", "INF 6", "", ""], ["PRF-INFO-08", "INFO", "Unid. 08", "Computação em nuvem", "I", "INF 7", "", ""], ["PRF-FIS-01", "FIS", "Unid. 01", "Cinemática escalar: MRU e MRUV", "I", "FIS 1", "", ""], ["PRF-FIS-02", "FIS", "Unid. 02", "Cinemática vetorial, queda livre e lançamentos", "I", "FIS 1", "", ""], ["PRF-FIS-03", "FIS", "Unid. 03", "Leis de Newton e aplicações (atrito, plano inclinado)", "I", "FIS 2", "", ""], ["PRF-FIS-04", "FIS", "Unid. 04", "Trabalho, potência e energia", "I", "FIS 3", "", ""], ["PRF-FIS-05", "FIS", "Unid. 05", "Conservação da energia mecânica", "I", "FIS 3", "", ""], ["PRF-FIS-06", "FIS", "Unid. 06", "Impulso, quantidade de movimento e colisões", "I", "FIS 4", "", ""], ["PRF-ETI-01", "ETI", "Unid. 01", "Ética e moral; ética, princípios e valores", "I", "ET 1", "", ""], ["PRF-ETI-02", "ETI", "Unid. 02", "Ética e função pública: Código de Ética do Servidor (Decreto 1.171/1994)", "I", "ET 2", "", ""], ["PRF-ETI-03", "ETI", "Unid. 03", "Sistema de Gestão da Ética (Decreto 6.029/2007) e governança pública", "I", "ET 3", "", ""], ["PRF-ETI-04", "ETI", "Unid. 04", "Lei de Acesso à Informação (Lei 12.527/2011)", "I", "ET 4", "", ""], ["PRF-ETI-05", "ETI", "Unid. 05", "Conflito de interesses (Lei 12.813/2013)", "I", "ET 5", "", ""], ["PRF-GEO-01", "GEO", "Unid. 01", "Organização do Estado brasileiro e do território", "I", "GEO 1", "", ""], ["PRF-GEO-02", "GEO", "Unid. 02", "Divisão regional e dinâmica econômica", "I", "GEO 2", "", ""], ["PRF-GEO-03", "GEO", "Unid. 03", "Estrutura urbana e redes urbanas", "I", "GEO 3", "", ""], ["PRF-GEO-04", "GEO", "Unid. 04", "População, migrações e trabalho", "I", "GEO 4", "", ""], ["PRF-GEO-05", "GEO", "Unid. 05", "Redes de transporte e logística (ênfase rodoviária)", "I", "GEO 5", "", ""], ["PRF-GEO-06", "GEO", "Unid. 06", "Meio ambiente: políticas e gestão ambiental", "I", "GEO 6", "", ""], ["PRF-LE-01", "LE", "Unid. 01", "Compreensão de textos em língua estrangeira", "I", "LE 1", "", ""], ["PRF-LE-02", "LE", "Unid. 02", "Itens gramaticais para compreensão do texto", "I", "LE 2", "", ""], ["PRF-TRAN-01", "TRAN", "Unid. 01", "CTB: disposições preliminares e Sistema Nacional de Trânsito (arts. 1º a 25)", "II", "CTB", "", ""], ["PRF-TRAN-02", "TRAN", "Unid. 02", "Normas gerais de circulação e conduta, parte I (arts. 26 a 45)", "II", "CTB", "", ""], ["PRF-TRAN-03", "TRAN", "Unid. 03", "Normas gerais de circulação e conduta, parte II (arts. 46 a 67)", "II", "CTB", "", ""], ["PRF-TRAN-04", "TRAN", "Unid. 04", "Pedestres, condutores não motorizados, cidadania e educação para o trânsito (arts. 68 a 79)", "II", "CTB", "", ""], ["PRF-TRAN-05", "TRAN", "Unid. 05", "Sinalização de trânsito (arts. 80 a 90 e Anexo II)", "II", "CTB", "", ""], ["PRF-TRAN-06", "TRAN", "Unid. 06", "Engenharia, operação, fiscalização e policiamento ostensivo (arts. 91 a 95)", "II", "CTB", "", ""], ["PRF-TRAN-07", "TRAN", "Unid. 07", "Veículos: classificação, segurança e identificação (arts. 96 a 117)", "II", "CTB", "", ""], ["PRF-TRAN-08", "TRAN", "Unid. 08", "Registro e licenciamento de veículos (arts. 120 a 135)", "II", "CTB", "", ""], ["PRF-TRAN-09", "TRAN", "Unid. 09", "Condução de escolares, motofrete e veículos de aluguel (arts. 136 a 139-B)", "II", "CTB", "", ""], ["PRF-TRAN-10", "TRAN", "Unid. 10", "Habilitação (arts. 140 a 160)", "II", "CTB", "", ""], ["PRF-TRAN-11", "TRAN", "Unid. 11", "Infrações, parte I (arts. 161 a 190)", "II", "CTB", "", ""], ["PRF-TRAN-12", "TRAN", "Unid. 12", "Infrações, parte II (arts. 191 a 220)", "II", "CTB", "", ""], ["PRF-TRAN-13", "TRAN", "Unid. 13", "Infrações, parte III (arts. 221 a 255)", "II", "CTB", "", ""], ["PRF-TRAN-14", "TRAN", "Unid. 14", "Penalidades (arts. 256 a 268)", "II", "CTB", "", ""], ["PRF-TRAN-15", "TRAN", "Unid. 15", "Medidas administrativas (arts. 269 a 279)", "II", "CTB", "", ""], ["PRF-TRAN-16", "TRAN", "Unid. 16", "Processo administrativo (arts. 280 a 290)", "II", "CTB", "", ""], ["PRF-TRAN-17", "TRAN", "Unid. 17", "Crimes de trânsito (arts. 291 a 312-B)", "II", "CTB", "", ""], ["PRF-TRAN-18", "TRAN", "Unid. 18", "Anexo I: conceitos e definições", "II", "CTB", "", ""], ["PRF-TRAN-19", "TRAN", "Unid. 19", "Resoluções do CONTRAN, parte I: equipamentos obrigatórios e segurança", "II", "CONTRAN", "", ""], ["PRF-TRAN-20", "TRAN", "Unid. 20", "Resoluções do CONTRAN, parte II: fiscalização, álcool e documentos", "II", "CONTRAN", "", ""], ["PRF-TRAN-21", "TRAN", "Unid. 21", "Resoluções do CONTRAN, parte III: cargas, dimensões e veículos especiais", "II", "CONTRAN", "", ""], ["PRF-TRAN-22", "TRAN", "Unid. 22", "Acidentes de trânsito: conceitos e classificações", "II", "Leg. compl.", "", ""], ["PRF-ADM-01", "ADM", "Unid. 01", "Organização administrativa: centralização, descentralização, concentração e desconcentração", "III", "DA 1", "", ""], ["PRF-ADM-02", "ADM", "Unid. 02", "Administração direta e indireta: autarquias, fundações, empresas estatais", "III", "DA 1", "", ""], ["PRF-ADM-03", "ADM", "Unid. 03", "Ato administrativo: conceito, requisitos, atributos e classificação", "III", "DA 2", "", ""], ["PRF-ADM-04", "ADM", "Unid. 04", "Ato administrativo: espécies, extinção, anulação e revogação", "III", "DA 2", "", ""], ["PRF-ADM-05", "ADM", "Unid. 05", "Agentes públicos e Lei 8.112/1990: provimento, vacância, direitos e vantagens", "III", "DA 3", "", ""], ["PRF-ADM-06", "ADM", "Unid. 06", "Lei 8.112/1990: regime disciplinar e processo administrativo disciplinar", "III", "DA 3", "", ""], ["PRF-ADM-07", "ADM", "Unid. 07", "Carreira de Policial Rodoviário Federal (Lei 9.654/1998 e legislação correlata)", "III", "DA 3", "", ""], ["PRF-ADM-08", "ADM", "Unid. 08", "Poderes administrativos: hierárquico, disciplinar, regulamentar e de polícia", "III", "DA 4", "", ""], ["PRF-ADM-09", "ADM", "Unid. 09", "Licitações e contratos (Lei 14.133/2021)", "III", "DA 5", "", ""], ["PRF-ADM-10", "ADM", "Unid. 10", "Controle e responsabilização da Administração; improbidade administrativa", "III", "DA 6", "", ""], ["PRF-ADM-11", "ADM", "Unid. 11", "Responsabilidade civil do Estado", "III", "DA 7", "", ""], ["PRF-CONST-01", "CONST", "Unid. 01", "Poder constituinte e aplicabilidade das normas constitucionais", "III", "DC 1", "", ""], ["PRF-CONST-02", "CONST", "Unid. 02", "Direitos e garantias fundamentais: direitos e deveres individuais e coletivos (art. 5º)", "III", "DC 2", "", ""], ["PRF-CONST-03", "CONST", "Unid. 03", "Remédios constitucionais", "III", "DC 2", "", ""], ["PRF-CONST-04", "CONST", "Unid. 04", "Direitos sociais, nacionalidade e direitos políticos", "III", "DC 2", "", ""], ["PRF-CONST-05", "CONST", "Unid. 05", "Organização do Estado e administração pública (arts. 37 a 41)", "III", "DC 3", "", ""], ["PRF-CONST-06", "CONST", "Unid. 06", "Poder Executivo", "III", "DC 4", "", ""], ["PRF-CONST-07", "CONST", "Unid. 07", "Defesa do Estado e segurança pública (art. 144); atribuições da PRF", "III", "DC 5", "", ""], ["PRF-PEN-01", "PEN", "Unid. 01", "Princípios do Direito Penal", "III", "DP 1", "", ""], ["PRF-PEN-02", "PEN", "Unid. 02", "Aplicação da lei penal no tempo e no espaço", "III", "DP 2", "", ""], ["PRF-PEN-03", "PEN", "Unid. 03", "Fato típico: conduta, resultado, nexo e tipicidade; crime doloso e culposo", "III", "DP 3", "", ""], ["PRF-PEN-04", "PEN", "Unid. 04", "Tentativa, desistência, arrependimento e crime impossível", "III", "DP 3", "", ""], ["PRF-PEN-05", "PEN", "Unid. 05", "Ilicitude e excludentes", "III", "DP 4", "", ""], ["PRF-PEN-06", "PEN", "Unid. 06", "Culpabilidade e imputabilidade", "III", "DP 4", "", ""], ["PRF-PEN-07", "PEN", "Unid. 07", "Concurso de pessoas", "III", "DP 5", "", ""], ["PRF-PEN-08", "PEN", "Unid. 08", "Crimes contra a pessoa", "III", "DP 6", "", ""], ["PRF-PEN-09", "PEN", "Unid. 09", "Crimes contra o patrimônio", "III", "DP 6", "", ""], ["PRF-PEN-10", "PEN", "Unid. 10", "Crimes contra a incolumidade e a fé pública", "III", "DP 6", "", ""], ["PRF-PEN-11", "PEN", "Unid. 11", "Crimes contra a Administração Pública", "III", "DP 6", "", ""], ["PRF-PP-01", "PP", "Unid. 01", "Aplicação da lei processual penal e inquérito policial", "III", "DPP 1", "", ""], ["PRF-PP-02", "PP", "Unid. 02", "Ação penal", "III", "DPP 2", "", ""], ["PRF-PP-03", "PP", "Unid. 03", "Termo circunstanciado de ocorrência e Lei 9.099/1995", "III", "DPP 3", "", ""], ["PRF-PP-04", "PP", "Unid. 04", "Provas", "III", "DPP 4", "", ""], ["PRF-PP-05", "PP", "Unid. 05", "Busca e apreensão", "III", "DPP 5", "", ""], ["PRF-PP-06", "PP", "Unid. 06", "Prisão em flagrante, preventiva e temporária; audiência de custódia", "III", "DPP 6", "", ""], ["PRF-LEG-01", "LEG", "Unid. 01", "Estatuto da Criança e do Adolescente: disposições e crimes", "III", "LE", "", ""], ["PRF-LEG-02", "LEG", "Unid. 02", "Crimes hediondos (Lei 8.072/1990)", "III", "LE", "", ""], ["PRF-LEG-03", "LEG", "Unid. 03", "Crimes de tortura (Lei 9.455/1997)", "III", "LE", "", ""], ["PRF-LEG-04", "LEG", "Unid. 04", "Crimes ambientais (Lei 9.605/1998)", "III", "LE", "", ""], ["PRF-LEG-05", "LEG", "Unid. 05", "Estatuto do Desarmamento (Lei 10.826/2003)", "III", "LE", "", ""], ["PRF-LEG-06", "LEG", "Unid. 06", "Lei de Drogas (Lei 11.343/2006)", "III", "LE", "", ""], ["PRF-LEG-07", "LEG", "Unid. 07", "Organizações criminosas (Lei 12.850/2013)", "III", "LE", "", ""], ["PRF-LEG-08", "LEG", "Unid. 08", "Abuso de autoridade (Lei 13.869/2019)", "III", "LE", "", ""], ["PRF-LEG-09", "LEG", "Unid. 09", "Violência doméstica (Lei 11.340/2006) e crimes de racismo (Lei 7.716/1989)", "III", "LE", "", ""], ["PRF-LEG-10", "LEG", "Unid. 10", "Interceptação telefônica (Lei 9.296/1996) e identificação criminal", "III", "LE", "", ""], ["PRF-DH-01", "DH", "Unid. 01", "Direitos humanos na Constituição Federal", "III", "DH 1", "", ""], ["PRF-DH-02", "DH", "Unid. 02", "Declaração Universal dos Direitos Humanos", "III", "DH 2", "", ""], ["PRF-DH-03", "DH", "Unid. 03", "Convenção Americana sobre Direitos Humanos (Pacto de São José)", "III", "DH 3", "", ""]];
+const MAT_PRF = {"PORT": "Língua Portuguesa", "RLM": "Raciocínio Lógico-Matemático", "INFO": "Informática", "FIS": "Física", "ETI": "Ética e Cidadania", "GEO": "Geopolítica", "LE": "Língua Estrangeira", "TRAN": "Legislação de Trânsito", "ADM": "Direito Administrativo", "CONST": "Direito Constitucional", "PEN": "Direito Penal", "PP": "Direito Processual Penal", "LEG": "Legislação Especial", "DH": "Direitos Humanos"};
+const PESO_PRF = {"TRAN": 10, "PORT": 5, "RLM": 4, "INFO": 4, "FIS": 3, "ADM": 3, "CONST": 3, "PEN": 3, "PP": 3, "LEG": 3, "ETI": 2, "GEO": 2, "DH": 2, "LE": 2};
+
 const WEEKS = [
 ["S1","2026-11-23","23/11 a 27/11","Preparação + Bloco I","Seg e ter: conferir o edital, marcar as aulas que você não domina, criar a pasta de cadernos no Sistema de Questões. Qua a sex: primeiras aulas do Bloco I (sem revisões ainda: 4h de conteúdo).","Dias 1, 2, 3 e 6"],
 ["S2","2026-11-30","30/11 a 04/12","Bloco I","Aulas novas + revisões de 48h (cadernos de questões).","Dias 5 e 7: só o Bloco I e cronometrar as revisões"],
@@ -537,7 +542,8 @@ let S = {t:{}, w:{}};
 let mem = true;
 try { const raw = localStorage.getItem(KEY); if (raw) S = JSON.parse(raw); localStorage.setItem(KEY+".probe","1"); mem = false; } catch(e){ mem = true; }
 S.t = S.t || {}; S.w = S.w || {}; S.tm = S.tm || {run:null, days:{}};
-setTimeout(() => aplicaMetas(), 0);
+if (S.perfil && S.perfil.cargo === "cfo-pmgo") S.perfil.cargo = "cfo";
+setTimeout(() => { aplicaConcurso(); aplicaMetas(); render(); }, 0);
 function keep(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 function save(){ S.u = Date.now(); keep(); syncSoon(); }
 
@@ -566,7 +572,7 @@ function mergeFirst(local, remote){
   return m;
 }
 function adopt(r){
-  const cur = JSON.stringify(S); S = norm(r); S.sy = 1; keep(); aplicaMetas();
+  const cur = JSON.stringify(S); S = norm(r); S.sy = 1; keep(); aplicaConcurso(); aplicaMetas();
   if (JSON.stringify(S) !== cur) { const dl = document.getElementById("dlg"); if (!dl || !dl.classList.contains("open")) render(); }
 }
 async function syncNow(pushOnly){
@@ -655,17 +661,25 @@ const XP_AULA = 50, XP_REV = {d48:20, d7:25, d30:35}, XP_HORA = 20, XP_META = 40
 // Escala hierárquica do Estatuto da PMDF (Lei 7.289/1984) e insígnias do Regulamento de Uniformes da PMDF (Decreto 42.923/2022).
 // Bombeiro: mesma escala; estrelas do Regulamento de Uniformes do CBMDF (simples de 4 pontas, composta de 8 pontas).
 // [nível mínimo, nome, sigla, desenho]
-const PATENTES = [
+const PAT_MIL = [
   [1,"Soldado de 2ª Classe","SD 2ª CL","rec"],[2,"Soldado","SD","d1"],[3,"Cabo","CB","d2"],
   [4,"3º Sargento","3º SGT","d3"],[5,"2º Sargento","2º SGT","d4"],[6,"1º Sargento","1º SGT","d5"],[7,"Subtenente","ST","tri"],
   [8,"Cadete CFO I","CAD I","b1"],[10,"Cadete CFO II","CAD II","b2"],[12,"Cadete CFO III","CAD III","b3"],[14,"Aspirante a Oficial","ASP","asp"],
   [16,"2º Tenente","2º TEN","s1"],[18,"1º Tenente","1º TEN","s2"],[20,"Capitão","CAP","s3"],
   [22,"Major","MAJ","c1s2"],[24,"Tenente-Coronel","TC","c2s1"],[26,"Coronel","CEL","c3"]
 ];
+// PRF: carreira por classes e padrões (Lei 9.654/1998). A PRF não usa insígnias de patente: os símbolos são do app.
+const PAT_PRF = [
+  [1,"3ª Classe · Padrão I","3ª CL I","p3-1"],[2,"3ª Classe · Padrão II","3ª CL II","p3-2"],[3,"3ª Classe · Padrão III","3ª CL III","p3-3"],
+  [4,"2ª Classe · Padrão I","2ª CL I","p2-1"],[5,"2ª Classe · Padrão II","2ª CL II","p2-2"],[6,"2ª Classe · Padrão III","2ª CL III","p2-3"],[7,"2ª Classe · Padrão IV","2ª CL IV","p2-4"],[8,"2ª Classe · Padrão V","2ª CL V","p2-5"],[9,"2ª Classe · Padrão VI","2ª CL VI","p2-6"],
+  [10,"1ª Classe · Padrão I","1ª CL I","p1-1"],[12,"1ª Classe · Padrão II","1ª CL II","p1-2"],[14,"1ª Classe · Padrão III","1ª CL III","p1-3"],[16,"1ª Classe · Padrão IV","1ª CL IV","p1-4"],[18,"1ª Classe · Padrão V","1ª CL V","p1-5"],[20,"1ª Classe · Padrão VI","1ª CL VI","p1-6"],
+  [22,"Classe Especial · Padrão I","ESP I","pe-1"],[24,"Classe Especial · Padrão II","ESP II","pe-2"],[26,"Classe Especial · Padrão III","ESP III","pe-3"]
+];
+let PATENTES = PAT_MIL;
 const xpNivel = L => 45*L*(L-1);              // XP total para chegar ao nível L
 function nivelDe(xp){ let L = 1; while (xpNivel(L+1) <= xp) L++; return L; }
 function patente(L){ let i = 0; PATENTES.forEach((x,k) => { if (L >= x[0]) i = k; }); const p = PATENTES[i]; return {n:i, nome:p[1], sigla:p[2], tipo:p[3], prox: PATENTES[i+1] || null}; }
-function carreira(){ return (S.car === "bm") ? "bm" : "pm"; }
+function carreira(){ return cargoAtual() === "prf" ? "prf" : (S.car === "bm") ? "bm" : "pm"; }
 function estrela(x, y, r, pontas, cor, rot){
   let d = ""; const n = pontas*2, ri = pontas === 4 ? r*.38 : r*.42;
   for (let i=0;i<n;i++){ const a = Math.PI/pontas*i - Math.PI/2 + (rot||0), rr = i%2 ? ri : r; d += (i?"L":"M")+(x+Math.cos(a)*rr).toFixed(2)+" "+(y+Math.sin(a)*rr).toFixed(2); }
@@ -676,7 +690,7 @@ function insig(L, cls, car){
   car = car || carreira();
   const P = patente(L), t = P.tipo, id = "i" + (++INS_N);
   const OURO = `url(#${id}o)`, OURO2 = "#c9a227", PRATA = `url(#${id}p)`, fx = `filter="url(#${id}s)"`;
-  const f1 = car === "bm" ? "#9b1c20" : "#0b3470", f2 = car === "bm" ? "#3d0507" : "#020f26";
+  const f1 = car === "bm" ? "#9b1c20" : car === "prf" ? "#123f8c" : "#0b3470", f2 = car === "bm" ? "#3d0507" : car === "prf" ? "#061a3d" : "#020f26";
   // mesmas insígnias da PM para as duas carreiras; Bombeiro muda só a cor do fundo
   const simples = (x,y,r) => estrela(x,y,r,5,PRATA);
   const composta = (x,y,r) => estrela(x,y,r,5,OURO) + estrela(x,y,r*.78,5,"#fff3b0",Math.PI/5).replace('fill="#fff3b0"','fill="#fff3b0" opacity=".55"');
@@ -687,6 +701,13 @@ function insig(L, cls, car){
     const n = +t[1], top = n <= 3 ? n : 3, low = n - top, h = top*6 + (low ? 4 + low*6 : 0), y0 = 26 - h/2;
     for (let i=0;i<top;i++) g += div(y0 + i*6);
     for (let i=0;i<low;i++) g += div(y0 + top*6 + 4 + i*6);
+  }
+  else if (/^p/.test(t)){
+    const [cl, pd] = t.slice(1).split("-"), n = +pd;
+    if (cl === "e"){ g = `<path d="M13 33c2.5 5 6.5 7 11 7s8.5-2 11-7" fill="none" stroke="${OURO}" stroke-width="2.2"/>` + estrela(24,22,9,5,OURO); }
+    else { const k = 4 - +cl; for (let i=0;i<k;i++) g += `<rect x="13" y="${24 - k*4 + i*7}" width="22" height="4.6" rx="1" fill="${OURO}"/>`; }
+    const tot = cl === "e" || cl === "3" ? 3 : 6, y = 41, w = 4.2;
+    for (let i=0;i<tot;i++){ const x = 24 - (tot-1)*w/2 + i*w; g += `<circle cx="${x.toFixed(1)}" cy="${y}" r="1.35" fill="${i < n ? "#ffffff" : "none"}" stroke="#ffffff" stroke-opacity=".7" stroke-width=".6"/>`; }
   }
   else if (t === "tri") g = `<path d="M24 15L35 34H13Z" fill="none" stroke="${OURO}" stroke-width="3" stroke-linejoin="miter"/>`;
   else if (/^b\d$/.test(t)){ const n = +t[1]; for (let i=0;i<n;i++) g += `<rect x="14" y="${26 - n*4 + i*8}" width="20" height="4.4" rx=".8" fill="${OURO}"/>`; }
@@ -709,11 +730,11 @@ function jogo(t, days, extra){
   // t: mapa de aulas {f,d48,d7,d30,pct}; days: segundos líquidos por dia
   t = t || {}; days = days || {};
   let aulas = 0, revs = 0, ciclos = 0, p90 = 0, xp = 0; const porMat = {}, porBl = {I:[0,0],II:[0,0],III:[0,0]};
-  for (const x of T){
-    const s = t[x[I_ID]], m = x[I_MAT];
-    porMat[m] = porMat[m] || [0,0]; porMat[m][1]++; porBl[x[I_BL]][1]++;
+  const idx = {}; for (const x of T){ idx[x[I_ID]] = x; porMat[x[I_MAT]] = porMat[x[I_MAT]] || [0,0]; porMat[x[I_MAT]][1]++; porBl[x[I_BL]][1]++; }
+  for (const id in t){
+    const s = t[id], x = idx[id];
     if (!s || !s.f) continue;
-    aulas++; porMat[m][0]++; porBl[x[I_BL]][0]++; xp += XP_AULA;
+    aulas++; xp += XP_AULA; if (x){ porMat[x[I_MAT]][0]++; porBl[x[I_BL]][0]++; }
     for (const k in XP_REV) if (s[k]){ revs++; xp += XP_REV[k]; }
     if (s.d48 && s.d7 && s.d30) ciclos++;
     if (typeof s.pct === "number" && s.pct >= 90){ p90++; xp += XP_90; }
@@ -740,11 +761,11 @@ function conquistas(g){
     ["a1","Primeiro passo","Conclua sua primeira aula","livro",g.aulas,1],
     ["a10","Pegando o ritmo","Conclua 10 aulas","livro",g.aulas,10],
     ["a25","Um quarto do caminho","Conclua 25 aulas","livro",g.aulas,25],
-    ["a70","Metade do edital","Conclua 70 aulas","livro",g.aulas,70],
-    ["a139","Edital fechado","Conclua todas as 139 aulas","coroa",g.aulas,T.length],
-    ["bI","Bloco I concluído","Português, Constitucional, Administrativo e Penal","escudo",g.porBl.I[0],g.porBl.I[1]],
-    ["bII","Bloco II concluído","Processo Penal, LPE, Penal Militar e Proc. Penal Militar","escudo",g.porBl.II[0],g.porBl.II[1]],
-    ["bIII","Bloco III concluído","Goiás, Redação Oficial e legislação estadual","escudo",g.porBl.III[0],g.porBl.III[1]],
+    ["a70","Metade do edital","Conclua metade das aulas do edital","livro",g.aulas,Math.ceil(T.length/2)],
+    ["a139","Edital fechado","Conclua todas as aulas do edital","coroa",g.aulas,T.length],
+    ["bI","Bloco I concluído","Conclua todas as aulas do Bloco I do edital","escudo",g.porBl.I[0],g.porBl.I[1]],
+    ["bII","Bloco II concluído","Conclua todas as aulas do Bloco II do edital","escudo",g.porBl.II[0],g.porBl.II[1]],
+    ["bIII","Bloco III concluído","Conclua todas as aulas do Bloco III do edital","escudo",g.porBl.III[0],g.porBl.III[1]],
     ["r1","Revisar é vencer","Faça sua primeira revisão","ciclo",g.revs,1],
     ["r50","Memória de elefante","Faça 50 revisões","ciclo",g.revs,50],
     ["r150","Fixação total","Faça 150 revisões","ciclo",g.revs,150],
@@ -835,15 +856,16 @@ function somPromo(){
   } catch(e){}
 }
 function promo3D(g, preview){
-  const P = g.pat, promo = preview ? false : patente(g.L-1).nome !== P.nome, car = carreira();
+  const P = g.pat, car = carreira(), ant = patente(g.L-1).nome, classe = n => n.split(" · ")[0];
+  const promo = preview ? false : car === "prf" ? classe(ant) !== classe(P.nome) : ant !== P.nome, progr = !preview && car === "prf" && !promo && ant !== P.nome;
   const svg = insig(g.L, "", car), N = 12;
   let lay = ""; for (let i=N;i>=1;i--) lay += `<div class="lay edge" style="transform:translateZ(${-i*1.1}px)">${svg}</div>`;
   const mask = "url(\"data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 52"><path d="M24 2 45 9v17c0 12.5-8.6 21.3-21 25C11.6 47.3 3 38.5 3 26V9Z"/></svg>') + "\")";
   let sp = ""; for (let i=0;i<22;i++){ const a = Math.random()*Math.PI*2, r = 120 + Math.random()*160; sp += `<i class="spark" style="--dx:${(Math.cos(a)*r).toFixed(0)}px;--dy:${(Math.sin(a)*r).toFixed(0)}px;animation-delay:${(.7+Math.random()*.25).toFixed(2)}s"></i>`; }
   const w = document.createElement("div"); w.className = "p3d" + (car === "bm" ? " bm" : ""); w.setAttribute("role","dialog"); w.setAttribute("aria-modal","true");
   const kicker = preview ? "SUA PATENTE" : "PARABÉNS!";
-  const titulo = preview ? P.sigla : promo ? "Você foi promovido" : "Novo nível";
-  const linha = preview ? `Nível <b>${g.L}</b> · ${g.xp} XP` : promo ? `Você alcançou a patente de <b>${esc(P.nome)}</b> · nível ${g.L}` : `Você alcançou o <b>nível ${g.L}</b>` + (P.prox ? ` · próxima promoção: ${esc(P.prox[1])} no nível ${P.prox[0]}` : "");
+  const titulo = preview ? P.sigla : promo ? "Você foi promovido" : progr ? "Você progrediu" : "Novo nível";
+  const linha = preview ? `Nível <b>${g.L}</b> · ${g.xp} XP` : promo ? `Você alcançou ${car === "prf" ? "a" : "a patente de"} <b>${esc(P.nome)}</b> · nível ${g.L}` : progr ? `Progressão para <b>${esc(P.nome)}</b> · nível ${g.L}` : `Você alcançou o <b>nível ${g.L}</b>` + (P.prox ? ` · próxima promoção: ${esc(P.prox[1])} no nível ${P.prox[0]}` : "");
   w.setAttribute("aria-label", kicker + " " + titulo + ". " + P.nome);
   w.innerHTML = `<div class="rays"></div><div class="ring"></div>${sp}
     <div class="stage"><div class="coin">${lay}<div class="lay front">${svg}</div><div class="sheen" style="--m:${mask}"></div></div></div>
@@ -865,7 +887,7 @@ function abrirConquistas(){
   const sh = $("sheet");
   sh.innerHTML = `<div class="lvhead"><span class="ins" role="button" aria-label="Ver insígnia em 3D">${insig(g.L)}</span><div style="flex:1"><b>${esc(g.pat.nome)}</b><div class="muted">Nível ${g.L} · ${g.xp} XP no total · faltam ${fim-g.xp} XP para o nível ${g.L+1}</div><div class="bar2" style="margin-top:6px"><i style="width:${((g.xp-ini)/(fim-ini)*100).toFixed(1)}%"></i></div></div></div>
     <div class="ladder">${PATENTES.map(p => `<div class="${g.L >= p[0] ? (patente(g.L).nome===p[1]?"cur":"") : "lock"}"><span class="ins">${insig(p[0])}</span>${esc(p[1])}<br><span class="muted">nív. ${p[0]}</span></div>`).join("")}</div>
-    <div class="muted">${carreira()==="bm" ? "Carreira de Bombeiro Militar" : "Carreira de Polícia Militar"}: escala do Estatuto da PMDF; insígnias conforme o Regulamento de Uniformes ${carreira()==="bm" ? "do CBMDF" : "da PMDF"}. ${patente(g.L).prox ? "Próxima promoção: <b>" + esc(patente(g.L).prox[1]) + "</b> no nível " + patente(g.L).prox[0] + "." : "Você chegou ao topo da carreira."}</div>
+    <div class="muted">${carreira()==="prf" ? "Carreira de Policial Rodoviário Federal: classes e padrões da Lei 9.654/1998 (os símbolos são do app; a PRF não usa insígnia de patente)." : (carreira()==="bm" ? "Carreira de Bombeiro Militar" : "Carreira de Polícia Militar") + ": escala do Estatuto da PMDF; insígnias conforme o Regulamento de Uniformes da PMDF."} ${patente(g.L).prox ? "Próxima promoção: <b>" + esc(patente(g.L).prox[1]) + "</b> no nível " + patente(g.L).prox[0] + "." : "Você chegou ao topo da carreira."}</div>
     <h2 style="margin:4px 0 0">Sequência: ${g.streak} dia${g.streak===1?"":"s"}</h2>
     <div class="muted">Dias com 30 min ou mais de estudo líquido. Sábado e domingo não quebram a sequência. Recorde: ${g.melhor}.</div>
     ${heat(S.tm.days)}
@@ -892,8 +914,27 @@ function missoes(){
   return `<section class="card"><h2>Missões do dia ${feitas}/${it.length}</h2>${it.map(x => `<div class="missao${x[0]?" ok":""}"><span class="ck">${x[0]?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m5 12 5 5 9-10"/></svg>':""}</span><span class="t">${esc(x[1])}</span><span class="x">${esc(x[2])}</span></div>`).join("")}</section>`;
 }
 
+
+/* ---------- concursos disponíveis ---------- */
+const PESO_CFO = {PORT:5, CONST:5, PEN:5, ADM:4, PP:4, LPE:3, DPM:3, DPPM:3, GO:2};
+let PESO = PESO_CFO;   // importância na prova (edital-base AOCP 003/2022)
+const CONC = {
+  cfo: {nome:"Cadete Combatente · CFO PMGO", curto:"Plano CFO PMGO", kicker:"Rumo ao oficialato", T:T_CFO, MAT:MAT_CFO, PESO:PESO_CFO, links:true,
+        edital:"Edital-base: AOCP 003/2022", info:"50 questões objetivas e 1 discursiva. Enquanto o novo edital não sai, o plano segue o anterior, verticalizado tópico a tópico na aba Aulas.",
+        banca:"AOCP. Se vierem poucas, inclua outras de 5 alternativas (FCC, FGV, Vunesp)", gnome:{"PORT|III":"Redação Oficial", "CONST|III":"Constituição de Goiás", "LPE|III":"Estatuto dos PMs de Goiás"}},
+  prf: {nome:"Policial Rodoviário Federal · PRF", curto:"Plano PRF", kicker:"Rumo ao distintivo", T:T_PRF, MAT:MAT_PRF, PESO:PESO_PRF, links:false,
+        edital:"Edital-base: Cebraspe 2021", info:"120 itens de certo ou errado em 3 blocos (55, 30 e 35 itens) e prova discursiva. Mínimo de 15, 10 e 10 pontos por bloco e 50 no total; um item errado anula um certo. O plano segue o edital de 2021 até sair o novo.",
+        banca:"Cebraspe (certo ou errado). Se vierem poucas, inclua outras provas Cebraspe de nível superior da área policial", gnome:{}}
+};
+function cargoAtual(){ return (QZ && QZ.d.cargo) || (S.perfil && S.perfil.cargo) || "cfo"; }
+function aplicaConcurso(c){
+  c = CONC[c || cargoAtual()] ? (c || cargoAtual()) : "cfo"; const C = CONC[c];
+  T = C.T; MAT = C.MAT; PESO = C.PESO; PATENTES = c === "prf" ? PAT_PRF : PAT_MIL;
+  const h1 = document.querySelector(".top h1"); if (h1) h1.innerHTML = `<small>${esc(C.kicker)}</small>${esc(C.curto)}`;
+  document.title = C.curto;
+  document.querySelectorAll(".brand svg text, #auth .crest svg text").forEach(e => e.textContent = c === "prf" ? "PRF" : "CFO");
+}
 /* ---------- plano adaptado pelo diagnóstico (método Sarah Delma, dias 1 a 4) ---------- */
-const PESO = {PORT:5, CONST:5, PEN:5, ADM:4, PP:4, LPE:3, DPM:3, DPPM:3, GO:2};   // importância na prova (edital-base AOCP 003/2022)
 const DOM = ["Não sei / nunca estudei","Estudei, mas não domino","Tenho resumo e faço questões","Acerto 90% ou mais"];
 const NIVEIS = {
   zerado:{nome:"Zerado", n:2, txt:"Comece com apenas 2 matérias e fique só com elas por cerca de 1 mês, aplicando o método: teoria, resumo objetivo, questões e as revisões de 48h, 7 e 30 dias."},
@@ -901,8 +942,7 @@ const NIVEIS = {
   intermediario:{nome:"Intermediário", n:4, txt:"Bloco I com as 4 matérias mais importantes. Fique só com elas até esgotar os tópicos e então inclua as próximas."},
   avancado:{nome:"Avançado", n:5, txt:"Bloco I com 5 matérias. Nos tópicos que você já domina, vá direto ao resumo e ao caderno de questões, revisando por questões."}
 };
-const GNOME = {"PORT|III":"Redação Oficial", "CONST|III":"Constituição de Goiás", "LPE|III":"Estatuto dos PMs de Goiás"};
-const gNome = g => GNOME[g.k] || MAT[g.m].replace(/ \(.*\)/,"");
+const gNome = g => CONC[cargoAtual()].gnome[g.k] || MAT[g.m].replace(/ \(.*\)/,"");
 function grupos(){ const g = []; for (const x of T){ const k = x[I_MAT]+"|"+x[I_BL]; if (!g.find(y => y.k===k)) g.push({k, m:x[I_MAT], ob:x[I_BL]}); } return g; }
 function montaBlocos(pf){
   const fator = [1.6, 1.4, 1.0, 0.6], ob = {I:1, II:.9, III:.55};
@@ -942,10 +982,10 @@ function provaCard(){
 let QZ = null;
 function abrirDiagnostico(){
   const pf = S.perfil || {};
-  QZ = {step:0, d: {cargo: pf.cargo || "cfo-pmgo", motivo: pf.motivo || "", ident: pf.ident ?? null, prova: pf.prova || "", semEdital: pf.semEdital ?? true, leu: pf.leu ?? null,
+  QZ = {step:0, d: {cargo: CONC[pf.cargo] ? pf.cargo : "cfo", motivo: pf.motivo || "", ident: pf.ident ?? null, prova: pf.prova || "", semEdital: pf.semEdital ?? true, leu: pf.leu ?? null,
     horas: pf.horas || 4, dias: pf.dias ? [...pf.dias] : [1,2,3,4,5], q: Object.assign({tempo:null, rev:null, quest:null, edital:null}, pf.q || {}), dom: Object.assign({}, pf.dom || {})}};
   let w = $("quiz"); if (!w){ w = document.createElement("div"); w.id = "quiz"; w.className = "auth"; document.body.appendChild(w); }
-  w.classList.add("on"); qzRender();
+  w.classList.add("on"); aplicaConcurso(QZ.d.cargo); qzRender();
 }
 function qzNivel(q){
   const pts = {tempo:{nunca:0, m6:1, a2:2, mais:3}, rev:{nao:0, asvezes:1, sim:2}, quest:{nao:0, asvezes:1, sim:2}, edital:{nao:0, uma:1, tres:3}};
@@ -964,15 +1004,15 @@ function qzRender(){
   if (st === 0){
     corpo = `<small class="qk">Desafio 01 · Escolha do cargo</small><h3>Qual é o seu cargo?</h3>
       <p class="lead">Foque em um cargo só. Quando terminar todas as matérias dele, aí sim você inclui outro.</p>
-      ${chips("cargo", [["cfo-pmgo","Cadete Combatente · CFO PMGO"]], d.cargo)}
+      ${chips("cargo", Object.keys(CONC).map(k => [k, CONC[k].nome]), d.cargo)}
       <div class="muted" style="font-size:13px">Outros concursos chegam em breve.</div>
       <div class="fld"><label for="qMotivo">Por que você escolheu este cargo? (não vale só dinheiro)</label><textarea id="qMotivo" rows="3" class="qta" placeholder="Seus motivos aparecem para você nos dias difíceis.">${esc(d.motivo)}</textarea></div>
       <div class="fld"><label>Você se identifica com uns 80% das matérias do edital?</label>${chips("ident", [["sim","Sim, gosto de estudá-las"],["nao","Não muito"]], d.ident)}</div>
       ${d.ident === "nao" ? `<div class="alert on bad">A Sarah recomenda analisar melhor a escolha: trabalhar com o que não gosta corrói com o tempo. Se mesmo assim este é o cargo, siga em frente.</div>` : ""}`;
     ok = !!d.ident;
   } else if (st === 1){
-    corpo = `<small class="qk">Desafio 02 · Conheça seu edital</small><h3>Edital-base: AOCP 003/2022</h3>
-      <p class="lead">50 questões objetivas e 1 discursiva. Enquanto o novo edital não sai, o plano segue o anterior, verticalizado tópico a tópico na aba Aulas.</p>
+    corpo = `<small class="qk">Desafio 02 · Conheça seu edital</small><h3>${esc(CONC[d.cargo].edital)}</h3>
+      <p class="lead">${esc(CONC[d.cargo].info)}</p>
       <div class="fld"><label>Já tem data de prova?</label>${chips("semEdital", [["false","Sim, tenho a data"],["true","Ainda não (vou usar uma previsão)"]], String(d.semEdital))}</div>
       <div class="fld"><label for="qProva">${d.semEdital ? "Data prevista da prova" : "Data da prova"}</label><div class="box"><input type="date" id="qProva" value="${esc(d.prova)}" min="${today()}" style="padding:0 12px"></div></div>
       <div class="fld"><label>Você já leu o edital inteiro e verticalizou os tópicos?</label>${chips("leu", [["sim","Sim"],["nao","Ainda não"]], d.leu)}</div>
@@ -1023,6 +1063,7 @@ function qzRender(){
     else if (q === "semEdital") d.semEdital = v === "true";
     else if (q.startsWith("dom:")) d.dom[q.slice(4)] = +v;
     else if (["tempo","rev","quest","edital"].includes(q)) d.q[q] = v;
+    else if (q === "cargo"){ if (d.cargo !== v){ d.cargo = v; d.dom = {}; aplicaConcurso(v); } }
     else d[q] = v;
     const keep = $("qMotivo") ? $("qMotivo").value : null; if (keep !== null) d.motivo = keep;
     const pv = $("qProva") ? $("qProva").value : null; if (pv !== null) d.prova = pv;
@@ -1032,12 +1073,12 @@ function qzRender(){
   const pr = $("qProva"); if (pr) pr.onchange = () => { d.prova = pr.value; qzRender(); };
   if (st === 1 && !d.prova){ const x = new Date(); x.setMonth(x.getMonth()+8); d.prova = iso(x); setTimeout(qzRender, 0); }
   const bk = $("qBack"); if (bk) bk.onclick = () => { QZ.step--; qzRender(); };
-  const cl = $("qClose"); if (cl) cl.onclick = () => { $("quiz").classList.remove("on"); QZ = null; };
+  const cl = $("qClose"); if (cl) cl.onclick = () => { $("quiz").classList.remove("on"); QZ = null; aplicaConcurso(); render(); };
   $("qForm").onsubmit = e => {
     e.preventDefault(); if (!ok) return;
     if (!last){ QZ.step++; qzRender(); return; }
     const nivel = qzNivel(d.q), pf = {cargo:d.cargo, motivo:d.motivo.trim(), ident:d.ident, prova:d.prova, semEdital:d.semEdital, leu:d.leu, horas:d.horas, dias:d.dias.sort(), q:d.q, dom:d.dom, nivel, feito:today()};
-    pf.bl = montaBlocos(pf); S.perfil = pf; aplicaMetas(); save();
+    pf.bl = montaBlocos(pf); S.perfil = pf; QZ = null; aplicaConcurso(); aplicaMetas(); save();
     $("quiz").classList.remove("on"); QZ = null; tab = "hoje"; G = null; render();
     toast("Plano montado: nível " + NIVEIS[nivel].nome + ". Comece pelo Bloco I.");
   };
@@ -1120,14 +1161,15 @@ function vHoje(){
     for (const m of mats){
       const x = nextOf(m,b);
       h += `<div class="item"><div class="txt"><div class="code">${label(x)}</div><div class="tt">${esc(x[I_TIT])}</div>
-        ${dicaDom(x)}<div class="muted">Edital: ${esc(x[I_ED])} · <a href="${cursoUrl(x)}" target="_blank" rel="noopener">${ondeAbrir(x)}</a>${isPJ(x)&&PJ[x[I_ID]].a.length?" · "+PJ[x[I_ID]].a.length+" aulas do Pablo":""}</div>${x[I_OBS]?`<div class="muted">${esc(x[I_OBS])}</div>`:""}</div>
+        ${dicaDom(x)}<div class="muted">Edital: ${esc(x[I_ED])}${CONC[cargoAtual()].links ? ` · <a href="${cursoUrl(x)}" target="_blank" rel="noopener">${ondeAbrir(x)}</a>${isPJ(x)&&PJ[x[I_ID]].a.length?" · "+PJ[x[I_ID]].a.length+" aulas do Pablo":""}` : ""}</div>${x[I_OBS]?`<div class="muted">${esc(x[I_OBS])}</div>`:""}</div>
         <button class="btn small ghost" data-first="${x[I_ID]}">Terminei</button></div>`;
     }
   }
   h += `</section>`;
 
-  const w = curWeek();
-  if (w){ h += `<section class="card"><h2>Semana ${w[0]} · ${w[2]}</h2><div class="muted">${esc(w[3])}</div><div>${esc(w[4])}</div></section>`; }
+  const w = cargoAtual() === "cfo" ? curWeek() : null;
+  if (cargoAtual() !== "cfo"){}
+  else if (w){ h += `<section class="card"><h2>Semana ${w[0]} · ${w[2]}</h2><div class="muted">${esc(w[3])}</div><div>${esc(w[4])}</div></section>`; }
   else { const f = WEEKS[0]; h += `<section class="card"><h2>Começa em ${br(f[1])}</h2><div class="muted">${esc(f[3])}</div><div>${esc(f[4])}</div></section>`; }
   return h;
 }
@@ -1136,7 +1178,7 @@ function curWeek(){ const t = today(); let cur = null; for (const w of WEEKS) if
 function vAulas(){
   let h = `<section class="card"><input type="search" id="busca" placeholder="Buscar aula, lei ou item do edital" value="${esc(fBusca)}" aria-label="Buscar aula">
     <div class="chips" role="group" aria-label="Filtrar por bloco">${["todos",...blocosOrd()].map(b=>`<button class="chip" data-bloco="${b}" aria-pressed="${fBloco===b}">${b==="todos"?"Todos":"Bloco "+b}</button>`).join("")}</div>
-    <div class="muted">Aulas dos cursos PM-GO (Cadete) do Estratégia e, em Português, unidades do curso do Pablo Jamilk (seu Drive), na ordem de estudo. Toque numa aula para lançar a data, as revisões, o % de acerto e o "não domino".</div></section>`;
+    <div class="muted">${cargoAtual()==="cfo" ? `Aulas dos cursos PM-GO (Cadete) do Estratégia e, em Português, unidades do curso do Pablo Jamilk (seu Drive), na ordem de estudo. Toque numa aula para lançar a data, as revisões, o % de acerto e o "não domino".` : `Edital verticalizado (${esc(CONC[cargoAtual()].edital.replace("Edital-base: ",""))}), uma unidade por tópico, na ordem dos seus blocos. Toque numa unidade para lançar a data, as revisões, o % de acerto e o "não domino".`}</div></section>`;
   const q = fBusca.trim().toLowerCase();
   const groups = [];
   for (const x of T){
@@ -1159,7 +1201,21 @@ function vAulas(){
   return h;
 }
 
+function vCronoBlocos(){
+  const b0 = currentBlock(), porDia = S.perfil && S.perfil.horas <= 2 ? 1 : 2, R = blocosOrd();
+  let d = today(), h = `<section class="card"><h2>Cronograma por blocos</h2><div class="muted">${esc(CONC[cargoAtual()].edital)}. Método Sarah Delma: fique só com as matérias do bloco até esgotar os tópicos, depois passe ao próximo. Datas estimadas com ${porDia} aula${porDia>1?"s":""} por dia de estudo; o app segue o seu ritmo real.</div></section>`;
+  for (const b of R){
+    const its = T.filter(x => blocoDe(x) === b), left = its.filter(x => !(S.t[x[I_ID]]||{}).f).length;
+    let n = Math.ceil(left / porDia); const ini = d; while (n > 0 && S.perfil){ d = add(d,1); if (S.perfil.dias.includes(parse(d).getDay())) n--; }
+    const gs = grupos().filter(g => its.some(x => x[I_MAT]===g.m && x[I_BL]===g.ob));
+    h += `<section class="card"><h2>Bloco ${b}${b===b0?" · agora":""}</h2><div>${gs.map(g => esc(gNome(g))).join(" · ")}</div>
+      <div class="bar2"><i style="width:${((its.length-left)/its.length*100).toFixed(0)}%"></i></div>
+      <div class="muted">${its.length-left} de ${its.length} aulas${left ? ` · previsão: ${br(ini)} a ${br(d)}/${d.slice(0,4)}` : " · concluído"}</div></section>`;
+  }
+  return h + `<section class="card"><h2>Depois do edital</h2><div class="muted">Refazer os cadernos de erros até 90% de acerto em cada tópico, treinar a discursiva e fazer simulados no tempo de prova.</div></section>`;
+}
 function vCrono(){
+  if (cargoAtual() !== "cfo") return vCronoBlocos();
   const cw = curWeek(), b = currentBlock();
   const left = b ? T.filter(x => blocoDe(x)===b && !(S.t[x[I_ID]]||{}).f).length : 0;
   let h = `<section class="card"><h2>Cronograma</h2><div class="muted">Base: Edital 003/2022 (AOCP). Quando o novo edital sair, confira o conteúdo. As datas supõem cerca de 2 aulas por dia no Bloco I; se o seu ritmo for outro, o app segue o seu ritmo e o cronograma estica.</div>${b?`<div><b>Bloco ${b}:</b> faltam ${left} aulas.</div>`:""}`;
@@ -1171,24 +1227,25 @@ function vCrono(){
 }
 
 function vRotina(){
-  return `<section class="card"><h2>O dia de 4 horas</h2><ol class="steps">
+  return `<section class="card"><h2>O dia de ${META_DIA/3600} hora${META_DIA===3600?"":"s"}</h2><ol class="steps">
     <li><b>Revisões do dia</b> (~1h, cresce até ~2h). Rev 48h: monte o caderno de questões da aula no Sistema de Questões do Estratégia e resolva tudo, copiando erros e dúvidas com o comentário para o caderno de erros. Rev 7 e 30 dias: releia o caderno de erros e o resumo, ou o Passo Estratégico da matéria.</li>
-    <li><b>Aula nova, matéria A</b> (~1h15). PDF ou videoaula acelerada (em Português, as aulas do Pablo Jamilk de cada unidade), resumo curto pensando em como cai na prova, lei seca nas matérias jurídicas.</li>
+    <li><b>Aula nova, matéria A</b> (~1h15). PDF ou videoaula acelerada${cargoAtual()==="cfo" ? " (em Português, as aulas do Pablo Jamilk de cada unidade)" : ""}, resumo curto pensando em como cai na prova, lei seca nas matérias jurídicas.</li>
     <li><b>Aula nova, matéria B</b> (~1h15). Mesmo processo. Terminou a aula: toque em "Terminei" e as revisões entram na agenda.</li>
     <li><b>Fechamento</b> (10 min). O que ficou pela metade é a primeira coisa de amanhã.</li>
     <li><b>Sexta</b> (+15 min). Planeje a semana seguinte no Cronograma.</li></ol>
     <div class="muted">Se as revisões tomarem as 4h, não comece aula nova naquele dia. Pausas ficam fora das 4h líquidas.</div></section>
   <section class="card"><h2>Filtros do caderno de questões</h2><div class="kv">
     <b>Assunto</b><span>Os itens do edital da aula (um caderno por aula)</span>
-    <b>Banca</b><span>AOCP. Se vierem poucas, inclua outras de 5 alternativas (FCC, FGV, Vunesp)</span>
+    <b>Banca</b><span>${esc(CONC[cargoAtual()].banca)}</span>
     <b>Ano</b><span>Últimos 5 anos; depois, os 5 anteriores</span>
     <b>Excluir</b><span>Desatualizadas e anuladas, sempre</span>
     <b>Meta</b><span>90% só ao refazer as erradas, depois da revisão de 30 dias</span></div></section>
-  <section class="card"><h2>Rodízio de matérias</h2><div class="kv">
+  ${S.perfil ? `<section class="card"><h2>Seus blocos</h2><div class="kv">${blocosOrd().map(b => `<b>Bloco ${b}</b><span>${grupos().filter(g => blocoDe([0,g.m,0,0,g.ob])===b).map(g => esc(gNome(g))).join(" · ")}</span>`).join("")}</div>
+    <div class="muted">Montados pelo seu diagnóstico (nível ${NIVEIS[S.perfil.nivel].nome}). Nos dias de estudo, o app reveza as matérias do bloco atual. Refaça o diagnóstico em Minha conta.</div></section>` : `<section class="card"><h2>Rodízio de matérias</h2><div class="kv">
     <b>Bloco I</b><span>Seg e qua: Português + Constitucional. Ter e qui: Administrativo + Penal. Sex: Português + Administrativo</span>
     <b>Bloco II</b><span>Seg, qua e sex: Processo Penal + Leg. Penal Especial. Ter e qui: Penal Militar + Proc. Penal Militar</span>
     <b>Bloco III</b><span>Realidade de Goiás, Redação Oficial, Constituição de GO e Estatuto dos PMs de GO</span></div>
-    <div class="muted">Quando uma matéria do dia acaba, o app puxa a próxima do mesmo bloco.</div></section>
+    <div class="muted">Quando uma matéria do dia acaba, o app puxa a próxima do mesmo bloco.</div></section>`}
   <section class="card"><h2>Sincronização celular ↔ PC</h2>
     <div class="kv"><b>Status</b><span id="syncSt">${esc(syncTxt())}</span><b>Versão do app</b><span>${APP_V}${window.CFO ? " · atualiza sozinho" : ""}</span></div>
     <div class="muted">Conectado como <b>${esc((syncCfg()||{}).nome||"")}</b>. Seu progresso e suas horas aparecem em qualquer aparelho em que você entrar. Sincroniza ao abrir, a cada alteração e a cada minuto.</div>
@@ -1240,7 +1297,7 @@ function resumoMembro(m){
   let ult7 = 0; for (let i=0;i<7;i++) ult7 += dia(add(t,-i));
   return {seen, late, hoje, pct: pcts.length ? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length) : null, hojeH: dia(t), sem, ult7, porMat, porBl, run: !!m.run};
 }
-function convite(g){ return "Entre no meu grupo de estudos do Plano CFO PMGO. 1) Abra " + PAGES + " (ou instale o app que eu te passar). 2) Na aba Rotina, crie sua conta. 3) Na aba Grupo, digite o código " + g.codigo + "."; }
+function convite(g){ return "Entre no meu grupo de estudos. 1) Abra " + PAGES + " (ou instale o app que eu te passar). 2) Na aba Rotina, crie sua conta. 3) Na aba Grupo, digite o código " + g.codigo + "."; }
 function vGrupo(){
   const c = syncCfg();
   if (!c) return `<section class="card"><h2>Grupo de estudos</h2><div class="muted">Entre na sua conta para usar grupos.</div></section>`;
@@ -1307,7 +1364,7 @@ function openAula(id){
   let h = `<div class="code">${esc(MAT[m])} · ${esc(x[I_AULA])} · Bloco ${blocoDe(x)}</div><h2 style="text-transform:none;letter-spacing:0">${esc(x[I_TIT])}</h2>
     <div class="muted">Edital: ${esc(x[I_ED])}</div>`;
   if (x[I_OBS]) h += `<div class="muted">${esc(x[I_OBS])}</div>`;
-  h += `<div class="row" style="flex-wrap:wrap">${isPJ(x) ? "" : `<a class="btn small ghost" href="${cursoUrl(x)}" target="_blank" rel="noopener">Abrir no Estratégia</a>`}${PASSO[m]?`<a class="btn small ghost" href="${EC+PASSO[m]}/aulas" target="_blank" rel="noopener">Passo Estratégico</a>`:""}</div>
+  h += `<div class="row" style="flex-wrap:wrap">${isPJ(x) || !CONC[cargoAtual()].links ? "" : `<a class="btn small ghost" href="${cursoUrl(x)}" target="_blank" rel="noopener">Abrir no Estratégia</a>`}${CONC[cargoAtual()].links && PASSO[m]?`<a class="btn small ghost" href="${EC+PASSO[m]}/aulas" target="_blank" rel="noopener">Passo Estratégico</a>`:""}</div>
     ${isPJ(x) ? pjList(x) : ""}
     <label class="switch"><input type="checkbox" id="dNd" ${s.nd?"checked":""}> Não domino (marcar em vermelho)</label>
     <label class="f" for="dF">Data em que terminei a aula<input type="date" id="dF" value="${s.f||""}"></label>
@@ -1420,7 +1477,7 @@ async function authCall(btn, body, campos){
 async function aposEntrar(r, lembrar, msg){
   setConta({t:r.t, u:r.u, nome:r.nome, email:r.email}, lembrar); S.sy = 0; GR = null; keep();
   ["lSenha","cSenha","cSenha2","eSenha","eSenha2","eCod"].forEach(id => $(id).value = "");
-  toast(msg); await syncNow(false); G = null; aplicaMetas(); render(); if (!S.perfil) abrirDiagnostico();
+  toast(msg); await syncNow(false); G = null; aplicaConcurso(); aplicaMetas(); render(); if (!S.perfil) abrirDiagnostico();
 }
 function initAuth(){
   $("t_login").onclick = () => authPane("login"); $("t_cad").onclick = () => authPane("cad");
@@ -1487,7 +1544,7 @@ function openConta(){
     <div class="kv"><b>Status</b><span id="syncSt2">${esc(syncTxt())}</span><b>Login</b><span>${esc(c.u)}</span></div>
     <label class="f">Nome<input type="text" id="pNome" value="${esc(c.nome||"")}" maxlength="60"></label>
     <label class="f">E-mail para recuperar a senha<input type="email" id="pEmail" value="${esc(c.email||"")}" autocapitalize="none" spellcheck="false" placeholder="seuemail@exemplo.com"></label>
-    <label class="f">Carreira (patentes e insígnias)<select id="pCar" style="height:44px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 10px"><option value="pm"${carreira()==="pm"?" selected":""}>Polícia Militar</option><option value="bm"${carreira()==="bm"?" selected":""}>Bombeiro Militar</option></select></label>
+    ${cargoAtual()==="prf" ? "" : `<label class="f">Carreira (patentes e insígnias)<select id="pCar" style="height:44px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 10px"><option value="pm"${carreira()==="pm"?" selected":""}>Polícia Militar</option><option value="bm"${carreira()==="bm"?" selected":""}>Bombeiro Militar</option></select></label>`}
     <div class="row"><button class="btn small" id="pSalvar">Salvar dados</button></div>
     <details><summary class="muted">Trocar senha</summary>
       <input type="password" id="pAtual" placeholder="Senha atual" autocomplete="current-password" aria-label="Senha atual">
@@ -1498,7 +1555,7 @@ function openConta(){
     <div class="muted">Ao sair, o progresso continua salvo na conta e neste aparelho.</div>`;
   $("dlg").classList.add("open");
   $("pFechar").onclick = closeDlg; $("pSair").onclick = sair; $("pDiag").onclick = () => { closeDlgQuiet(); abrirDiagnostico(); };
-  $("pCar").onchange = e => { S.car = e.target.value; save(); render(); toast(S.car === "bm" ? "Carreira: Bombeiro Militar" : "Carreira: Polícia Militar"); };
+  if ($("pCar")) $("pCar").onchange = e => { S.car = e.target.value; save(); render(); toast(S.car === "bm" ? "Carreira: Bombeiro Militar" : "Carreira: Polícia Militar"); };
   $("pSalvar").onclick = async () => {
     try { const r = await api({acao:"perfil", t:c.t, nome:$("pNome").value, email:$("pEmail").value}); if (!r.ok){ toast(r.erro); return; } updConta({nome:r.nome, email:r.email}); toast("Dados salvos"); }
     catch(e){ toast("Sem conexão. Tente de novo"); }
@@ -1514,7 +1571,7 @@ if (syncCfg() && !S.perfil) setTimeout(abrirDiagnostico, 300);
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 8, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 9, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
