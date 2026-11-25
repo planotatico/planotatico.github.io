@@ -691,6 +691,35 @@ const DRV = id => "https://drive.google.com/file/d/"+id+"/view";
 const isPJ = x => !!PJ[x[I_ID]];
 const pjVe = () => { try { return !!ACC.dono; } catch(e){ return false; } };   // arquivos do Drive (material recomendado de Português): só o dono abre
 const matRec = () => { try { return ((VENDAS.cursos||{})[cargoAtual()]||{}).material || ""; } catch(e){ return ""; } };   // página oficial do material, definida no Painel de vendas
+/* curso de cada plataforma por concurso (o aluno escolhe no diagnóstico ou no Plano) */
+const CURSOS = {
+  cfo:     {estrategia:["PM-GO (Cadete) Pacotaço", "https://www.estrategiaconcursos.com.br/curso/pm-go-cadete-pacotaco-pacote-teorico-pacote-passo-estrategico-202512231045/"], gran:["PM GO - Oficial (Cadete)", "https://www.grancursosonline.com.br/cursos/por-concurso/pm-go-policia-militar-do-estado-de-goias-oficial-cadete-treinamento-intensivo-pos-edital"]},
+  pmgosd:  {estrategia:["PM-GO (Soldado Combatente) Pacotaço", "https://www.estrategiaconcursos.com.br/curso/pm-go-soldado-combatente-pacotaco-pacote-teorico-pacote-passo-estrategico-202512231045/"], gran:["PM GO - Soldado de 2ª Classe Combatente", "https://www.grancursosonline.com.br/cursos/por-concurso/pm-go-policia-militar-do-estado-de-goias-soldado-de-2-classe-policia-militar-combatente"]},
+  cbmgocad:{estrategia:["CBM-GO (Cadete) Pacotaço", "https://www.estrategiaconcursos.com.br/curso/cbm-go-cadete-pacotaco-pacote-teorico-pacote-passo-estrategico-202512231051/"], gran:["CBM GO - Cadete (Aluno Oficial)", "https://www.grancursosonline.com.br/cursos/por-concurso/cbm-go-corpo-de-bombeiros-militar-do-estado-de-goias-cadete-aluno-oficial"]},
+  cbmgo:   {estrategia:["CBM-GO (Soldado Combatente) Pacotaço", "https://www.estrategiaconcursos.com.br/curso/cbm-go-soldado-combatente-pacotaco-pacote-teorico-pacote-passo-estrategico-202512231051/"], gran:["CBM GO - Soldado Combatente", "https://www.grancursosonline.com.br/cursos/por-concurso/cbm-go-corpo-de-bombeiro-do-estado-de-goias-soldado-combatente"]},
+  pmdfcfo: {estrategia:["PM-DF (Oficial - CFO) Pacotaço", "https://www.estrategiaconcursos.com.br/cursosPorConcurso/policia-militar-do-distrito-federal-pmdf/"], gran:["PMDF - CFO (Curso de Formação de Oficiais)", "https://www.grancursosonline.com.br/cursos/por-concurso/pmdf-policia-militar-do-df-cfo-curso-de-formacao-de-oficiais"]},
+  pmdfsd:  {estrategia:["PM-DF (Soldado) Pacotaço", "https://www.estrategiaconcursos.com.br/curso/02-pm-df-soldado-pacotaco-pacote-teorico-passo-estrategico-202512231107/"], gran:["Preparação Total PMDF - Soldado", "https://www.grancursosonline.com.br/cursos/por-concurso/preparacao-total-para-pmdf-policia-militar-do-distrito-federal-soldado"]},
+  cbmdfof: {estrategia:["CBM-DF (Oficial Combatente) Pacote", "https://www.estrategiaconcursos.com.br/cursosPorConcurso/cbmdf-corpo-de-bombeiros-militar-do-df-271/"], gran:["CBM DF - Oficial Cadete Combatente", "https://www.grancursosonline.com.br/cursos/por-concurso/cbmdf-corpo-de-bombeiros-militar-do-distrito-federal-oficial-bombeiro-militar-combatente"]},
+  cbmdfsd: {estrategia:["CBM-DF (Soldado Operacional) Pacote", "https://www.estrategiaconcursos.com.br/cursosPorConcurso/cbmdf-corpo-de-bombeiros-militar-do-df-271/"], gran:["CBM DF - Soldado Bombeiro Militar QBMG-1", "https://www.grancursosonline.com.br/cursos/por-concurso/cbm-df-corpo-de-bombeiros-militar-do-distrito-federal-soldado-bombeiro-militar"]},
+  prf:     {estrategia:["PRF (Policial Rodoviário Federal) Pacotaço", "https://www.estrategiaconcursos.com.br/cursosPorConcurso/prf-policial-rodoviario-federal/"], gran:["PRF - Preparação Total (Policial Rodoviário Federal)", "https://www.grancursosonline.com.br/cursos/por-concurso/operacao-prf-policial-rodoviario-federal-preparacao-total-com-opcao-de-ingles"]}
+};
+const PLATS = {estrategia:"Estratégia Concursos", gran:"Gran Cursos Online", outro:"Outro / sem cursinho"};
+const plat = () => (S.perfil && S.perfil.plat) || "estrategia";
+function cursoRec(k){ const p = plat(), c = (CURSOS[k || cargoAtual()] || {})[p]; return c ? {plat:p, nome:c[0], url:c[1]} : null; }
+function linkAula(x){ // onde abrir a aula: Estratégia aula a aula (quando o plano tem os cursos), senão a página do curso da plataforma
+  const p = plat(); if (p === "estrategia" && CONC[cargoAtual()].links && !isPJ(x)) return cursoUrl(x);
+  if (isPJ(x) && p === "estrategia") return cursoUrl(x);
+  const c = cursoRec(); return c ? c.url : "";
+}
+function nomeLinkAula(x){ const p = plat(); if (isPJ(x) && p === "estrategia") return ondeAbrir(x); return p === "gran" ? "abrir curso no Gran" : CONC[cargoAtual()].links ? "abrir no Estratégia" : "abrir curso no Estratégia"; }
+function cardCurso(){
+  const c = cursoRec(), p = plat();
+  return `<section class="card"><h2>Seu curso</h2>
+    <div class="chips" role="group" aria-label="Plataforma">${Object.keys(PLATS).map(k => `<button class="chip" data-plat="${k}" aria-pressed="${p===k}">${PLATS[k]}</button>`).join("")}</div>
+    ${c ? `<div class="kv"><b>Recomendado</b><span>${esc(c.nome)}</span></div><div class="row"><a class="btn small" href="${c.url}" target="_blank" rel="noopener">Abrir curso no ${p === "gran" ? "Gran" : "Estratégia"}</a></div>
+      <div class="muted" style="font-size:13px">${p === "gran" ? "As aulas do plano seguem o edital; abra no Gran a aula do mesmo assunto." : CONC[cargoAtual()].links ? "As aulas do plano abrem direto no curso do Estratégia." : "As aulas do plano seguem o edital; abra no Estratégia a aula do mesmo assunto."}</div>`
+      : `<div class="muted">Use o material que preferir: o plano segue os assuntos do edital.</div>`}</section>`;
+}
 function cursoUrl(x){
   if (isPJ(x)){ const p = PJ[x[I_ID]]; if (!pjVe()) return matRec() || p.est || ""; const f = p.a.find(a => a[2]) || p.a[0]; return f ? DRV(f[2]||f[3]) : p.est; }
   return EC + CURSO[x[I_CUR] || x[I_MAT]] + "/aulas";
@@ -1094,7 +1123,7 @@ function provaCard(){
 let QZ = null;
 function abrirDiagnostico(){
   const pf = S.perfil || {};
-  QZ = {step:0, d: {cargo: CURSO_LINK || (CONC[pf.cargo] ? pf.cargo : "cfo"), motivo: pf.motivo || "", ident: pf.ident ?? null, prova: pf.prova || "", semEdital: pf.semEdital ?? true, leu: pf.leu ?? null,
+  QZ = {step:0, d: {cargo: CURSO_LINK || (CONC[pf.cargo] ? pf.cargo : "cfo"), motivo: pf.motivo || "", ident: pf.ident ?? null, prova: pf.prova || "", semEdital: pf.semEdital ?? true, leu: pf.leu ?? null, plat: pf.plat || "",
     horas: pf.horas || 4, dias: pf.dias ? [...pf.dias] : [1,2,3,4,5], q: Object.assign({tempo:null, rev:null, quest:null, edital:null}, pf.q || {}), dom: Object.assign({}, pf.dom || {})}};
   let w = $("quiz"); if (!w){ w = document.createElement("div"); w.id = "quiz"; w.className = "auth"; document.body.appendChild(w); }
   w.classList.add("on"); aplicaConcurso(QZ.d.cargo); qzRender();
@@ -1127,9 +1156,11 @@ function qzRender(){
       <p class="lead">${esc(CONC[d.cargo].info)}</p>
       <div class="fld"><label>Já tem data de prova?</label>${chips("semEdital", [["false","Sim, tenho a data"],["true","Ainda não (vou usar uma previsão)"]], String(d.semEdital))}</div>
       <div class="fld"><label for="qProva">${d.semEdital ? "Data prevista da prova" : "Data da prova"}</label><div class="box"><input type="date" id="qProva" value="${esc(d.prova)}" min="${today()}" style="padding:0 12px"></div></div>
+      <div class="fld"><label>Onde você vai estudar as aulas?</label>${chips("plat", Object.keys(PLATS).map(k => [k, PLATS[k]]), d.plat)}</div>
+      ${d.plat && d.plat !== "outro" && CURSOS[d.cargo] ? `<div class="alert on ok">Curso indicado: <b>${esc(CURSOS[d.cargo][d.plat][0])}</b>. O link fica no Plano e em cada aula.</div>` : ""}
       <div class="fld"><label>Você já leu o edital inteiro e verticalizou os tópicos?</label>${chips("leu", [["sim","Sim"],["nao","Ainda não"]], d.leu)}</div>
       ${d.leu === "nao" ? `<div class="alert on ok">Sem problema: a aba Aulas já traz o edital verticalizado e enumerado. Leia os detalhes da prova (tempo, número e peso das questões, discursiva) assim que puder.</div>` : ""}`;
-    ok = !!d.prova && !!d.leu;
+    ok = !!d.prova && !!d.leu && !!d.plat;
   } else if (st === 2){
     corpo = `<small class="qk">Passo 3 · Rotina</small><h3>Quanto tempo você tem?</h3>
       <p class="lead">Conte só o tempo líquido: pausas e interrupções ficam de fora.</p>
@@ -1189,7 +1220,7 @@ function qzRender(){
   $("qForm").onsubmit = e => {
     e.preventDefault(); if (!ok) return;
     if (!last){ QZ.step++; qzRender(); return; }
-    const nivel = qzNivel(d.q), pf = {cargo:d.cargo, motivo:d.motivo.trim(), ident:d.ident, prova:d.prova, semEdital:d.semEdital, leu:d.leu, horas:d.horas, dias:d.dias.sort(), q:d.q, dom:d.dom, nivel, feito:today()};
+    const nivel = qzNivel(d.q), pf = {cargo:d.cargo, motivo:d.motivo.trim(), ident:d.ident, prova:d.prova, semEdital:d.semEdital, leu:d.leu, plat:d.plat, horas:d.horas, dias:d.dias.sort(), q:d.q, dom:d.dom, nivel, feito:today()};
     pf.bl = montaBlocos(pf); S.perfil = pf; delete S.car; QZ = null; limpaCursoLink(); aplicaConcurso(); aplicaMetas(); save();
     $("quiz").classList.remove("on"); QZ = null; tab = "crono"; PLANO_NOVO = true; G = null; render(); try { document.getElementById("main").scrollTop = 0; } catch(e){}
     toast("Plano montado: nível " + NIVEIS[nivel].nome + "."); paywall();
@@ -1459,6 +1490,7 @@ function vPlano(boasVindas){
     ${ok ? `<div class="muted">O edital fecha por volta de ${br(P.fimEdital)}; o tempo que sobra até a prova fica para revisão geral e simulados.</div>`
          : `<div class="alert on bad">Neste ritmo ficam ${P.sobra} aulas sem estudar até a prova. Fechar o edital pede ${P.precisa.toFixed(1).replace(".",",")} aulas por dia de estudo${P.precisa > MAX_DIA ? ", acima do limite de " + MAX_DIA + ": aumente os dias de estudo ou ajuste a data da prova" : ": aumente as horas ou os dias no diagnóstico"}.</div><div class="row"><button class="btn small ghost" id="plDiag">Ajustar diagnóstico</button></div>`}</section>`;
   const t = today();
+  h += cardCurso();
   h += `<section class="card"><h2>Semana a semana</h2>` + P.sem.map(w => semanaCard(w, P, w.ini <= t && t <= w.fim)).join("") + `</section>`;
   return h;
 }
@@ -1487,7 +1519,7 @@ function vHoje(){
     for (const m of mats){
       const x = nextOf(m,b);
       h += `<div class="item"><div class="txt"><div class="code">${label(x)}</div><div class="tt">${esc(x[I_TIT])}</div>
-        ${dicaDom(x)}<div class="muted">Edital: ${esc(x[I_ED])}${CONC[cargoAtual()].links && cursoUrl(x) ? ` · <a href="${cursoUrl(x)}" target="_blank" rel="noopener">${ondeAbrir(x)}</a>${isPJ(x)&&pjVe()&&PJ[x[I_ID]].a.length?" · "+PJ[x[I_ID]].a.length+" aulas":""}` : ""}</div>${x[I_OBS]?`<div class="muted">${esc(x[I_OBS])}</div>`:""}</div>
+        ${dicaDom(x)}<div class="muted">Edital: ${esc(x[I_ED])}${linkAula(x) ? ` · <a href="${linkAula(x)}" target="_blank" rel="noopener">${nomeLinkAula(x)}</a>${isPJ(x)&&pjVe()&&PJ[x[I_ID]].a.length?" · "+PJ[x[I_ID]].a.length+" aulas":""}` : ""}</div>${x[I_OBS]?`<div class="muted">${esc(x[I_OBS])}</div>`:""}</div>
         <button class="btn small ghost" data-first="${x[I_ID]}">Terminei</button></div>`;
     }
   }
@@ -1502,7 +1534,7 @@ function curWeek(){ const t = today(); let cur = null; for (const w of WEEKS) if
 function vAulas(){
   let h = `<section class="card"><input type="search" id="busca" placeholder="Buscar aula, lei ou item do edital" value="${esc(fBusca)}" aria-label="Buscar aula">
     <div class="chips" role="group" aria-label="Filtrar por bloco">${["todos",...blocosOrd()].map(b=>`<button class="chip" data-bloco="${b}" aria-pressed="${fBloco===b}">${b==="todos"?"Todos":"Bloco "+b}</button>`).join("")}</div>
-    <div class="muted">${cargoAtual()==="cfo" ? `Aulas dos cursos PM-GO (Cadete) do Estratégia e, em Português, as unidades do material recomendado, na ordem de estudo. Toque numa aula para ver o material, marcar as revisões, o % de acerto e o "não domino".` : `Edital verticalizado (${esc(CONC[cargoAtual()].edital.replace("Edital-base: ",""))}), uma unidade por tópico, na ordem dos seus blocos. Toque numa unidade para marcar as revisões, o % de acerto e o "não domino".`}</div></section>`;
+    <div class="muted">${cargoAtual()==="cfo" ? `${plat() === "estrategia" ? "Aulas dos cursos PM-GO (Cadete) do Estratégia" : "Aulas na ordem do edital (estrutura do curso PM-GO Cadete)"} e, em Português, as unidades do material recomendado, na ordem de estudo. Toque numa aula para ver o material, marcar as revisões, o % de acerto e o "não domino".` : `Edital verticalizado (${esc(CONC[cargoAtual()].edital.replace("Edital-base: ",""))}), uma unidade por tópico, na ordem dos seus blocos. Toque numa unidade para marcar as revisões, o % de acerto e o "não domino".`}</div></section>`;
   const q = fBusca.trim().toLowerCase();
   const groups = [];
   for (const x of T){
@@ -1554,7 +1586,7 @@ function vCrono(){
 
 function vRotina(){
   return `<section class="card"><h2>O dia de ${META_DIA/3600} hora${META_DIA===3600?"":"s"}</h2><ol class="steps">
-    <li><b>Revisões do dia</b> (~1h, cresce até ~2h). Rev 48h: monte o caderno de questões da aula no Sistema de Questões do Estratégia e resolva tudo, copiando erros e dúvidas com o comentário para o caderno de erros. Rev 7 e 30 dias: releia o caderno de erros e o resumo, ou o Passo Estratégico da matéria.</li>
+    <li><b>Revisões do dia</b> (~1h, cresce até ~2h). Rev 48h: monte o caderno de questões da aula ${plat() === "gran" ? "no Gran Questões (ou no TEC Concursos)" : plat() === "estrategia" ? "no Sistema de Questões do Estratégia (ou no TEC Concursos)" : "no seu sistema de questões (TEC Concursos, QConcursos…)"} e resolva tudo, copiando erros e dúvidas com o comentário para o caderno de erros. Rev 7 e 30 dias: releia o caderno de erros e o resumo, ou o Passo Estratégico da matéria.</li>
     <li><b>Aula nova, matéria A</b> (~1h15). PDF ou videoaula acelerada${cargoAtual()==="cfo" ? " (em Português, o material de cada unidade)" : ""}, resumo curto pensando em como cai na prova, lei seca nas matérias jurídicas.</li>
     <li><b>Aula nova, matéria B</b> (~1h15). Mesmo processo. Terminou a aula: toque em "Terminei" e as revisões entram na agenda.</li>
     <li><b>Fechamento</b> (10 min). O que ficou pela metade é a primeira coisa de amanhã.</li>
@@ -1691,7 +1723,7 @@ function openAula(id){
   let h = `<div class="code">${esc(MAT[m])} · ${esc(x[I_AULA])} · Bloco ${blocoDe(x)}</div><h2 style="text-transform:none;letter-spacing:0">${esc(x[I_TIT])}</h2>
     <div class="muted">Edital: ${esc(x[I_ED])}</div>`;
   if (x[I_OBS]) h += `<div class="muted">${esc(x[I_OBS])}</div>`;
-  h += `<div class="row" style="flex-wrap:wrap">${isPJ(x) || !CONC[cargoAtual()].links ? "" : `<a class="btn small ghost" href="${cursoUrl(x)}" target="_blank" rel="noopener">Abrir no Estratégia</a>`}${CONC[cargoAtual()].links && PASSO[m]?`<a class="btn small ghost" href="${EC+PASSO[m]}/aulas" target="_blank" rel="noopener">Passo Estratégico</a>`:""}</div>
+  h += `<div class="row" style="flex-wrap:wrap">${isPJ(x) || !linkAula(x) ? "" : `<a class="btn small ghost" href="${linkAula(x)}" target="_blank" rel="noopener">${nomeLinkAula(x).replace(/^./, c => c.toUpperCase())}</a>`}${plat() === "estrategia" && CONC[cargoAtual()].links && PASSO[m]?`<a class="btn small ghost" href="${EC+PASSO[m]}/aulas" target="_blank" rel="noopener">Passo Estratégico</a>`:""}</div>
     ${isPJ(x) ? pjList(x) : ""}
     <label class="switch"><input type="checkbox" id="dNd" ${s.nd?"checked":""}> Não domino (marcar em vermelho)</label>
     ${regraLivre() ? `<label class="f" for="dF">Data em que terminei a aula<input type="date" id="dF" value="${s.f||""}"></label>
@@ -1742,6 +1774,7 @@ function bind(){
   const v = document.getElementById("view");
   v.querySelectorAll("[data-rev]").forEach(b => b.onclick = () => { const n = nextRev(b.dataset.rev); if (n){ st(b.dataset.rev)[n.k] = true; save(); render(); toast("Rev "+n.n+" concluída"); } });
   v.querySelectorAll("[data-first]").forEach(b => b.onclick = () => { if (!terminar(b.dataset.first)) return; render(); toast("Feito. Rev 48h em "+br(add(today(),2))); });
+  v.querySelectorAll("[data-plat]").forEach(b => b.onclick = () => { if (!S.perfil) return; S.perfil.plat = b.dataset.plat; save(); render(); toast("Curso: " + PLATS[b.dataset.plat]); });
   const pd = v.querySelector("#plDiag"); if (pd) pd.onclick = abrirDiagnostico;
   const ph = v.querySelector("#plHoje"); if (ph) ph.onclick = () => { tab = "hoje"; render(); try { document.getElementById("main").scrollTop = 0; } catch(e){} };
   v.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openAula(b.dataset.open));
@@ -2029,7 +2062,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 27, PAGES = "https://planotatico.github.io/";
+const APP_V = 28, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
