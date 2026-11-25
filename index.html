@@ -55,6 +55,7 @@ main{flex:1;overflow-y:auto;padding:16px;padding-bottom:96px}
 .wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 h2{font:700 19px/1.2 var(--display);text-transform:uppercase;letter-spacing:.05em;margin:0;text-wrap:balance}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card.destaque{border:2px solid var(--ouro);background:linear-gradient(180deg,color-mix(in srgb,var(--ouro) 12%,var(--surface)),var(--surface))}
 .muted{color:var(--muted);font-size:14px}
 .row{display:flex;gap:10px;align-items:flex-start}
 .item{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
@@ -334,7 +335,7 @@ html[data-tema="prf"]{--navy:#0a2657;--navy2:#123a7a;--navy3:#1b4b98;--navy0:#03
   <button role="tab" data-tab="hoje" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Hoje</button>
   <button role="tab" data-tab="aulas" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>Aulas</button>
   <button role="tab" data-tab="horas" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>Horas</button>
-  <button role="tab" data-tab="crono" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v16h16"/><path d="M8 14l3-3 3 2 5-6"/></svg>Cronograma</button>
+  <button role="tab" data-tab="crono" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v16h16"/><path d="M8 14l3-3 3 2 5-6"/></svg>Plano</button>
   <button role="tab" data-tab="rotina" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 12h16M4 19h10"/></svg>Rotina</button>
   <button role="tab" data-tab="grupo" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c3 .2 5.5 2.3 5.5 5.8"/></svg>Grupo</button>
 </nav>
@@ -1119,7 +1120,7 @@ function qzRender(){
     <div class="abox"><div class="qprog">${passos.map((p,i) => `<span class="${i<st?"ok":i===st?"cur":""}">${esc(p)}</span>`).join("")}</div>
     <form class="apane" id="qForm" novalidate>${corpo}
       <div class="qnav">${st > 0 ? `<button type="button" class="qback" id="qBack">Voltar</button>` : (S.perfil ? `<button type="button" class="qback" id="qClose">Cancelar</button>` : "<span></span>")}
-      <button class="abtn" type="submit" ${ok ? "" : "disabled"}>${last ? "Começar meu plano" : "Continuar"}</button></div></form></div></div>`;
+      <button class="abtn" type="submit" ${ok ? "" : "disabled"}>${last ? "Ver meu plano" : "Continuar"}</button></div></form></div></div>`;
   w.scrollTop = 0;
   w.querySelectorAll(".qchip").forEach(b => b.onclick = () => {
     const q = b.dataset.q, v = b.dataset.v;
@@ -1144,8 +1145,8 @@ function qzRender(){
     if (!last){ QZ.step++; qzRender(); return; }
     const nivel = qzNivel(d.q), pf = {cargo:d.cargo, motivo:d.motivo.trim(), ident:d.ident, prova:d.prova, semEdital:d.semEdital, leu:d.leu, horas:d.horas, dias:d.dias.sort(), q:d.q, dom:d.dom, nivel, feito:today()};
     pf.bl = montaBlocos(pf); S.perfil = pf; delete S.car; QZ = null; limpaCursoLink(); aplicaConcurso(); aplicaMetas(); save();
-    $("quiz").classList.remove("on"); QZ = null; tab = "hoje"; G = null; render();
-    toast("Plano montado: nível " + NIVEIS[nivel].nome + ". Comece pelo Bloco I."); paywall();
+    $("quiz").classList.remove("on"); QZ = null; tab = "crono"; PLANO_NOVO = true; G = null; render(); try { document.getElementById("main").scrollTop = 0; } catch(e){}
+    toast("Plano montado: nível " + NIVEIS[nivel].nome + "."); paywall();
   };
 }
 /* ---------- cronômetro de horas líquidas ---------- */
@@ -1202,6 +1203,75 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 let tab = "hoje", fBloco = "todos", fBusca = "";
 const label = x => esc(SHORT[x[I_MAT]])+" · "+esc(x[I_AULA]);
 
+/* ---------- progressão: no máximo 3 aulas novas por dia, sem pular bloco, sem datas retroativas ---------- */
+const MAX_DIA = 3;
+const regraLivre = () => pjVe();   // o administrador edita livremente
+function feitasHoje(){ const t = today(); return T.filter(x => (S.t[x[I_ID]]||{}).f === t).length; }
+function podeTerminar(x){
+  if (regraLivre() || (S.t[x[I_ID]]||{}).f) return "";
+  if (feitasHoje() >= MAX_DIA) return `Você já concluiu ${MAX_DIA} aulas novas hoje. Agora é revisar e fazer questões; a próxima aula fica para amanhã.`;
+  const b = currentBlock(); if (b && blocoDe(x) !== b) return `Esta aula é do Bloco ${blocoDe(x)}. Termine o Bloco ${b} antes de avançar.`;
+  return "";
+}
+function terminar(id){ const m = podeTerminar(byId(id)); if (m){ toast(m); return false; } const s = st(id); s.f = today(); s.d48 = s.d7 = s.d30 = false; save(); return true; }
+
+/* ---------- plano semana a semana, do diagnóstico até a prova ---------- */
+function porDiaPlano(){ const h = (S.perfil||{}).horas || 4; return h <= 2 ? 1 : h < 6 ? 2 : 3; }
+function filaPlano(){
+  const out = [];
+  for (const b of blocosOrd()){
+    const fil = {}; for (const x of T) if (blocoDe(x) === b && !(S.t[x[I_ID]]||{}).f){ const k = x[I_MAT]+"|"+x[I_BL]; (fil[k] = fil[k] || []).push(x); }
+    const ks = Object.keys(fil); let tem = true;
+    while (tem){ tem = false; for (const k of ks) if (fil[k].length){ out.push(fil[k].shift()); tem = true; } }
+  }
+  return out;
+}
+function planoSemanal(){
+  const pf = S.perfil; if (!pf || !pf.prova || pf.prova <= today()) return null;
+  const t = today(), fim = pf.prova, pd = porDiaPlano(), fila = filaPlano(), sem = [];
+  for (let ws = weekStart(t); ws <= fim; ws = add(ws, 7)){
+    let du = 0; for (let i=0;i<7;i++){ const d = add(ws,i); if (d >= t && d < fim && pf.dias.includes(parse(d).getDay())) du++; }
+    sem.push({ini:ws, fim:add(ws,6), du, aulas:[], prova: fim <= add(ws,6)});
+  }
+  const N = fila.length, duTotal = sem.reduce((a,w) => a + w.du, 0), capDe = ws => ws.reduce((a,w) => a + w.du*pd, 0);
+  let reserva = Math.min(4, Math.floor(sem.length/5));
+  while (reserva > 0 && capDe(sem.slice(0, sem.length - reserva)) < N) reserva--;
+  let i = 0;
+  sem.forEach((w, n) => { if (n >= sem.length - reserva) return; w.aulas = fila.slice(i, i + w.du*pd); i += w.aulas.length; });
+  const fimBloco = {}; fila.forEach(x => fimBloco[blocoDe(x)] = x[I_ID]);
+  sem.forEach((w, n) => { w.n = n+1; w.fecha = Object.keys(fimBloco).filter(b => w.aulas.some(x => x[I_ID] === fimBloco[b])); w.blocos = [...new Set(w.aulas.map(blocoDe))]; w.reta = !w.aulas.length && n >= sem.length - Math.max(2, reserva); });
+  const ultima = sem.filter(w => w.aulas.length).pop();
+  return {sem, pd, N, sobra: N - i, duTotal, precisa: duTotal ? N / duTotal : N, fimEdital: ultima ? ultima.fim : t};
+}
+function semanaTxt(w, P){
+  const gs = []; for (const x of w.aulas){ const g = {k:x[I_MAT]+"|"+x[I_BL], m:x[I_MAT], ob:x[I_BL]}; const nm = gNome(g); if (!gs.includes(nm)) gs.push(nm); }
+  if (w.prova) return {tit:"Semana da prova", txt:`Prova em ${br(S.perfil.prova)}. Só revisões leves, caderno de erros e descanso na véspera.`};
+  if (!w.du) return {tit:"Sem dias de estudo", txt:"Semana sem dias de estudo no seu plano."};
+  if (w.aulas.length) return {tit:(w.n === 1 ? "Preparação + " : "") + "Bloco " + w.blocos.join(" → "),
+    txt:`${w.aulas.length} aula${w.aulas.length>1?"s":""} nova${w.aulas.length>1?"s":""}: ${gs.join(" · ")}.` + (w.n === 1 ? " Antes, confira o edital e crie a pasta de cadernos de questões." : "") + (w.fecha.length ? ` Fecha o Bloco ${w.fecha.join(" e ")}: revisões de 30 dias em dia antes de abrir o próximo.` : " Revisões de 48h, 7 e 30 dias no dia certo.")};
+  if (w.reta) return {tit:"Reta final", txt:"Simulados no tempo de prova, refazer as questões erradas e revisar o caderno de erros."};
+  return {tit:"Revisão geral", txt:"Edital fechado: refazer os cadernos até 90% de acerto e revisar os resumos."};
+}
+function semanaCard(w, P, agora){
+  const z = semanaTxt(w, P);
+  return `<div class="week${agora?" now":""}"><input type="checkbox" data-week="P${w.ini}" ${S.w["P"+w.ini]?"checked":""} aria-label="Semana ${w.n} feita">
+    <div class="txt"><div><span class="wk">S${w.n}</span> <b>${br(w.ini)} a ${br(w.fim)}</b> · ${esc(z.tit)}</div><div>${esc(z.txt)}</div></div></div>`;
+}
+function vPlano(boasVindas){
+  const P = planoSemanal(), pf = S.perfil, C = CONC[cargoAtual()];
+  if (!P) return `<section class="card"><h2>Seu plano</h2><div class="muted">${pf ? "A data da prova já passou. Atualize a data no diagnóstico." : "Faça o diagnóstico para montar o seu plano até a prova."}</div><div class="row"><button class="btn small" id="plDiag">${pf ? "Refazer diagnóstico" : "Fazer diagnóstico"}</button></div></section>`;
+  const sem = P.sem.length, ok = !P.sobra;
+  let h = boasVindas ? `<section class="card destaque"><h2>Seu plano está pronto</h2><div>Montado pelo seu diagnóstico para o ${esc(C.nome)}, semana a semana até a prova. Comece hoje pelo Bloco ${esc(currentBlock()||"I")} na aba Hoje.</div><div class="row"><button class="btn small" id="plHoje">Começar hoje</button></div></section>` : "";
+  h += `<section class="card"><h2>Seu plano até a prova</h2><div class="kv"><b>Concurso</b><span>${esc(C.nome)}</span><b>Edital</b><span>${esc(C.edital.replace("Edital-base: ",""))}</span>
+    <b>Prova</b><span>${br(pf.prova)}/${pf.prova.slice(0,4)}${pf.semEdital ? " (previsão)" : ""} · ${sem} semana${sem>1?"s":""}</span>
+    <b>Ritmo</b><span>${P.pd} aula${P.pd>1?"s":""} nova${P.pd>1?"s":""} por dia de estudo (máximo de ${MAX_DIA}) · ${pf.dias.length} dias por semana</span>
+    <b>Aulas</b><span>${P.N} a estudar de ${T.length}</span></div>
+    ${ok ? `<div class="muted">O edital fecha por volta de ${br(P.fimEdital)}; o tempo que sobra até a prova fica para revisão geral e simulados.</div>`
+         : `<div class="alert on bad">Neste ritmo ficam ${P.sobra} aulas sem estudar até a prova. Fechar o edital pede ${P.precisa.toFixed(1).replace(".",",")} aulas por dia de estudo${P.precisa > MAX_DIA ? ", acima do limite de " + MAX_DIA + ": aumente os dias de estudo ou ajuste a data da prova" : ": aumente as horas ou os dias no diagnóstico"}.</div><div class="row"><button class="btn small ghost" id="plDiag">Ajustar diagnóstico</button></div>`}</section>`;
+  const t = today();
+  h += `<section class="card"><h2>Semana a semana</h2>` + P.sem.map(w => semanaCard(w, P, w.ini <= t && t <= w.fim)).join("") + `</section>`;
+  return h;
+}
 function vHoje(){
   const t = today(), dt = new Date();
   const due = T.map(x => ({x, n: nextRev(x[I_ID])})).filter(o => o.n && o.n.d <= t).sort((a,b)=> a.n.d < b.n.d ? -1 : 1);
@@ -1215,14 +1285,15 @@ function vHoje(){
   }
   h += `</section>`;
 
-  const b = currentBlock(), wd = dt.getDay();
+  const b = currentBlock(), wd = dt.getDay(), fh = feitasHoje(), cheio = !regraLivre() && fh >= MAX_DIA;
   h += `<section class="card"><h2>Aula nova · ${WD[wd]}</h2>`;
-  if (!b){ h += `<div class="empty">Edital fechado. Siga a manutenção do cronograma: refazer cadernos (meta 90%), discursiva e simulados.</div>`; }
+  if (b && cheio){ h += `<div class="empty"><b>${fh} de ${MAX_DIA} aulas novas hoje: meta cumprida.</b><br>Agora é consolidar: revisões, caderno de questões e caderno de erros. A próxima aula fica para amanhã.</div>`; }
+  else if (!b){ h += `<div class="empty">Edital fechado. Siga a manutenção do cronograma: refazer cadernos (meta 90%), discursiva e simulados.</div>`; }
   else if (S.perfil ? !S.perfil.dias.includes(wd) : (wd===0 || wd===6)){ h += `<div class="empty">Hoje não é dia de estudo no seu plano: descanso. Se quiser adiantar, só revisões.</div>`; }
   else {
     let mats = S.perfil ? matsHoje(b) : ROT[b][wd].filter(m => nextOf(m,b));
     for (const m of Object.keys(MAT)) if (mats.length < 2 && !mats.includes(m) && nextOf(m,b)) mats.push(m);
-    h += `<div class="muted">Bloco ${b} · ${mats.length > 1 ? "metade do tempo de conteúdo para cada matéria" : "todo o tempo de conteúdo nesta matéria"}. Se a aula não acabar hoje, ela continua amanhã.</div>`;
+    h += `<div class="muted">Bloco ${b} · ${mats.length > 1 ? "metade do tempo de conteúdo para cada matéria" : "todo o tempo de conteúdo nesta matéria"}. Se a aula não acabar hoje, ela continua amanhã.${regraLivre() ? "" : ` Aulas novas hoje: ${fh} de ${MAX_DIA}.`}</div>`;
     for (const m of mats){
       const x = nextOf(m,b);
       h += `<div class="item"><div class="txt"><div class="code">${label(x)}</div><div class="tt">${esc(x[I_TIT])}</div>
@@ -1232,10 +1303,8 @@ function vHoje(){
   }
   h += `</section>`;
 
-  const w = cargoAtual() === "cfo" ? curWeek() : null;
-  if (cargoAtual() !== "cfo"){}
-  else if (w){ h += `<section class="card"><h2>Semana ${w[0]} · ${w[2]}</h2><div class="muted">${esc(w[3])}</div><div>${esc(w[4])}</div></section>`; }
-  else { const f = WEEKS[0]; h += `<section class="card"><h2>Começa em ${br(f[1])}</h2><div class="muted">${esc(f[3])}</div><div>${esc(f[4])}</div></section>`; }
+  const P = planoSemanal(), w = P && P.sem.find(w => w.ini <= t && t <= w.fim);
+  if (w){ const z = semanaTxt(w, P); h += `<section class="card"><h2>Semana ${w.n} do plano · ${br(w.ini)} a ${br(w.fim)}</h2><div class="muted">${esc(z.tit)}</div><div>${esc(z.txt)}</div></section>`; }
   return h;
 }
 function curWeek(){ const t = today(); let cur = null; for (const w of WEEKS) if (w[1] <= t) cur = w; return cur; }
@@ -1243,7 +1312,7 @@ function curWeek(){ const t = today(); let cur = null; for (const w of WEEKS) if
 function vAulas(){
   let h = `<section class="card"><input type="search" id="busca" placeholder="Buscar aula, lei ou item do edital" value="${esc(fBusca)}" aria-label="Buscar aula">
     <div class="chips" role="group" aria-label="Filtrar por bloco">${["todos",...blocosOrd()].map(b=>`<button class="chip" data-bloco="${b}" aria-pressed="${fBloco===b}">${b==="todos"?"Todos":"Bloco "+b}</button>`).join("")}</div>
-    <div class="muted">${cargoAtual()==="cfo" ? `Aulas dos cursos PM-GO (Cadete) do Estratégia e, em Português, as unidades do material recomendado, na ordem de estudo. Toque numa aula para lançar a data, as revisões, o % de acerto e o "não domino".` : `Edital verticalizado (${esc(CONC[cargoAtual()].edital.replace("Edital-base: ",""))}), uma unidade por tópico, na ordem dos seus blocos. Toque numa unidade para lançar a data, as revisões, o % de acerto e o "não domino".`}</div></section>`;
+    <div class="muted">${cargoAtual()==="cfo" ? `Aulas dos cursos PM-GO (Cadete) do Estratégia e, em Português, as unidades do material recomendado, na ordem de estudo. Toque numa aula para ver o material, marcar as revisões, o % de acerto e o "não domino".` : `Edital verticalizado (${esc(CONC[cargoAtual()].edital.replace("Edital-base: ",""))}), uma unidade por tópico, na ordem dos seus blocos. Toque numa unidade para marcar as revisões, o % de acerto e o "não domino".`}</div></section>`;
   const q = fBusca.trim().toLowerCase();
   const groups = [];
   for (const x of T){
@@ -1279,7 +1348,9 @@ function vCronoBlocos(){
   }
   return h + `<section class="card"><h2>Depois do edital</h2><div class="muted">Refazer os cadernos de erros até 90% de acerto em cada tópico, treinar a discursiva e fazer simulados no tempo de prova.</div></section>`;
 }
+let PLANO_NOVO = false;
 function vCrono(){
+  if (S.perfil){ const h = vPlano(PLANO_NOVO); PLANO_NOVO = false; return h; }
   if (cargoAtual() !== "cfo") return vCronoBlocos();
   const cw = curWeek(), b = currentBlock();
   const left = b ? T.filter(x => blocoDe(x)===b && !(S.t[x[I_ID]]||{}).f).length : 0;
@@ -1433,13 +1504,15 @@ function openAula(id){
   h += `<div class="row" style="flex-wrap:wrap">${isPJ(x) || !CONC[cargoAtual()].links ? "" : `<a class="btn small ghost" href="${cursoUrl(x)}" target="_blank" rel="noopener">Abrir no Estratégia</a>`}${CONC[cargoAtual()].links && PASSO[m]?`<a class="btn small ghost" href="${EC+PASSO[m]}/aulas" target="_blank" rel="noopener">Passo Estratégico</a>`:""}</div>
     ${isPJ(x) ? pjList(x) : ""}
     <label class="switch"><input type="checkbox" id="dNd" ${s.nd?"checked":""}> Não domino (marcar em vermelho)</label>
-    <label class="f" for="dF">Data em que terminei a aula<input type="date" id="dF" value="${s.f||""}"></label>
-    <div class="row"><button class="btn small" id="dToday">Terminei hoje</button>${s.f?`<button class="btn small danger" id="dClear">Limpar datas</button>`:""}</div>`;
+    ${regraLivre() ? `<label class="f" for="dF">Data em que terminei a aula<input type="date" id="dF" value="${s.f||""}"></label>
+    <div class="row"><button class="btn small" id="dToday">Terminei hoje</button>${s.f?`<button class="btn small danger" id="dClear">Limpar datas</button>`:""}</div>`
+    : s.f ? `<div class="kv"><b>Concluída em</b><span>${br(s.f)}/${s.f.slice(0,4)}</span></div>${s.f === today() ? `<div class="row"><button class="btn small danger" id="dClear">Desfazer (marquei sem querer)</button></div>` : ""}`
+    : podeTerminar(x) ? `<div class="alert on bad">${esc(podeTerminar(x))}</div>` : `<div class="row"><button class="btn small" id="dToday">Terminei esta aula hoje</button></div>`}`;
   if (r){
     h += `<div>`;
     for (const v of r){
       const t = today(), cls = v.ok ? "done" : (v.d < t ? "late" : v.d===t ? "due" : "");
-      h += `<div class="revrow"><span><b>Rev ${v.n}</b> <span class="muted">${v.tipo}</span></span><span class="pill ${cls}">${br(v.d)}</span><input type="checkbox" data-rk="${v.k}" ${v.ok?"checked":""} aria-label="Rev ${v.n} feita" style="width:22px;height:22px;accent-color:var(--accent)"></div>`;
+      h += `<div class="revrow"><span><b>Rev ${v.n}</b> <span class="muted">${v.tipo}</span></span><span class="pill ${cls}">${br(v.d)}</span><input type="checkbox" data-rk="${v.k}" ${v.ok?"checked":""} ${!v.ok && v.d > t && !regraLivre() ? 'disabled title="Ainda não chegou o dia desta revisão"' : ""} aria-label="Rev ${v.n} feita" style="width:22px;height:22px;accent-color:var(--accent)"></div>`;
     }
     h += `</div>`;
   }
@@ -1450,10 +1523,10 @@ function openAula(id){
   document.getElementById("dlg").classList.add("open");
   const reopen = () => { save(); render(); openAula(id); };
   sh.querySelector("#dNd").onchange = e => { s.nd = e.target.checked; save(); render(); };
-  sh.querySelector("#dF").onchange = e => { s.f = e.target.value || undefined; if (!s.f){ s.d48=s.d7=s.d30=false; } reopen(); };
-  sh.querySelector("#dToday").onclick = () => { s.f = today(); s.d48=s.d7=s.d30=false; reopen(); toast("Revisões programadas"); };
+  const dF = sh.querySelector("#dF"); if (dF) dF.onchange = e => { s.f = e.target.value || undefined; if (!s.f){ s.d48=s.d7=s.d30=false; } reopen(); };
+  const dT = sh.querySelector("#dToday"); if (dT) dT.onclick = () => { if (regraLivre()){ s.f = today(); s.d48=s.d7=s.d30=false; } else if (!terminar(id)) return; reopen(); toast("Revisões programadas"); };
   const c = sh.querySelector("#dClear"); if (c) c.onclick = () => { delete s.f; s.d48=s.d7=s.d30=false; reopen(); };
-  sh.querySelectorAll("[data-rk]").forEach(el => el.onchange = e => { s[el.dataset.rk] = e.target.checked; reopen(); });
+  sh.querySelectorAll("[data-rk]").forEach(el => el.onchange = e => { const rv = (revs(id)||[]).find(v => v.k === el.dataset.rk); if (e.target.checked && rv && rv.d > today() && !regraLivre()){ e.target.checked = false; toast("Esta revisão é só em " + br(rv.d)); return; } s[el.dataset.rk] = e.target.checked; reopen(); });
   sh.querySelector("#dPct").oninput = e => { const v = e.target.value; s.pct = v===""?undefined:Math.max(0,Math.min(100,Number(v))); save(); };
   sh.querySelector("#dObs").oninput = e => { s.obs = e.target.value; save(); };
   sh.querySelector("#dClose").onclick = closeDlg;
@@ -1478,7 +1551,9 @@ function render(){
 function bind(){
   const v = document.getElementById("view");
   v.querySelectorAll("[data-rev]").forEach(b => b.onclick = () => { const n = nextRev(b.dataset.rev); if (n){ st(b.dataset.rev)[n.k] = true; save(); render(); toast("Rev "+n.n+" concluída"); } });
-  v.querySelectorAll("[data-first]").forEach(b => b.onclick = () => { const s = st(b.dataset.first); s.f = today(); s.d48=s.d7=s.d30=false; save(); render(); toast("Feito. Rev 48h em "+br(add(s.f,2))); });
+  v.querySelectorAll("[data-first]").forEach(b => b.onclick = () => { if (!terminar(b.dataset.first)) return; render(); toast("Feito. Rev 48h em "+br(add(today(),2))); });
+  const pd = v.querySelector("#plDiag"); if (pd) pd.onclick = abrirDiagnostico;
+  const ph = v.querySelector("#plHoje"); if (ph) ph.onclick = () => { tab = "hoje"; render(); try { document.getElementById("main").scrollTop = 0; } catch(e){} };
   v.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openAula(b.dataset.open));
   v.querySelectorAll("[data-bloco]").forEach(b => b.onclick = () => { fBloco = b.dataset.bloco; render(); });
   const tg = v.querySelector("#tmToggle"); if (tg) tg.onclick = () => { if (S.tm.run){ tmStop(); toast("Pausado: "+hm(tmDay(today()))+" hoje"); } else { tmStart(); toast("Cronômetro rodando"); } render(); };
@@ -1738,7 +1813,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 16, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 17, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
