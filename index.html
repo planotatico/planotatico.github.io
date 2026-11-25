@@ -270,6 +270,7 @@ nav.tabs button{font-size:11px;padding-left:2px;padding-right:2px}
 .vit .vt{margin:0;color:#fff;font:700 20px var(--display);letter-spacing:.05em;text-transform:uppercase}
 .vit .vl{margin:0;color:rgba(255,255,255,.8);font-size:14px}
 .vcard{background:#fff;border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.vcard.vlink{grid-template-columns:1fr;border-left:5px solid var(--ouro)}
 .vcard b{display:block;color:var(--navy);font-size:15px}.vcard span{font-size:12px;color:#55627a}
 .vcard .abtn{grid-column:1/-1;height:42px;font-size:16px;text-decoration:none}
 .vp{font:700 22px var(--display);color:var(--navy);white-space:nowrap}.vp small{font:500 12px var(--body);color:#55627a}
@@ -385,7 +386,7 @@ html[data-tema="prf"]{--navy:#0a2657;--navy2:#123a7a;--navy3:#1b4b98;--navy0:#03
 
 <script>"use strict";
 let MAT = {
-  PORT:"Língua Portuguesa (Pablo Jamilk)", CONST:"Direito Constitucional", ADM:"Direito Administrativo", PEN:"Direito Penal",
+  PORT:"Língua Portuguesa", CONST:"Direito Constitucional", ADM:"Direito Administrativo", PEN:"Direito Penal",
   PP:"Direito Processual Penal", LPE:"Legislação Penal Especial e Extravagante",
   DPM:"Direito Penal Militar", DPPM:"Direito Processual Penal Militar", GO:"Realidade de Goiás"
 };
@@ -419,8 +420,8 @@ let T = [
 ["PJ 22", "PORT", "Unidade 22", "Interpretação de textos e tipologias textuais", "I", "PORT 01, 02"],
 ["PJ 23", "PORT", "Unidade 23", "Gêneros (charge, tirinha, poema), funções da linguagem, conotação, figuras e tradução de sentido", "I", "PORT 02, 03, 04, 05, 12"],
 ["PJ 24", "PORT", "Unidade 24", "Ortografia", "I", "PORT 06"],
-["PJ 25", "PORT", "Unidade 25", "Coesão e coerência textuais; reescrita", "I", "PORT 13, 14, 15", "O curso do Pablo não tem PDF deste tema: use a Aula 12 do Estratégia."],
-["PJ 26", "PORT", "Unidade 26", "Variação linguística", "I", "PORT 21", "O curso do Pablo não tem PDF deste tema: use a Aula 15 do Estratégia."],
+["PJ 25", "PORT", "Unidade 25", "Coesão e coerência textuais; reescrita", "I", "PORT 13, 14, 15", "Para este tema, use a Aula 12 do Estratégia."],
+["PJ 26", "PORT", "Unidade 26", "Variação linguística", "I", "PORT 21", "Para este tema, use a Aula 15 do Estratégia."],
 ["CONST 00","CONST","Aula 00","Poder constituinte. Normas constitucionais. Princípios fundamentais (arts. 1º a 4º)","I","CONST 01, 02, 04"],
 ["CONST 01","CONST","Aula 01","Teoria geral dos direitos fundamentais","I","CONST 05"],
 ["CONST 02","CONST","Aula 02","Direitos e deveres individuais e coletivos (art. 5º), parte I","I","CONST 05"],
@@ -529,7 +530,7 @@ let T = [
 ["GO 03","GO","Aula 03","Formação econômica de Goiás","III","GO 01"],
 ["GO 04","GO","Aula 04","História política de Goiás","III","GO 03"],
 ["GO 05","GO","Aula 05","História sociocultural de Goiás","III","GO 04"],
-["PJ 27", "PORT", "Unidade 27", "Redação Oficial", "III", "PORT 22", "Módulo bônus do Pablo Jamilk."],
+["PJ 27", "PORT", "Unidade 27", "Redação Oficial", "III", "PORT 22", "Módulo bônus."],
 ["CONST 16","CONST","Aula 16","Constituição do Estado de Goiás: organização dos Poderes (só PDF)","III","CONST 13"],
 ["LPE 22","LPE","Aula 22","Estatuto dos Policiais Militares de Goiás (Lei 8.033/75), parte 1","III","LE 15"],
 ["LPE 23","LPE","Aula 23","Estatuto dos Policiais Militares de Goiás, parte 2","III","LE 15"],
@@ -649,11 +650,13 @@ function st(id){ return S.t[id] || (S.t[id] = {}); }
 const byId = id => T.find(x => x[I_ID]===id);
 const DRV = id => "https://drive.google.com/file/d/"+id+"/view";
 const isPJ = x => !!PJ[x[I_ID]];
+const pjVe = () => { try { return !!ACC.dono; } catch(e){ return false; } };   // arquivos do Drive (material recomendado de Português): só o dono abre
+const matRec = () => { try { return ((VENDAS.cursos||{})[cargoAtual()]||{}).material || ""; } catch(e){ return ""; } };   // página oficial do material, definida no Painel de vendas
 function cursoUrl(x){
-  if (isPJ(x)){ const p = PJ[x[I_ID]]; const f = p.a.find(a => a[2]) || p.a[0]; return f ? DRV(f[2]||f[3]) : p.est; }
+  if (isPJ(x)){ const p = PJ[x[I_ID]]; if (!pjVe()) return matRec() || p.est || ""; const f = p.a.find(a => a[2]) || p.a[0]; return f ? DRV(f[2]||f[3]) : p.est; }
   return EC + CURSO[x[I_CUR] || x[I_MAT]] + "/aulas";
 }
-const ondeAbrir = x => isPJ(x) ? (PJ[x[I_ID]].a.length ? "abrir 1º PDF no Drive" : "abrir no Estratégia") : "abrir no Estratégia";
+const ondeAbrir = x => isPJ(x) ? (PJ[x[I_ID]].a.length && pjVe() ? "abrir material recomendado" : matRec() ? "ver material recomendado" : "abrir no Estratégia") : "abrir no Estratégia";
 
 /* ---------- datas ---------- */
 function parse(d){ const [y,m,dd] = d.split("-").map(Number); return new Date(y, m-1, dd); }
@@ -1044,7 +1047,7 @@ function provaCard(){
 let QZ = null;
 function abrirDiagnostico(){
   const pf = S.perfil || {};
-  QZ = {step:0, d: {cargo: CONC[pf.cargo] ? pf.cargo : "cfo", motivo: pf.motivo || "", ident: pf.ident ?? null, prova: pf.prova || "", semEdital: pf.semEdital ?? true, leu: pf.leu ?? null,
+  QZ = {step:0, d: {cargo: CURSO_LINK || (CONC[pf.cargo] ? pf.cargo : "cfo"), motivo: pf.motivo || "", ident: pf.ident ?? null, prova: pf.prova || "", semEdital: pf.semEdital ?? true, leu: pf.leu ?? null,
     horas: pf.horas || 4, dias: pf.dias ? [...pf.dias] : [1,2,3,4,5], q: Object.assign({tempo:null, rev:null, quest:null, edital:null}, pf.q || {}), dom: Object.assign({}, pf.dom || {})}};
   let w = $("quiz"); if (!w){ w = document.createElement("div"); w.id = "quiz"; w.className = "auth"; document.body.appendChild(w); }
   w.classList.add("on"); aplicaConcurso(QZ.d.cargo); qzRender();
@@ -1140,7 +1143,7 @@ function qzRender(){
     e.preventDefault(); if (!ok) return;
     if (!last){ QZ.step++; qzRender(); return; }
     const nivel = qzNivel(d.q), pf = {cargo:d.cargo, motivo:d.motivo.trim(), ident:d.ident, prova:d.prova, semEdital:d.semEdital, leu:d.leu, horas:d.horas, dias:d.dias.sort(), q:d.q, dom:d.dom, nivel, feito:today()};
-    pf.bl = montaBlocos(pf); S.perfil = pf; delete S.car; QZ = null; aplicaConcurso(); aplicaMetas(); save();
+    pf.bl = montaBlocos(pf); S.perfil = pf; delete S.car; QZ = null; limpaCursoLink(); aplicaConcurso(); aplicaMetas(); save();
     $("quiz").classList.remove("on"); QZ = null; tab = "hoje"; G = null; render();
     toast("Plano montado: nível " + NIVEIS[nivel].nome + ". Comece pelo Bloco I."); paywall();
   };
@@ -1223,7 +1226,7 @@ function vHoje(){
     for (const m of mats){
       const x = nextOf(m,b);
       h += `<div class="item"><div class="txt"><div class="code">${label(x)}</div><div class="tt">${esc(x[I_TIT])}</div>
-        ${dicaDom(x)}<div class="muted">Edital: ${esc(x[I_ED])}${CONC[cargoAtual()].links ? ` · <a href="${cursoUrl(x)}" target="_blank" rel="noopener">${ondeAbrir(x)}</a>${isPJ(x)&&PJ[x[I_ID]].a.length?" · "+PJ[x[I_ID]].a.length+" aulas do Pablo":""}` : ""}</div>${x[I_OBS]?`<div class="muted">${esc(x[I_OBS])}</div>`:""}</div>
+        ${dicaDom(x)}<div class="muted">Edital: ${esc(x[I_ED])}${CONC[cargoAtual()].links && cursoUrl(x) ? ` · <a href="${cursoUrl(x)}" target="_blank" rel="noopener">${ondeAbrir(x)}</a>${isPJ(x)&&pjVe()&&PJ[x[I_ID]].a.length?" · "+PJ[x[I_ID]].a.length+" aulas":""}` : ""}</div>${x[I_OBS]?`<div class="muted">${esc(x[I_OBS])}</div>`:""}</div>
         <button class="btn small ghost" data-first="${x[I_ID]}">Terminei</button></div>`;
     }
   }
@@ -1240,7 +1243,7 @@ function curWeek(){ const t = today(); let cur = null; for (const w of WEEKS) if
 function vAulas(){
   let h = `<section class="card"><input type="search" id="busca" placeholder="Buscar aula, lei ou item do edital" value="${esc(fBusca)}" aria-label="Buscar aula">
     <div class="chips" role="group" aria-label="Filtrar por bloco">${["todos",...blocosOrd()].map(b=>`<button class="chip" data-bloco="${b}" aria-pressed="${fBloco===b}">${b==="todos"?"Todos":"Bloco "+b}</button>`).join("")}</div>
-    <div class="muted">${cargoAtual()==="cfo" ? `Aulas dos cursos PM-GO (Cadete) do Estratégia e, em Português, unidades do curso do Pablo Jamilk (seu Drive), na ordem de estudo. Toque numa aula para lançar a data, as revisões, o % de acerto e o "não domino".` : `Edital verticalizado (${esc(CONC[cargoAtual()].edital.replace("Edital-base: ",""))}), uma unidade por tópico, na ordem dos seus blocos. Toque numa unidade para lançar a data, as revisões, o % de acerto e o "não domino".`}</div></section>`;
+    <div class="muted">${cargoAtual()==="cfo" ? `Aulas dos cursos PM-GO (Cadete) do Estratégia e, em Português, as unidades do material recomendado, na ordem de estudo. Toque numa aula para lançar a data, as revisões, o % de acerto e o "não domino".` : `Edital verticalizado (${esc(CONC[cargoAtual()].edital.replace("Edital-base: ",""))}), uma unidade por tópico, na ordem dos seus blocos. Toque numa unidade para lançar a data, as revisões, o % de acerto e o "não domino".`}</div></section>`;
   const q = fBusca.trim().toLowerCase();
   const groups = [];
   for (const x of T){
@@ -1291,7 +1294,7 @@ function vCrono(){
 function vRotina(){
   return `<section class="card"><h2>O dia de ${META_DIA/3600} hora${META_DIA===3600?"":"s"}</h2><ol class="steps">
     <li><b>Revisões do dia</b> (~1h, cresce até ~2h). Rev 48h: monte o caderno de questões da aula no Sistema de Questões do Estratégia e resolva tudo, copiando erros e dúvidas com o comentário para o caderno de erros. Rev 7 e 30 dias: releia o caderno de erros e o resumo, ou o Passo Estratégico da matéria.</li>
-    <li><b>Aula nova, matéria A</b> (~1h15). PDF ou videoaula acelerada${cargoAtual()==="cfo" ? " (em Português, as aulas do Pablo Jamilk de cada unidade)" : ""}, resumo curto pensando em como cai na prova, lei seca nas matérias jurídicas.</li>
+    <li><b>Aula nova, matéria A</b> (~1h15). PDF ou videoaula acelerada${cargoAtual()==="cfo" ? " (em Português, o material de cada unidade)" : ""}, resumo curto pensando em como cai na prova, lei seca nas matérias jurídicas.</li>
     <li><b>Aula nova, matéria B</b> (~1h15). Mesmo processo. Terminou a aula: toque em "Terminei" e as revisões entram na agenda.</li>
     <li><b>Fechamento</b> (10 min). O que ficou pela metade é a primeira coisa de amanhã.</li>
     <li><b>Sexta</b> (+15 min). Planeje a semana seguinte no Cronograma.</li></ol>
@@ -1418,8 +1421,9 @@ function bindGrupo(v){
 /* ---------- detalhe da aula ---------- */
 function pjList(x){
   const p = PJ[x[I_ID]];
-  if (!p.a.length) return `<div><a class="btn small ghost" href="${p.est}" target="_blank" rel="noopener">Abrir no Estratégia</a></div>`;
-  return `<div class="pjl"><div class="muted">Aulas do Pablo Jamilk nesta unidade</div>` + p.a.map(a => `<div class="pjrow"><span class="code">${esc(a[0].length<4?a[0]:"")}</span><span class="tt">${esc(a[1])}</span><span class="pjlinks">${a[2]?`<a href="${DRV(a[2])}" target="_blank" rel="noopener">PDF</a>`:""}${a[3]?`<a href="${DRV(a[3])}" target="_blank" rel="noopener">vídeo</a>`:""}</span></div>`).join("") + `</div>`;
+  if (!p.a.length) return p.est ? `<div><a class="btn small ghost" href="${p.est}" target="_blank" rel="noopener">Abrir no Estratégia</a></div>` : "";
+  if (!pjVe()) return `<div class="pjl"><div class="muted">Material recomendado nesta unidade</div>` + p.a.map(a => `<div class="pjrow"><span class="code">${esc(a[0].length<4?a[0]:"")}</span><span class="tt">${esc(a[1])}</span><span class="pjlinks"></span></div>`).join("") + `</div>` + (matRec() ? `<div><a class="btn small ghost" href="${esc(matRec())}" target="_blank" rel="noopener">Ver material recomendado</a></div>` : "");
+  return `<div class="pjl"><div class="muted">Material recomendado nesta unidade</div>` + p.a.map(a => `<div class="pjrow"><span class="code">${esc(a[0].length<4?a[0]:"")}</span><span class="tt">${esc(a[1])}</span><span class="pjlinks">${a[2]?`<a href="${DRV(a[2])}" target="_blank" rel="noopener">PDF</a>`:""}${a[3]?`<a href="${DRV(a[3])}" target="_blank" rel="noopener">vídeo</a>`:""}</span></div>`).join("") + `</div>`;
 }
 function openAula(id){
   const x = byId(id), s = st(id), r = revs(id), m = x[I_MAT];
@@ -1539,7 +1543,7 @@ async function authCall(btn, body, campos){
 async function aposEntrar(r, lembrar, msg){
   setConta({t:r.t, u:r.u, nome:r.nome, email:r.email}, lembrar); S.sy = 0; GR = null; ACC = {dono:!!r.dono, acessos:r.acessos||{}}; guardaV(); keep();
   ["lSenha","cSenha","cSenha2","eSenha","eSenha2","eCod"].forEach(id => $(id).value = "");
-  toast(msg); await syncNow(false); G = null; aplicaConcurso(); aplicaMetas(); render(); if (!S.perfil) abrirDiagnostico(); else paywall();
+  toast(msg); await syncNow(false); G = null; aplicaConcurso(); aplicaMetas(); render(); if (!S.perfil || cursoLinkPendente()) abrirDiagnostico(); else { limpaCursoLink(); paywall(); }
 }
 function initAuth(){
   $("t_login").onclick = () => authPane("login"); $("t_cad").onclick = () => authPane("cad");
@@ -1601,6 +1605,16 @@ function initAuth(){
 
 /* ---------- plataforma de vendas: vitrine, assinatura e painel do administrador ---------- */
 const VKEY = KEY + ".vendas";
+/* link de acesso por curso: ...plano-cfo/?curso=prf abre o site já com aquele concurso */
+const CKEY = KEY + ".curso";
+let CURSO_LINK = (() => { try {
+  const k = new URLSearchParams(location.search).get("curso");
+  if (k && CONC[k]){ localStorage.setItem(CKEY, k); try { history.replaceState(null, "", location.pathname + location.hash); } catch(e){} return k; }
+  const g = localStorage.getItem(CKEY); return CONC[g] ? g : "";
+} catch(e){ return ""; } })();
+function limpaCursoLink(){ CURSO_LINK = ""; try { localStorage.removeItem(CKEY); } catch(e){} }
+function linkAcesso(k){ return "https://jeasanta.github.io/plano-cfo/?curso=" + k; }
+function cursoLinkPendente(){ return !!CURSO_LINK && !!S.perfil && S.perfil.cargo !== CURSO_LINK; }
 let VENDAS = (() => { try { return JSON.parse(localStorage.getItem(VKEY)||"null"); } catch(e){ return null; } })() || {ativa:false, cursos:{}};
 let ACC = (() => { try { return JSON.parse(localStorage.getItem(VKEY+".acc")||"null"); } catch(e){ return null; } })() || {dono:false, acessos:{}};
 function guardaV(){ try { localStorage.setItem(VKEY, JSON.stringify(VENDAS)); localStorage.setItem(VKEY+".acc", JSON.stringify(ACC)); } catch(e){} }
@@ -1612,14 +1626,15 @@ function linkCompra(k){ const c = (VENDAS.cursos||{})[k]; if (!c || !c.checkout)
 function cursosAVenda(){ return Object.keys(CONC).filter(k => (VENDAS.cursos[k]||{}).checkout && (VENDAS.cursos[k]||{}).visivel !== false); }
 function vitrineAuth(){
   const box = $("vitrine"); if (!box) return;
-  const ks = VENDAS.ativa ? cursosAVenda() : [];
-  box.hidden = !ks.length;
-  box.innerHTML = ks.length ? `<h3 class="vt">Planos de estudo por concurso</h3><p class="vl">Assine o plano do seu concurso. Depois, crie a conta com o mesmo e-mail da compra e o acesso é liberado na hora.</p>` +
-    ks.map(k => `<div class="vcard"><div><b>${esc(CONC[k].nome)}</b><span>${esc(CONC[k].edital.replace("Edital-base: ","Base: "))} · ${CONC[k].T.length} unidades</span></div><div class="vp">${esc(precoDe(k))}<small>/mês</small></div><a class="abtn" href="${esc(VENDAS.cursos[k].checkout)}" target="_blank" rel="noopener">Assinar</a></div>`).join("") : "";
+  const ks = VENDAS.ativa ? cursosAVenda() : [], cl = CURSO_LINK && !syncCfg() ? CURSO_LINK : "";
+  if (cl) aplicaConcurso(cl);
+  box.hidden = !ks.length && !cl;
+  box.innerHTML = (cl ? `<div class="vcard vlink"><div><b>Você está entrando no ${esc(CONC[cl].nome)}</b><span>Entre ou crie sua conta com o mesmo e-mail usado na compra. O plano deste concurso abre automaticamente.</span></div></div>` : "") + (ks.length ? `<h3 class="vt">Planos de estudo por concurso</h3><p class="vl">Assine o plano do seu concurso. Depois, crie a conta com o mesmo e-mail da compra e o acesso é liberado na hora.</p>` +
+    ks.map(k => `<div class="vcard"><div><b>${esc(CONC[k].nome)}</b><span>${esc(CONC[k].edital.replace("Edital-base: ","Base: "))} · ${CONC[k].T.length} unidades</span></div><div class="vp">${esc(precoDe(k))}<small>/mês</small></div><a class="abtn" href="${esc(VENDAS.cursos[k].checkout)}" target="_blank" rel="noopener">Assinar</a></div>`).join("") : "");
 }
 function paywall(){
   let w = $("pay");
-  const precisa = syncCfg() && S.perfil && !QZ && !temAcesso(cargoAtual());
+  const precisa = syncCfg() && S.perfil && !QZ && !cursoLinkPendente() && !temAcesso(cargoAtual());
   if (!precisa){ if (w) w.classList.remove("on"); return; }
   if (!w){ w = document.createElement("div"); w.id = "pay"; w.className = "auth"; document.body.appendChild(w); }
   const k = cargoAtual(), C = CONC[k], a = (ACC.acessos||{})[k], link = linkCompra(k);
@@ -1648,7 +1663,10 @@ async function abrirAdminVendas(){
     <label class="f">Preço mensal (como aparece)<input type="text" data-k="${k}" data-f="preco" value="${esc(v.preco||"")}" placeholder="R$ 39,90"></label>
     <label class="f">Link do checkout (Hotmart ou Kiwify)<input type="url" data-k="${k}" data-f="checkout" value="${esc(v.checkout||"")}" placeholder="https://pay.hotmart.com/..."></label>
     <label class="f">ID do produto na plataforma<input type="text" data-k="${k}" data-f="produto" value="${esc(v.produto||"")}" placeholder="Ex.: 1234567"></label>
-    <label class="chk" style="color:inherit"><input type="checkbox" data-k="${k}" data-f="visivel" ${v.visivel === false ? "" : "checked"}> Mostrar na vitrine</label></details>`; };
+    ${k === "cfo" ? `<label class="f">Material recomendado de Português: link da página oficial (opcional)<input type="url" data-k="${k}" data-f="material" value="${esc(v.material||"")}" placeholder="https://..."></label>` : ""}
+    <label class="chk" style="color:inherit"><input type="checkbox" data-k="${k}" data-f="visivel" ${v.visivel === false ? "" : "checked"}> Mostrar na vitrine</label>
+    <div class="muted" style="font-size:13px">Link de acesso (cole na Hotmart/Kiwify como entrega do produto):</div>
+    <div class="row" style="margin:4px 0 0;gap:6px;align-items:center"><code style="font-size:12px;word-break:break-all;flex:1">${esc(linkAcesso(k))}</code><button type="button" class="btn small ghost" data-copia="${esc(linkAcesso(k))}">Copiar</button></div></details>`; };
   sh.innerHTML = `<h2 style="margin:0">Painel de vendas</h2>
     <label class="chk" style="color:inherit;font-weight:600"><input type="checkbox" id="vAtiva" ${cfg.ativa ? "checked" : ""}> Cobrança ativa (sem assinatura, o aluno vê a tela de assinar)</label>
     <div class="muted">Você, como administrador, sempre tem acesso a todos os cursos.</div>
@@ -1667,11 +1685,13 @@ async function abrirAdminVendas(){
     <div class="kv">${(r.whlog||[]).map(l => `<b>${new Date(l.em).toLocaleString("pt-BR").slice(0,16)}</b><span>${esc([l.plat, l.ev, l.email, l.curso, l.res].filter(Boolean).join(" · "))}</span>`).join("") || "<span class='muted'>Nenhum aviso recebido ainda.</span>"}</div>
     <div class="row"><button class="btn small ghost" id="vFechar">Fechar</button></div>`;
   $("vFechar").onclick = closeDlg;
+  sh.querySelectorAll("[data-copia]").forEach(b => b.onclick = async e => { e.preventDefault(); try { await navigator.clipboard.writeText(b.dataset.copia); toast("Link copiado"); } catch(x){ toast(b.dataset.copia); } });
   $("vCopia").onclick = async () => { try { await navigator.clipboard.writeText(wh); toast("Endereço copiado"); } catch(e){ $("vWh").select(); toast("Selecione e copie"); } };
   $("vSalvar").onclick = async () => {
     const n = {ativa: $("vAtiva").checked, cursos: {}};
     sh.querySelectorAll("[data-k]").forEach(i => { const k = i.dataset.k; n.cursos[k] = n.cursos[k] || {}; n.cursos[k][i.dataset.f] = i.type === "checkbox" ? i.checked : i.value.trim(); });
-    for (const k in n.cursos){ if (n.cursos[k].checkout && !/^https:\/\//.test(n.cursos[k].checkout)){ toast("O link do checkout precisa começar com https://"); return; } }
+    for (const k in n.cursos){ if (n.cursos[k].material && !/^https:\/\//.test(n.cursos[k].material)){ toast("O link do material precisa começar com https://"); return; }
+      if (n.cursos[k].checkout && !/^https:\/\//.test(n.cursos[k].checkout)){ toast("O link do checkout precisa começar com https://"); return; } }
     try { const x = await api({acao:"admin_cfg", t:c.t, cfg:n}); if (!x.ok){ toast(x.erro); return; } VENDAS = {ativa:n.ativa, cursos:n.cursos}; guardaV(); toast("Configuração salva"); } catch(e){ toast("Sem conexão"); }
   };
   $("vLib").onclick = async () => {
@@ -1714,11 +1734,11 @@ function openConta(){
 initAuth();
 vitrineAuth(); carregaVitrine(); if (syncCfg()) carregaAcesso(); setTimeout(paywall, 400);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && syncCfg()) carregaAcesso(); });
-if (syncCfg() && !S.perfil) setTimeout(abrirDiagnostico, 300);
+if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico, 300); else if (syncCfg() && CURSO_LINK) limpaCursoLink();
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 15, PAGES = "https://jeasanta.github.io/plano-cfo/";
+const APP_V = 16, PAGES = "https://jeasanta.github.io/plano-cfo/";
 async function checkUpdate(){
   if (!window.CFO || !navigator.onLine) return;
   try {
