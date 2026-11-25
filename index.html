@@ -2018,6 +2018,9 @@ async function abrirAdminVendas(){
     <div class="muted">Você, como administrador, sempre tem acesso a todos os cursos.</div>
     ${Object.keys(CONC).map(linha).join("")}
     <div class="row"><button class="btn small" id="vSalvar">Salvar configuração</button></div>
+    <h2 style="margin:8px 0 0">Usuários cadastrados</h2>
+    <div class="muted">Todas as contas criadas. Com a cobrança ativa, quem não tem acesso vai para a tela de assinar; excluir apaga a conta e o progresso salvo.</div>
+    <div id="vUsers"><div class="muted">Carregando…</div></div>
     <h2 style="margin:8px 0 0">Webhook</h2>
     <div class="muted">Cole este endereço na Hotmart (Ferramentas › Webhook, versão 2.0) ou na Kiwify (Apps › Webhooks), marcando compra aprovada, renovação, cancelamento, reembolso e chargeback. Não compartilhe: quem tiver o link pode liberar acessos.</div>
     <textarea readonly rows="3" id="vWh">${esc(wh)}</textarea><div class="row"><button class="btn small ghost" id="vCopia">Copiar endereço</button></div>
@@ -2040,6 +2043,37 @@ async function abrirAdminVendas(){
       if (n.cursos[k].checkout && !/^https:\/\//.test(n.cursos[k].checkout)){ toast("O link do checkout precisa começar com https://"); return; } }
     try { const x = await api({acao:"admin_cfg", t:c.t, cfg:n}); if (!x.ok){ toast(x.erro); return; } VENDAS = {ativa:n.ativa, cursos:n.cursos}; guardaV(); toast("Configuração salva"); } catch(e){ toast("Sem conexão"); }
   };
+  const dt = n => n ? new Date(n).toLocaleDateString("pt-BR") : "—";
+  const dth = n => n ? new Date(n).toLocaleString("pt-BR").slice(0,17).replace(",", "") : "nunca";
+  const nomeC = k => (CONC[k] && CONC[k].nome) || (CONC[String(k).split("-")[0]] && CONC[String(k).split("-")[0]].nome) || k || "sem concurso";
+  const chaveC = k => CONC[k] ? k : (CONC[String(k).split("-")[0]] ? String(k).split("-")[0] : Object.keys(CONC)[0]);
+  const pintaUsers = lista => {
+    const box = $("vUsers"); if (!box) return;
+    const ativos = x => Object.entries(x.acessos||{}).filter(([k,v]) => v.ativo);
+    const pagos = lista.filter(x => !x.dono && ativos(x).length).length;
+    box.innerHTML = `<div class="muted" style="margin:6px 0">${lista.length} conta${lista.length === 1 ? "" : "s"} · ${pagos} com acesso ativo · ${lista.filter(x => !x.dono && !ativos(x).length).length} sem acesso</div>` + lista.map(x => {
+      const ac = ativos(x), ck = chaveC(x.cargo);
+      return `<div class="card" style="margin:8px 0;padding:12px">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div style="min-width:0"><b>${esc(x.nome)}</b>${x.dono ? ` <span class="pill">administrador</span>` : ""}<div class="muted" style="font-size:13px;word-break:break-all">${esc(x.email || x.u)}</div></div>
+        <span class="pill">${x.dono ? "acesso total" : ac.length ? "com acesso" : "sem acesso"}</span></div>
+        <div class="kv" style="margin-top:6px;font-size:13px"><b>Concurso</b><span>${esc(nomeC(x.cargo))}</span><b>Criada em</b><span>${dt(x.criado)}</span><b>Último uso</b><span>${dth(x.ultimo)}</span>
+        ${ac.length ? `<b>Acesso</b><span>${ac.map(([k,v]) => esc(nomeC(k)) + " até " + dt(v.ate) + (v.origem === "manual" ? " (cortesia)" : "")).join("<br>")}</span>` : ""}</div>
+        ${x.dono ? "" : `<div class="row" style="gap:6px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn small ghost" data-ulib="${esc(x.email || x.u)}" data-uc="${ck}">Liberar 30 dias</button>
+          ${ac.map(([k]) => `<button class="btn small ghost" data-utira="${esc(x.email || x.u)}" data-uc="${k}">Retirar ${esc(((CONC[k] && CONC[k].curto) || k).replace(/^Plano /, ""))}</button>`).join("")}
+          <button class="btn small ghost" style="color:var(--bad,#e5484d)" data-uexc="${esc(x.u)}" data-unome="${esc(x.nome)}">Excluir conta</button></div>`}
+      </div>`; }).join("");
+    box.querySelectorAll("[data-ulib]").forEach(b => b.onclick = async () => { b.disabled = true;
+      try { const y = await api({acao:"admin_liberar", t:c.t, email:b.dataset.ulib, curso:b.dataset.uc, dias:30}); toast(y.ok ? "Acesso liberado por 30 dias: " + nomeC(b.dataset.uc) : y.erro); carregaUsers(); } catch(e){ toast("Sem conexão"); b.disabled = false; } });
+    box.querySelectorAll("[data-utira]").forEach(b => b.onclick = async () => { b.disabled = true;
+      try { const y = await api({acao:"admin_liberar", t:c.t, email:b.dataset.utira, curso:b.dataset.uc, dias:0}); toast(y.ok ? "Acesso retirado" : y.erro); carregaUsers(); } catch(e){ toast("Sem conexão"); b.disabled = false; } });
+    box.querySelectorAll("[data-uexc]").forEach(b => b.onclick = async () => {
+      if (b.dataset.conf !== "1"){ b.dataset.conf = "1"; b.textContent = "Toque de novo para excluir " + b.dataset.unome.split(" ")[0]; setTimeout(() => { if (b.isConnected){ b.dataset.conf = ""; b.textContent = "Excluir conta"; } }, 4000); return; }
+      b.disabled = true;
+      try { const y = await api({acao:"admin_excluir", t:c.t, u:b.dataset.uexc}); if (!y.ok){ toast(y.erro); b.disabled = false; return; } toast("Conta excluída"); pintaUsers(y.usuarios || []); } catch(e){ toast("Sem conexão"); b.disabled = false; } });
+  };
+  const carregaUsers = async () => { try { const y = await api({acao:"admin_usuarios", t:c.t}); if (y.ok) pintaUsers(y.usuarios || []); else if ($("vUsers")) $("vUsers").innerHTML = `<div class="muted">${esc(y.erro || "Erro ao carregar")}</div>`; } catch(e){ if ($("vUsers")) $("vUsers").innerHTML = `<div class="muted">Sem conexão.</div>`; } };
+  carregaUsers();
   $("vLib").onclick = async () => {
     const em = $("vEmail").value.trim(), d = Number($("vDias").value||0);
     if (!EMAIL_RE.test(em)){ toast("E-mail inválido"); return; }
@@ -2085,7 +2119,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(() => { if (!S.p
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 29, PAGES = "https://planotatico.github.io/";
+const APP_V = 30, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
