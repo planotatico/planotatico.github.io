@@ -1350,7 +1350,7 @@ function timerCard(full){
     <div class="bar2" aria-hidden="true"><i id="tmBar" style="width:${Math.min(100,d/META_DIA*100).toFixed(1)}%"></i></div>
     <div class="muted" id="tmInfo">Hoje ${hm(d)} de 4h · semana ${hm(w)} de 20h</div>
     ${seletorAtiv("tm")}
-    <div class="row"><button class="btn" id="tmToggle">${run?"Pausar":"Iniciar"}</button>${full?`<button class="btn small ghost" data-tmadd="900">+15 min</button><button class="btn small ghost" data-tmadd="-900">−15 min</button>`:""}</div>
+    <div class="row" style="flex-wrap:wrap"><button class="btn" id="tmToggle">${run?"Pausar":"Iniciar"}</button>${full?`<button class="btn small ghost" data-tmadd="900">+15 min</button><button class="btn small ghost" data-tmadd="-900">−15 min</button><button class="btn small danger" id="tmZero">Zerar hoje</button>`:""}</div>
     <div class="muted">Pause em qualquer interrupção: só conta tempo de estudo de verdade. A contagem continua mesmo com o app fechado.</div></section>`;
   return h;
 }
@@ -1749,6 +1749,10 @@ function bind(){
   const tg = v.querySelector("#tmToggle"); if (tg) tg.onclick = () => { if (S.tm.run){ tmStop(); toast("Pausado: "+hm(tmDay(today()))+" hoje"); } else { if (!(S.tm.cur||{}).m && curPadrao().m) S.tm.cur = curPadrao(); tmStart(); toast((S.tm.cur||{}).m ? "Cronômetro rodando: " + nomeAtiv(S.tm.cur.m) : "Cronômetro rodando. Escolha a matéria para o gráfico de atividades"); } render(); };
   const tmM = v.querySelector("#tmM"); if (tmM) tmM.onchange = () => { const m = tmM.value, x = MAT[m] ? (nextOf(m, currentBlock()) || T.find(y => y[I_MAT] === m && !(S.t[y[I_ID]]||{}).f) || T.find(y => y[I_MAT] === m)) : null; tmTroca(m, x ? x[I_ID] : ""); render(); };
   const tmQ = v.querySelector("#tmQ"); if (tmQ) tmQ.onchange = () => { const ia = !!S.tm.run; if (ia) tmStop(); const c = S.tm.cur || {}; c.qm = tmQ.value; c.a = ""; S.tm.cur = c; if (ia) tmStart(); save(); render(); };
+  const tz = v.querySelector("#tmZero"); if (tz){ let arm = 0; tz.onclick = () => {
+    if (Date.now() - arm > 6000){ arm = Date.now(); tz.textContent = "Confirmar"; setTimeout(() => { if (tz.isConnected) tz.textContent = "Zerar hoje"; }, 6000); return; }
+    const t = today(); S.tm.run = null; for (const ch of ["days","by","byA"]) if (S.tm[ch]) delete S.tm[ch][t];
+    save(); G = null; render(); toast("Horas de hoje zeradas"); }; }
   const zr = v.querySelector("#zrGo"); if (zr){ let arm = 0; zr.onclick = () => {
     const per = v.querySelector("#zrP").value, nome = {dia:"de hoje", semana:"desta semana", mes:"deste mês", total:"de todo o período"}[per];
     if (Date.now() - arm > 6000){ arm = Date.now(); zr.textContent = "Toque de novo para apagar as horas " + nome; setTimeout(() => { if (zr.isConnected){ zr.textContent = "Zerar horas"; } }, 6000); return; }
@@ -2025,7 +2029,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 26, PAGES = "https://planotatico.github.io/";
+const APP_V = 27, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
