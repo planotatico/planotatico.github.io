@@ -1372,7 +1372,11 @@ function vHoras(){
     <div class="row"><label class="f" for="mhD" style="flex:1">Dia<input type="date" id="mhD" value="${t}"></label><label class="f" for="mhM" style="flex:1">Minutos<input type="number" id="mhM" inputmode="numeric" placeholder="ex.: 30"></label></div>
     <label class="f" for="mhA">Matéria ou atividade<select id="mhA" class="tmSel"><option value="">Sem matéria</option>${Object.keys(MAT).map(m => `<option value="${m}"${curPadrao().m===m?" selected":""}>${esc(nomeAtiv(m))}</option>`).join("")}${Object.keys(ATIV).map(k => `<option value="${k}">${ATIV[k]}</option>`).join("")}</select></label>
     <label class="f" for="mhB">Assunto<select id="mhB" class="tmSel">${opcoesAssunto(curPadrao().m)}</select></label>
-    <button class="btn small" id="mhGo" style="align-self:flex-start">Lançar</button></section>`;
+    <button class="btn small" id="mhGo" style="align-self:flex-start">Lançar</button></section>
+  <section class="card"><h2>Zerar horas</h2><div class="muted">Apaga o tempo registrado no período escolhido (inclusive o cronômetro em andamento). Não dá para desfazer.</div>
+    <div class="row" style="gap:8px;flex-wrap:wrap;align-items:flex-end"><label class="f" for="zrP" style="flex:1;min-width:150px">Período<select id="zrP" class="tmSel"><option value="dia">Hoje</option><option value="semana">Esta semana</option><option value="mes">Este mês</option><option value="total">Todas as horas</option></select></label>
+    <button class="btn small danger" id="zrGo" style="height:44px">Zerar horas</button></div>
+    <label class="chk" style="color:inherit"><input type="checkbox" id="zrQ"> Apagar também as questões registradas no período</label></section>`;
   return h;
 }
 function tickTimer(){
@@ -1745,6 +1749,14 @@ function bind(){
   const tg = v.querySelector("#tmToggle"); if (tg) tg.onclick = () => { if (S.tm.run){ tmStop(); toast("Pausado: "+hm(tmDay(today()))+" hoje"); } else { if (!(S.tm.cur||{}).m && curPadrao().m) S.tm.cur = curPadrao(); tmStart(); toast((S.tm.cur||{}).m ? "Cronômetro rodando: " + nomeAtiv(S.tm.cur.m) : "Cronômetro rodando. Escolha a matéria para o gráfico de atividades"); } render(); };
   const tmM = v.querySelector("#tmM"); if (tmM) tmM.onchange = () => { const m = tmM.value, x = MAT[m] ? (nextOf(m, currentBlock()) || T.find(y => y[I_MAT] === m && !(S.t[y[I_ID]]||{}).f) || T.find(y => y[I_MAT] === m)) : null; tmTroca(m, x ? x[I_ID] : ""); render(); };
   const tmQ = v.querySelector("#tmQ"); if (tmQ) tmQ.onchange = () => { const ia = !!S.tm.run; if (ia) tmStop(); const c = S.tm.cur || {}; c.qm = tmQ.value; c.a = ""; S.tm.cur = c; if (ia) tmStart(); save(); render(); };
+  const zr = v.querySelector("#zrGo"); if (zr){ let arm = 0; zr.onclick = () => {
+    const per = v.querySelector("#zrP").value, nome = {dia:"de hoje", semana:"desta semana", mes:"deste mês", total:"de todo o período"}[per];
+    if (Date.now() - arm > 6000){ arm = Date.now(); zr.textContent = "Toque de novo para apagar as horas " + nome; setTimeout(() => { if (zr.isConnected){ zr.textContent = "Zerar horas"; } }, 6000); return; }
+    const t = today(), x = parse(t), [de, ate] = per === "dia" ? [t, t] : per === "semana" ? [weekStart(t), add(weekStart(t), 6)] : per === "mes" ? [iso(new Date(x.getFullYear(), x.getMonth(), 1)), iso(new Date(x.getFullYear(), x.getMonth()+1, 0))] : ["0000-01-01", "9999-12-31"];
+    if (S.tm.run && t >= de && t <= ate) S.tm.run = null;
+    for (const ch of ["days","by","byA"]) for (const d of Object.keys(S.tm[ch]||{})) if (d >= de && d <= ate) delete S.tm[ch][d];
+    if (v.querySelector("#zrQ").checked) for (const d of Object.keys(S.q||{})) if (d >= de && d <= ate) delete S.q[d];
+    save(); G = null; render(); toast("Horas " + nome + " zeradas"); }; }
   const mhA = v.querySelector("#mhA"); if (mhA) mhA.onchange = () => { v.querySelector("#mhB").innerHTML = opcoesAssunto(mhA.value); };
   const qxM = v.querySelector("#qxM"); if (qxM) qxM.onchange = () => { QXM = qxM.value; QXA = ""; render(); };
   const qxA = v.querySelector("#qxA"); if (qxA) qxA.onchange = () => { QXA = qxA.value; };
@@ -2013,7 +2025,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 25, PAGES = "https://planotatico.github.io/";
+const APP_V = 26, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
