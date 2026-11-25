@@ -2013,9 +2013,16 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(abrirDiagnostico
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 24, PAGES = "https://planotatico.github.io/";
+const APP_V = 25, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
-  if (!window.CFO || !navigator.onLine) return;
+  if (!navigator.onLine) return;
+  if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
+    try { const r = await (await fetch(PAGES + "version.json?_=" + Date.now(), {cache:"no-store"})).json();
+      let tent = ""; try { tent = sessionStorage.getItem("ptUpd") || ""; } catch(e){}
+      if (r && r.v > APP_V && tent !== String(r.v)){ try { sessionStorage.setItem("ptUpd", String(r.v)); } catch(e){} clearTimeout(syncT); await syncNow(true); const u = new URL(location.href); u.searchParams.set("v", r.v); location.replace(u.toString()); }
+    } catch(e){}
+    return;
+  }
   try {
     const r = await (await fetch(PAGES + "version.json?_=" + Date.now(), {cache:"no-store"})).json();
     if (!(r && r.v > APP_V)) return;
@@ -2025,7 +2032,8 @@ async function checkUpdate(){
     if (window.CFO.saveApp(r.v, html)) { toast("App atualizado"); setTimeout(() => window.CFO.reload(), 800); }
   } catch(e){}
 }
-setTimeout(checkUpdate, 2500);
+setTimeout(checkUpdate, 2500); setInterval(checkUpdate, 5*60*1000);
+try { if (/[?&]v=\d+/.test(location.search)){ const u = new URL(location.href); u.searchParams.delete("v"); history.replaceState(null, "", u.pathname + u.search + u.hash); } } catch(e){}
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkUpdate(); });
 </script>
 </body>
