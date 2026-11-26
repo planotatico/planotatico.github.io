@@ -1649,7 +1649,8 @@ function fcOpcoesMat(sel){ return `<option value="">Geral (sem matéria)</option
 function fcPalavras(t){ return new Set(String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\(.*?\)/g, " ").split(/[^a-z0-9]+/).filter(w => w.length >= 4 && !/^(arts?|parte|partes|disposicoes|gerais|geral|preliminares|sobre|para|como|entre|outros|outras|lei|seus|suas|pelo|pela|demais|especie|especies|nocoes|conceito|aula|resumo|questoes|crimes|crime|contra|praticados|direito|direitos|emprego|relacoes|entre|atos)$/.test(w)).map(w => w.slice(0, 6))); }
 const FC_SIN = {pessoa:["vida","honra","lesoes","liberd","pericl","rixa"], patrim:["furto","roubo","dano","apropr","estelio","recept","usurpa"], coorde:["conjun","sintax"], subord:["conjun","sintax"], classe:["substa","adjeti","advérb","adverb","pronom","verbos","numera","preposi","artigo"], sintax:["sintax"], semant:["semant"], textos:["tipolo","coesao"], interp:["tipolo"], reescr:["coesao","sintax"], prisao:["prisao"], busca:["prova"], apreen:["prova"], provas:["prova"], licita:["licita","contrat","fase","habili","julgam"], improb:["improb","prescr"], agente:["agente","provim","direit","regime"], tortur:["tortur"]};
 function fcPalAula(t){ const p = fcPalavras(t); for (const w of [...p]) (FC_SIN[w] || []).forEach(x => p.add(x.slice(0, 6))); return p; }
-async function fcDaAula(id){ // cartões ligados ao assunto da aula: os criados nela e os dos baralhos prontos da mesma matéria
+const FC_POR_AULA = 15; // cartões de fixação por aula; os mesmos voltam nas revisões de 48h, 7 e 30 dias
+async function fcDaAula(id, rev){ // cartões ligados ao assunto da aula: os criados nela e os dos baralhos prontos da mesma matéria (rev: inclui os que ainda não venceram no Anki)
   const x = byId(id); if (!x) return [];
   const m = x[I_MAT], pal = fcPalAula(x[I_TIT]), cg = cargoAtual(), t = today();
   const meus = fcTodos().filter(c => c.a === id);
@@ -1662,17 +1663,45 @@ async function fcDaAula(id){ // cartões ligados ao assunto da aula: os criados 
       achados.push(Object.assign({id: cid, f: c.f, v: c.v, t: c.t, m, dk: d.id, cr: i, rp: 0, iv: 0, ef: 2.5, _n: n}, p)); });
   }
   const pri = c => (!c.rp ? 0 : c.due <= t ? 1 : 2), ja = new Set(meus.map(c => c.id));
-  const grupos = {}; achados.filter(c => !ja.has(c.id) && pri(c) < 2).sort((a,b) => pri(b) - pri(a) || a.cr - b.cr).forEach(c => (grupos[c.t] = grupos[c.t] || []).push(c));
+  const grupos = {}; achados.filter(c => !ja.has(c.id) && (rev || pri(c) < 2)).sort((a,b) => pri(b) - pri(a) || a.cr - b.cr).forEach(c => (grupos[c.t] = grupos[c.t] || []).push(c));
   const ordem = Object.keys(grupos).sort((a,b) => grupos[b][0]._n - grupos[a][0]._n), mist = []; // revisões vencidas primeiro, depois novos; alterna os assuntos
-  for (let i = 0; mist.length < 12 && ordem.some(k => grupos[k].length); i++){ const k = ordem[i % ordem.length]; if (grupos[k].length) mist.push(grupos[k].shift()); }
-  return meus.concat(mist).slice(0, 12);
+  for (let i = 0; mist.length < FC_POR_AULA && ordem.some(k => grupos[k].length); i++){ const k = ordem[i % ordem.length]; if (grupos[k].length) mist.push(grupos[k].shift()); }
+  return meus.concat(mist).slice(0, FC_POR_AULA);
+}
+async function fcDaRevisao(id){ // cartões guardados na fixação da aula; sem eles, escolhe agora pelo assunto
+  const ids = (S.t[id] || {}).fcIds || [];
+  if (!ids.length) return fcDaAula(id, true);
+  const x = byId(id), m = x ? x[I_MAT] : "", out = [];
+  for (const d of new Set(ids.filter(k => k.startsWith("d:")).map(k => k.split(":")[1]))){ try { await fcCarrega(d); } catch(e){} }
+  for (const cid of ids){
+    if (cid.startsWith("d:")){
+      const pt = cid.split(":"), d = pt[1], ci = pt.slice(2).join(":"), dk = FC_DK[d]; if (!dk) continue;
+      const i = dk.c.findIndex(c => String(c.i) === ci); if (i < 0) continue;
+      const c = dk.c[i], p = fcS().p[cid] || {}; if (p.sus) continue;
+      out.push(Object.assign({id: cid, f: c.f, v: c.v, t: c.t, m, dk: d, cr: i, rp: 0, iv: 0, ef: 2.5}, p));
+    } else { const c = fcS().c[cid]; if (c && !c.del) out.push(Object.assign({id: cid}, c)); }
+  }
+  return out.length ? out : fcDaAula(id, true);
+}
+async function revComFlash(id){ // revisão de 48h, 7 ou 30 dias: responde os flashcards da aula e a revisão é marcada como feita
+  const n = nextRev(id), x = byId(id); if (!n || !x) return;
+  const conclui = () => { st(id)[n.k] = true; save(); toast("Rev " + n.n + " concluída"); };
+  const cs = await fcDaRevisao(id);
+  if (!cs.length){ conclui(); render(); return; }
+  if (!(st(id).fcIds || []).length){ st(id).fcIds = cs.map(c => c.id); save(); }
+  FC_SESS_AULA = id;
+  fcRevisar(null, "Rev " + n.n + " · " + nomeAtiv(x[I_MAT]), cs, (feitos) => {
+    if (feitos >= cs.length) conclui(); else if (feitos) toast("Revisão parcial: responda todos os cartões para concluir");
+    closeDlgQuiet(); render();
+  });
 }
 async function fcPosAula(id, volta){
-  const x = byId(id), cs = await fcDaAula(id);
+  const x = byId(id), cs = (S.t[id] || {}).fcIds && S.t[id].fcIds.length ? await fcDaRevisao(id) : await fcDaAula(id);
   if (!cs.length) return volta && volta();
+  st(id).fcIds = cs.map(c => c.id); save();
   const sh = $("sheet");
   sh.innerHTML = `<h2 style="margin:0">Aula concluída</h2><div class="muted">${esc(x[I_TIT])}</div>
-    <div class="fcAula"><b>Agora fixe com ${cs.length} flashcard${cs.length === 1 ? "" : "s"} deste assunto</b><span class="muted">Leva poucos minutos. O resultado entra nas suas estatísticas da matéria, ao lado das questões, e os cartões voltam nas revisões no dia certo.</span></div>
+    <div class="fcAula"><b>Agora fixe com ${cs.length} flashcard${cs.length === 1 ? "" : "s"} deste assunto</b><span class="muted">Leva poucos minutos. O resultado entra nas suas estatísticas da matéria, ao lado das questões, e estes mesmos cartões voltam nas revisões de 48 horas, 7 e 30 dias desta aula.</span></div>
     <div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn" id="paSim">Resolver agora</button><button class="btn ghost" id="paDepois">Depois</button></div>`;
   $("dlg").classList.add("open");
   sh.querySelector("#paSim").onclick = () => { FC_SESS_AULA = id; delete (fcS().pend || {})[id]; save();
@@ -1836,8 +1865,8 @@ function vHoje(){
   for (const o of due){
     const late = o.n.d < t;
     h += `<div class="item"><div class="txt"><div class="code">${label(o.x)}</div><div class="tt">${esc(o.x[I_TIT])}</div>
-      <div style="margin-top:4px"><span class="pill ${late?"late":"due"}">Rev ${o.n.n}${late?" · desde "+br(o.n.d):""}</span> <span class="muted">${o.n.tipo}</span></div></div>
-      <button class="btn small" data-rev="${o.x[I_ID]}">Concluí</button></div>`;
+      <div style="margin-top:4px"><span class="pill ${late?"late":"due"}">Rev ${o.n.n}${late?" · desde "+br(o.n.d):""}</span> <span class="muted">${o.n.tipo} + flashcards da aula</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:stretch"><button class="btn small" data-revfc="${o.x[I_ID]}">Revisar</button><button class="btn small ghost" data-rev="${o.x[I_ID]}" title="Marcar como feita sem os flashcards">Já fiz</button></div></div>`;
   }
   h += `</section>` + fcCardHoje();
 
@@ -2176,7 +2205,8 @@ function bind(){
   const v = document.getElementById("view");
   fcBindHoje(v);
   v.querySelectorAll("[data-rev]").forEach(b => b.onclick = () => { const n = nextRev(b.dataset.rev); if (n){ st(b.dataset.rev)[n.k] = true; save(); render(); toast("Rev "+n.n+" concluída"); } });
-  v.querySelectorAll("[data-first]").forEach(b => b.onclick = () => { if (!terminar(b.dataset.first)) return; render(); toast("Feito. Rev 48h em "+br(add(today(),2))); });
+  v.querySelectorAll("[data-revfc]").forEach(b => b.onclick = () => revComFlash(b.dataset.revfc));
+  v.querySelectorAll("[data-first]").forEach(b => b.onclick = () => { const id = b.dataset.first; if (!terminar(id)) return; render(); toast("Feito. Rev 48h em "+br(add(today(),2))); fcPosAula(id); });
   v.querySelectorAll("[data-plat]").forEach(b => b.onclick = () => { if (!S.perfil) return; S.perfil.plat = b.dataset.plat; save(); render(); toast("Curso: " + PLATS[b.dataset.plat]); });
   const pd = v.querySelector("#plDiag"); if (pd) pd.onclick = abrirDiagnostico;
   const ph = v.querySelector("#plHoje"); if (ph) ph.onclick = () => { tab = "hoje"; render(); try { document.getElementById("main").scrollTop = 0; } catch(e){} };
@@ -2570,7 +2600,7 @@ if (!syncCfg()) paginaInicial();
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 41, PAGES = "https://planotatico.github.io/";
+const APP_V = 42, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
