@@ -398,6 +398,19 @@ html[data-tema="prf"]{--navy:#0a2657;--navy2:#123a7a;--navy3:#1b4b98;--navy0:#03
 .trBal[data-seta="baixo"]::before{bottom:-8px;border-left:0;border-top:0}
 .trBal[data-seta=""]::before{display:none}
 @media (prefers-reduced-motion:reduce){.trLuz,.trBal{transition:none}}
+
+/* flashcards */
+.fcTopo{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fcCard{border:1px solid var(--line,#2c2c2c);border-radius:14px;padding:18px 16px;min-height:140px;background:var(--card2,#151515);font-size:18px;line-height:1.5;margin:10px 0}
+.fcCard hr{border:0;border-top:1px dashed #d4a72c;margin:14px 0}
+.fcV{color:#ede6d3}
+.fcNotas{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.fcNotas .btn{display:flex;flex-direction:column;align-items:center;justify-content:center;height:auto;min-height:52px;padding:6px 4px;line-height:1.2}
+.fcNotas small{font-weight:500;opacity:.8;font-size:12px}
+.fcN1{background:#5c1d1d!important;color:#fff!important}.fcN2{background:#4a3b12!important;color:#fff!important}.fcN3{background:#1d4a2c!important;color:#fff!important}.fcN4{background:#173a5c!important;color:#fff!important}
+.fcAula{border:1px dashed #444;border-radius:10px;padding:10px 12px;display:grid;gap:6px;margin:8px 0}
+.fcLin{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid #262626;color:inherit;cursor:pointer}
+.fcRes{background:none;color:#d4a72c;font-weight:700}.fcLac{color:#d4a72c;font-weight:700}
 </style>
 </head>
 <body>
@@ -696,6 +709,7 @@ function mergeFirst(local, remote){
   if (!m.tm.cur && local.tm.cur) m.tm.cur = local.tm.cur;
   for (const d in (local.q||{})){ m.q = m.q || {}; const ids = new Set((m.q[d]||[]).map(r => r.id)); m.q[d] = (m.q[d]||[]).concat(local.q[d].filter(r => !ids.has(r.id))); }
   for (const w in local.w) if (local.w[w]) m.w[w] = true;
+  if (local.fc){ m.fc = m.fc || {c:{}, l:{}}; m.fc.c = m.fc.c || {}; m.fc.l = m.fc.l || {}; for (const id in (local.fc.c||{})){ const a = local.fc.c[id], b = m.fc.c[id]; if (!b || (a.up||0) > (b.up||0)) m.fc.c[id] = a; } for (const d in (local.fc.l||{})) if (!m.fc.l[d]) m.fc.l[d] = local.fc.l[d]; }
   if (!m.tm.run && local.tm.run) m.tm.run = local.tm.run;
   return m;
 }
@@ -1549,6 +1563,183 @@ function vPlano(boasVindas){
   h += `<section class="card"><h2>Semana a semana</h2>` + P.sem.map(w => semanaCard(w, P, w.ini <= t && t <= w.fim)).join("") + `</section>`;
   return h;
 }
+
+/* ---------- flashcards com repetição espaçada (estilo Anki) ---------- */
+ATIV._fc = "Flashcards";
+const FC_NOVOS_DIA = 20;
+function fcS(){ const f = (S.fc = S.fc || {}); f.c = f.c || {}; f.l = f.l || {}; return f; }
+function fcTodos(){ return Object.entries(fcS().c).filter(([id,c]) => !c.del).map(([id,c]) => Object.assign({id}, c)); }
+function fcAddDias(d, n){ const x = new Date(d + "T12:00:00"); x.setDate(x.getDate() + n); return x.toISOString().slice(0,10); }
+function fcNovosHoje(){ return (fcS().l[today()] || {}).nv || 0; }
+function fcFila(filtro){
+  const t = today(), cs = fcTodos().filter(c => !filtro || filtro(c));
+  const rev = cs.filter(c => c.rp > 0 && c.due <= t).sort((a,b) => a.due < b.due ? -1 : 1);
+  const novos = cs.filter(c => !c.rp).sort((a,b) => (a.cr||0) - (b.cr||0)).slice(0, Math.max(0, FC_NOVOS_DIA - fcNovosHoje()));
+  return rev.concat(novos);
+}
+function fcProx(c, nota){ // nota: 1 errei, 2 difícil, 3 bom, 4 fácil -> {iv (dias), ef}
+  let ef = c.ef || 2.5, iv = c.iv || 0;
+  if (!c.rp){ return {iv: [0, 1, 1, 4][nota-1], ef: ef + [-0.2, -0.15, 0, 0.15][nota-1]}; }
+  if (nota === 1) return {iv: 1, ef: Math.max(1.3, ef - 0.2)};
+  if (nota === 2) return {iv: Math.max(iv + 1, Math.round(iv * 1.2)), ef: Math.max(1.3, ef - 0.15)};
+  if (nota === 3) return {iv: Math.max(iv + 1, Math.round(iv * ef)), ef};
+  return {iv: Math.max(iv + 2, Math.round(iv * ef * 1.3)), ef: ef + 0.15};
+}
+function fcTxtIv(n){ return n <= 0 ? "agora" : n === 1 ? "1 dia" : n < 30 ? n + " dias" : n < 365 ? Math.round(n/30) + " m" : (n/365).toFixed(1).replace(".", ",") + " a"; }
+function fcResponde(id, nota){
+  const c = fcS().c[id]; if (!c) return;
+  const era = !c.rp, p = fcProx(c, nota), t = today();
+  c.ef = Math.round(p.ef * 100) / 100; c.iv = p.iv; c.rp = (c.rp || 0) + 1; if (nota === 1 && !era) c.lp = (c.lp || 0) + 1;
+  c.due = fcAddDias(t, p.iv); c.up = Date.now();
+  const l = (fcS().l[t] = fcS().l[t] || {n:0, ok:0, nv:0}); l.n++; if (nota > 1) l.ok++; if (era) l.nv++;
+  const mt = c.m || "_g", lm = (l.m = l.m || {}), x = (lm[mt] = lm[mt] || [0,0]); x[0]++; if (nota > 1) x[1]++;
+  save();
+}
+function fcTxt(t){ return esc(String(t||"")).replace(/\n/g, "<br>").replace(/⟦(.*?)⟧/g, '<mark class="fcRes">$1</mark>').replace(/\[\.\.\.\]/g, '<span class="fcLac">[...]</span>'); }
+function fcCloze(txt, extra){ // nota de omissão do Anki ({{c1::resposta::dica}}) -> um cartão por número
+  const ns = [...new Set([...txt.matchAll(/\{\{c(\d+)::/g)].map(m => m[1]))];
+  return ns.map(n => {
+    const re = /\{\{c(\d+)::(.*?)(?:::(.*?))?\}\}/g;
+    const f = txt.replace(re, (all, k, r, dica) => k === n ? "[" + (dica ? dica : "...") + "]" : r).replace(/\[(?!\.\.\.\])([^\]]+)\]/g, "[...: $1]");
+    const v = txt.replace(re, (all, k, r) => k === n ? "⟦" + r + "⟧" : r) + (extra ? "\n\n" + extra : "");
+    return {f: f.replace(/\[\.\.\.: \.\.\.\]/g, "[...]"), v};
+  });
+}
+function fcOpcoesMat(sel){ return `<option value="">Geral (sem matéria)</option>` + Object.keys(MAT).map(m => `<option value="${m}" ${m === sel ? "selected" : ""}>${esc(nomeAtiv(m))}</option>`).join(""); }
+function fcCardHoje(){
+  const todos = fcTodos(), fila = fcFila(), l = fcS().l[today()] || {n:0, ok:0};
+  return `<section class="card fcHoje"><h2>Flashcards</h2>
+    <div class="muted">${todos.length ? `${fila.length ? `<b>${fila.length}</b> para revisar hoje` : "Nada para revisar agora"} · ${todos.length} cart${todos.length === 1 ? "ão" : "ões"} no total${l.n ? ` · hoje: ${l.n} revisado${l.n === 1 ? "" : "s"}, ${Math.round(100 * l.ok / l.n)}% de acerto` : ""}` : "Crie cartões de pergunta e resposta para fixar o que estudou. O app traz cada cartão de volta no dia certo, como no Anki."}</div>
+    <div class="row" style="flex-wrap:wrap;gap:8px;margin-top:8px">${fila.length ? `<button class="btn small" id="fcRev">Revisar agora (${fila.length})</button>` : ""}<button class="btn small ghost" id="fcNovo">Criar cartão</button><button class="btn small ghost" id="fcBar">Meus baralhos</button></div></section>`;
+}
+function fcBindHoje(v){
+  const r = v.querySelector("#fcRev"); if (r) r.onclick = () => fcRevisar();
+  const n = v.querySelector("#fcNovo"); if (n) n.onclick = () => fcEditar(null, {});
+  const b = v.querySelector("#fcBar"); if (b) b.onclick = fcBaralhos;
+}
+function fcEditar(id, pre, volta){
+  const c = id ? fcS().c[id] : null, sh = $("sheet");
+  sh.innerHTML = `<h2 style="margin:0">${c ? "Editar cartão" : "Novo cartão"}</h2>
+    <label class="f" for="fcF">Frente (pergunta)<textarea id="fcF" rows="3" placeholder="Ex.: Prazo do inquérito policial com o indiciado preso?">${esc(c ? c.f : "")}</textarea></label>
+    <label class="f" for="fcV">Verso (resposta)<textarea id="fcV" rows="3" placeholder="Ex.: 10 dias (art. 10 do CPP)">${esc(c ? c.v : "")}</textarea></label>
+    <label class="f" for="fcM">Matéria<select id="fcM">${fcOpcoesMat(c ? c.m : pre.m)}</select></label>
+    <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn" id="fcSalva">${c ? "Salvar" : "Criar"}</button>${c ? "" : `<button class="btn ghost" id="fcSalvaMais">Criar e fazer outro</button>`}${c ? `<button class="btn ghost danger" id="fcDel">Apagar</button>` : ""}<button class="btn ghost" id="fcVolta">Voltar</button></div>`;
+  $("dlg").classList.add("open");
+  const grava = () => {
+    const f = sh.querySelector("#fcF").value.trim(), v = sh.querySelector("#fcV").value.trim(), m = sh.querySelector("#fcM").value;
+    if (!f || !v){ toast("Preencha a frente e o verso"); return false; }
+    if (c){ c.f = f; c.v = v; c.m = m; c.up = Date.now(); }
+    else { const nid = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2,6); fcS().c[nid] = {f, v, m, a: pre.a || "", cr: Date.now(), up: Date.now(), rp: 0, iv: 0, ef: 2.5, due: today()}; }
+    save(); return true;
+  };
+  const sai = () => volta ? volta() : (closeDlgQuiet(), render());
+  sh.querySelector("#fcSalva").onclick = () => { if (grava()){ toast(c ? "Cartão salvo" : "Cartão criado"); sai(); } };
+  const mais = sh.querySelector("#fcSalvaMais"); if (mais) mais.onclick = () => { if (grava()){ toast("Cartão criado"); fcEditar(null, {m: sh.querySelector("#fcM").value, a: pre.a}, volta); } };
+  const del = sh.querySelector("#fcDel"); if (del) del.onclick = () => { if (del.dataset.ok !== "1"){ del.dataset.ok = "1"; del.textContent = "Toque de novo para apagar"; return; } c.del = 1; c.up = Date.now(); save(); toast("Cartão apagado"); sai(); };
+  sh.querySelector("#fcVolta").onclick = sai;
+  setTimeout(() => sh.querySelector("#fcF").focus(), 50);
+}
+function fcRevisar(filtro, titulo){
+  const fila = fcFila(filtro).map(c => c.id); if (!fila.length){ toast("Nenhum cartão para revisar agora"); return; }
+  const ini = Date.now(), sh = $("sheet"); let feitos = 0, acertos = 0; const repetir = new Set();
+  const fim = () => {
+    const sec = Math.round((Date.now() - ini) / 1000);
+    if (!S.tm.run && sec >= 20) tmAdd(today(), Math.min(sec, 3 * 3600), {m:"_fc"});
+    sh.innerHTML = `<h2 style="margin:0">Revisão concluída</h2><div class="kv"><b>Cartões</b><span>${feitos}</span><b>Acertos</b><span>${feitos ? Math.round(100 * acertos / feitos) : 0}%</span><b>Tempo</b><span>${Math.max(1, Math.round(sec / 60))} min${S.tm.run ? " (já contado no cronômetro)" : " (vai para a aba Horas)"}</span></div>
+      <div class="muted">Os cartões que você errou voltam na próxima revisão.</div><div class="row"><button class="btn" id="fcOk">Fechar</button></div>`;
+    sh.querySelector("#fcOk").onclick = () => { closeDlgQuiet(); render(); };
+  };
+  const mostra = (virado) => {
+    if (!fila.length) return fim();
+    const id = fila[0], c = fcS().c[id]; if (!c || c.del){ fila.shift(); return mostra(false); }
+    const ivs = [1,2,3,4].map(n => fcProx(c, n).iv);
+    sh.innerHTML = `<div class="fcTopo"><span class="muted">${esc(titulo || "Flashcards")} · ${esc(c.m ? nomeAtiv(c.m) : "Geral")}</span><span class="pill">${fila.length} restante${fila.length === 1 ? "" : "s"}</span></div>
+      <div class="fcCard" aria-live="polite"><div class="fcF">${fcTxt(c.f)}</div>${virado ? `<hr><div class="fcV">${fcTxt(c.v)}</div>` : ""}</div>
+      ${virado ? `<div class="fcNotas" role="group" aria-label="Como foi?">${["Errei","Difícil","Bom","Fácil"].map((t,i) => `<button class="btn small fcN${i+1}" data-nota="${i+1}"><b>${t}</b><small>${i === 0 && !c.rp ? "agora" : fcTxtIv(ivs[i])}</small></button>`).join("")}</div>`
+        : `<button class="btn" id="fcVira" style="width:100%">Mostrar resposta</button>`}
+      <div class="row" style="justify-content:space-between;margin-top:6px"><button class="btn small ghost" id="fcEd">Editar</button><button class="btn small ghost" id="fcSai">Parar por aqui</button></div>`;
+    const vira = sh.querySelector("#fcVira"); if (vira){ vira.onclick = () => mostra(true); vira.focus(); }
+    sh.querySelectorAll("[data-nota]").forEach(b => b.onclick = () => {
+      const n = Number(b.dataset.nota), novo = !c.rp;
+      fcResponde(id, n); feitos++; if (n > 1) acertos++;
+      fila.shift(); if (n === 1 && !repetir.has(id)){ repetir.add(id); if (novo) fila.push(id); }
+      mostra(false);
+    });
+    sh.querySelector("#fcEd").onclick = () => fcEditar(id, {}, () => mostra(virado));
+    sh.querySelector("#fcSai").onclick = fim;
+  };
+  sh.onkeydown = e => { if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return; if (e.key === " " && sh.querySelector("#fcVira")){ e.preventDefault(); sh.querySelector("#fcVira").click(); } else if (/^[1-4]$/.test(e.key)){ const b = sh.querySelector(`[data-nota="${e.key}"]`); if (b) b.click(); } };
+  $("dlg").classList.add("open"); mostra(false);
+}
+function fcBaralhos(){
+  const sh = $("sheet"), todos = fcTodos(), t = today(), grupos = {};
+  for (const c of todos){ const k = c.m || ""; (grupos[k] = grupos[k] || []).push(c); }
+  const acerto = k => { let n = 0, ok = 0; for (const d in fcS().l){ const x = ((fcS().l[d].m || {})[k || "_g"]); if (x){ n += x[0]; ok += x[1]; } } return n ? Math.round(100 * ok / n) + "%" : "—"; };
+  const ks = Object.keys(grupos).sort((a,b) => (a ? nomeAtiv(a) : "zz").localeCompare(b ? nomeAtiv(b) : "zz"));
+  sh.innerHTML = `<h2 style="margin:0">Meus baralhos</h2>
+    <div class="muted">${todos.length} cart${todos.length === 1 ? "ão" : "ões"}. Até ${FC_NOVOS_DIA} cartões novos entram por dia, como no Anki. Atalhos no computador: espaço vira o cartão; 1 a 4 respondem.</div>
+    <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn small" id="fbNovo">Criar cartão</button><button class="btn small ghost" id="fbImp">Importar do Anki</button></div>
+    ${ks.length ? `<div class="fcBars">${ks.map(k => { const cs = grupos[k], due = fcFila(c => (c.m || "") === k).length;
+      return `<div class="item"><div class="txt"><div class="tt">${esc(k ? nomeAtiv(k) : "Geral")}</div><div class="muted">${cs.length} cart${cs.length === 1 ? "ão" : "ões"} · ${cs.filter(c => !c.rp).length} novo${cs.filter(c => !c.rp).length === 1 ? "" : "s"} · acerto ${acerto(k)}</div></div>
+        <div class="row" style="gap:6px">${due ? `<button class="btn small" data-fbrev="${k}">Revisar ${due}</button>` : `<span class="pill done">em dia</span>`}<button class="btn small ghost" data-fbver="${k}">Ver</button></div></div>`; }).join("")}</div>` : `<div class="empty">Nenhum cartão ainda. Crie o primeiro ou importe um baralho do Anki.</div>`}
+    <button class="btn ghost" id="fbFecha">Fechar</button>`;
+  $("dlg").classList.add("open");
+  sh.querySelector("#fbNovo").onclick = () => fcEditar(null, {}, fcBaralhos);
+  sh.querySelector("#fbImp").onclick = fcImportar;
+  sh.querySelector("#fbFecha").onclick = () => { closeDlgQuiet(); render(); };
+  sh.querySelectorAll("[data-fbrev]").forEach(b => b.onclick = () => fcRevisar(c => (c.m || "") === b.dataset.fbrev, b.dataset.fbrev ? nomeAtiv(b.dataset.fbrev) : "Geral"));
+  sh.querySelectorAll("[data-fbver]").forEach(b => b.onclick = () => fcLista(b.dataset.fbver));
+}
+function fcLista(k){
+  const sh = $("sheet"), cs = fcTodos().filter(c => (c.m || "") === k).sort((a,b) => (a.cr||0) - (b.cr||0));
+  sh.innerHTML = `<h2 style="margin:0">${esc(k ? nomeAtiv(k) : "Geral")}</h2><input type="search" id="flBusca" placeholder="Buscar nos cartões" aria-label="Buscar nos cartões">
+    <div id="flItens"></div><button class="btn ghost" id="flVolta">Voltar</button>`;
+  const pinta = q => { q = (q || "").toLowerCase(); const vis = cs.filter(c => !q || (c.f + " " + c.v).toLowerCase().includes(q)).slice(0, 200);
+    sh.querySelector("#flItens").innerHTML = vis.map(c => `<button class="item fcLin" data-fled="${c.id}"><div class="txt"><div class="tt">${esc(c.f).slice(0,140)}</div><div class="muted">${esc(c.v).slice(0,120)}</div></div><span class="pill">${c.rp ? "volta " + br(c.due) : "novo"}</span></button>`).join("") + (cs.length > vis.length ? `<div class="muted">Mostrando ${vis.length} de ${cs.length}. Use a busca.</div>` : ""); 
+    sh.querySelectorAll("[data-fled]").forEach(b => b.onclick = () => fcEditar(b.dataset.fled, {}, () => fcLista(k))); };
+  pinta(""); sh.querySelector("#flBusca").oninput = e => pinta(e.target.value);
+  sh.querySelector("#flVolta").onclick = fcBaralhos;
+}
+function fcParse(txt){
+  const out = []; let sep = null;
+  for (let ln of txt.replace(/\r/g, "").split("\n")){
+    if (!ln.trim()) continue;
+    if (ln.startsWith("#")){ const m = ln.match(/^#separator:(\w+)/i); if (m) sep = {tab:"\t", semicolon:";", comma:",", pipe:"|", space:" "}[m[1].toLowerCase()] || sep; continue; }
+    const s = sep || (ln.includes("\t") ? "\t" : ln.includes(";") ? ";" : ",");
+    let cols = [];
+    if (s !== "\t" && ln.includes('"')){ let cur = "", q = false; for (let i = 0; i < ln.length; i++){ const ch = ln[i]; if (ch === '"'){ if (q && ln[i+1] === '"'){ cur += '"'; i++; } else q = !q; } else if (ch === s && !q){ cols.push(cur); cur = ""; } else cur += ch; } cols.push(cur); }
+    else cols = ln.split(s);
+    const limpa = h => String(h || "").replace(/<br\s*\/?>/gi, "\n").replace(/<\/(div|p|li)>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/\n{3,}/g, "\n\n").trim();
+    const f = limpa(cols[0]), v = limpa(cols[1]);
+    if (/\{\{c\d+::/.test(f)) out.push(...fcCloze(f, v));
+    else if (f && v) out.push({f, v});
+  }
+  return out;
+}
+function fcImportar(){
+  const sh = $("sheet");
+  sh.innerHTML = `<h2 style="margin:0">Importar do Anki</h2>
+    <div class="muted">No Anki do computador: <b>Arquivo → Exportar</b>, escolha <b>Notas em texto puro (.txt)</b> e marque "Incluir HTML" só se quiser. Também aceita .csv com frente e verso nas duas primeiras colunas. Cartões de omissão (cloze) viram um cartão para cada lacuna.</div>
+    <label class="f" for="fiArq">Arquivo<input type="file" id="fiArq" accept=".txt,.csv,.tsv,text/plain,text/csv"></label>
+    <label class="f" for="fiM">Matéria destes cartões<select id="fiM">${fcOpcoesMat("")}</select></label>
+    <div id="fiPrev" class="muted"></div>
+    <div class="row" style="gap:8px"><button class="btn" id="fiOk" disabled>Importar</button><button class="btn ghost" id="fiVolta">Voltar</button></div>`;
+  let itens = [];
+  sh.querySelector("#fiArq").onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    if (/\.apkg$|\.colpkg$/i.test(f.name)){ sh.querySelector("#fiPrev").innerHTML = "Arquivos .apkg não abrem aqui. No Anki, exporte como <b>Notas em texto puro (.txt)</b>."; return; }
+    itens = fcParse(await f.text());
+    const ja = new Set(fcTodos().map(c => c.f + "\u0001" + c.v)); const novos = itens.filter(x => !ja.has(x.f + "\u0001" + x.v));
+    sh.querySelector("#fiPrev").innerHTML = itens.length ? `${itens.length} cartões encontrados${novos.length < itens.length ? `, ${itens.length - novos.length} já existem e serão ignorados` : ""}.<br>Exemplo: <b>${esc(itens[0].f.slice(0,80))}</b> → ${esc(itens[0].v.slice(0,80))}` : "Não encontrei cartões neste arquivo. Confira se cada linha tem frente e verso separados por tabulação, ponto e vírgula ou vírgula.";
+    itens = novos; sh.querySelector("#fiOk").disabled = !itens.length;
+  };
+  sh.querySelector("#fiOk").onclick = () => {
+    const m = sh.querySelector("#fiM").value, base = Date.now();
+    itens.forEach((x, i) => { fcS().c["c" + (base + i).toString(36) + Math.random().toString(36).slice(2,5)] = {f: x.f.slice(0, 2000), v: x.v.slice(0, 4000), m, a: "", cr: base + i, up: base, rp: 0, iv: 0, ef: 2.5, due: today()}; });
+    save(); toast(itens.length + " cartões importados"); fcBaralhos();
+  };
+  sh.querySelector("#fiVolta").onclick = fcBaralhos;
+}
 function vHoje(){
   const t = today(), dt = new Date();
   const due = T.map(x => ({x, n: nextRev(x[I_ID])})).filter(o => o.n && o.n.d <= t).sort((a,b)=> a.n.d < b.n.d ? -1 : 1);
@@ -1560,7 +1751,7 @@ function vHoje(){
       <div style="margin-top:4px"><span class="pill ${late?"late":"due"}">Rev ${o.n.n}${late?" · desde "+br(o.n.d):""}</span> <span class="muted">${o.n.tipo}</span></div></div>
       <button class="btn small" data-rev="${o.x[I_ID]}">Concluí</button></div>`;
   }
-  h += `</section>`;
+  h += `</section>` + fcCardHoje();
 
   const b = currentBlock(), wd = dt.getDay(), fh = feitasHoje(), cheio = !regraLivre() && fh >= MAX_DIA;
   h += `<section class="card"><h2>Aula nova · ${WD[wd]}</h2>`;
@@ -1793,6 +1984,9 @@ function openAula(id){
     }
     h += `</div>`;
   }
+  { const fcA = fcTodos().filter(c => c.a === id), dueA = fcFila(c => c.a === id).length;
+    h += `<div class="fcAula"><b>Flashcards desta aula</b><span class="muted">${fcA.length ? fcA.length + " cart" + (fcA.length === 1 ? "ão" : "ões") + (dueA ? " · " + dueA + " para hoje" : "") : "Crie cartões com o que precisa decorar desta aula."}</span>
+      <div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn small ghost" id="dFcNovo">Criar cartão</button>${dueA ? `<button class="btn small" id="dFcRev">Revisar ${dueA}</button>` : ""}</div></div>`; }
   h += `<label class="f" for="dPct">% de acerto no caderno<input type="number" id="dPct" min="0" max="100" inputmode="numeric" value="${s.pct ?? ""}"></label>
     <label class="f" for="dObs">Observações<textarea id="dObs" rows="2">${esc(s.obs||"")}</textarea></label>
     <button class="btn" id="dClose">Fechar</button>`;
@@ -1807,6 +2001,8 @@ function openAula(id){
   sh.querySelector("#dPct").oninput = e => { const v = e.target.value; s.pct = v===""?undefined:Math.max(0,Math.min(100,Number(v))); save(); };
   sh.querySelector("#dObs").oninput = e => { s.obs = e.target.value; save(); };
   sh.querySelector("#dClose").onclick = closeDlg;
+  sh.querySelector("#dFcNovo").onclick = () => fcEditar(null, {m, a: id}, () => openAula(id));
+  const fr = sh.querySelector("#dFcRev"); if (fr) fr.onclick = () => fcRevisar(c => c.a === id, x[I_TIT]);
 }
 function closeDlg(){ document.getElementById("dlg").classList.remove("open"); render(); }
 document.getElementById("dlg").addEventListener("click", e => { if (e.target.id==="dlg") closeDlg(); });
@@ -1817,7 +2013,7 @@ window.appBack = function(){ const d = document.getElementById("dlg"); if (d.cla
 /* ---------- tutorial guiado (pode pular; aparece uma vez e fica em Minha conta) ---------- */
 const TOUR = [
   {t:"Bem-vindo ao Plano Tático", x:"Em um minuto você conhece cada parte do app. Se preferir, pode pular: o tutorial fica guardado em Minha conta para ver depois."},
-  {sel:'nav.tabs [data-tab="hoje"]', tab:"hoje", t:"Hoje", x:"Suas missões do dia: a aula nova (no máximo 3 por dia) e as revisões que vencem hoje. Comece sempre por aqui."},
+  {sel:'nav.tabs [data-tab="hoje"]', tab:"hoje", t:"Hoje", x:"Suas missões do dia: a aula nova (no máximo 3 por dia), as revisões que vencem hoje e os flashcards do dia. Comece sempre por aqui."},
   {sel:"#tmToggle", tab:"hoje", t:"Cronômetro de horas líquidas", x:"Escolha a matéria e o assunto e toque para começar. Pause quando parar. O tempo vai para o gráfico da aba Horas."},
   {sel:'nav.tabs [data-tab="aulas"]', tab:"aulas", t:"Aulas", x:"Todo o edital, por matéria. Toque numa aula para abrir o link do curso, marcar como estudada e acompanhar as revisões de 48 horas, 7 e 30 dias."},
   {sel:'nav.tabs [data-tab="horas"]', tab:"horas", t:"Horas", x:"O gráfico do seu tempo por matéria e por assunto, na semana, no mês ou no período que quiser. Aqui você também registra as questões do TEC, com acertos e erros."},
@@ -1889,6 +2085,7 @@ function render(){
 }
 function bind(){
   const v = document.getElementById("view");
+  fcBindHoje(v);
   v.querySelectorAll("[data-rev]").forEach(b => b.onclick = () => { const n = nextRev(b.dataset.rev); if (n){ st(b.dataset.rev)[n.k] = true; save(); render(); toast("Rev "+n.n+" concluída"); } });
   v.querySelectorAll("[data-first]").forEach(b => b.onclick = () => { if (!terminar(b.dataset.first)) return; render(); toast("Feito. Rev 48h em "+br(add(today(),2))); });
   v.querySelectorAll("[data-plat]").forEach(b => b.onclick = () => { if (!S.perfil) return; S.perfil.plat = b.dataset.plat; save(); render(); toast("Curso: " + PLATS[b.dataset.plat]); });
@@ -2106,6 +2303,7 @@ function paginaInicial(){
       <li>Revisões de 48 horas, 7 e 30 dias no dia certo</li>
       <li>Cronômetro de horas líquidas por matéria e assunto</li>
       <li>Registro de questões com acertos e erros</li>
+      <li>Flashcards com repetição espaçada, no estilo do Anki, e importação dos seus baralhos</li>
       <li>Patentes, conquistas e grupo de estudos</li>
       <li>Funciona no celular e no computador, sincronizado</li>
     </ul><p class="lpnao">Não inclui: videoaulas, apostilas ou cursos. O plano indica onde assistir cada assunto no cursinho que você escolher.</p></section>
@@ -2283,7 +2481,7 @@ if (!syncCfg()) paginaInicial();
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 37, PAGES = "https://planotatico.github.io/";
+const APP_V = 38, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
