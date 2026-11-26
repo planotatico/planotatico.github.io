@@ -1595,7 +1595,7 @@ function fcMk(d){ return (d.mk || []).find(k => MAT[k]) || ""; }
 async function fcIndice(){ if (FC_IDX) return FC_IDX; try { FC_IDX = (await (await fetch(fcBase() + "index.json?v=" + APP_V)).json()).baralhos || []; } catch(e){ FC_IDX = []; } return FC_IDX; }
 function fcCarrega(id){
   if (FC_DK[id]) return Promise.resolve(FC_DK[id]); if (FC_DK_ESP[id]) return FC_DK_ESP[id];
-  return FC_DK_ESP[id] = fetch(fcBase() + id + ".json?v=" + APP_V).then(r => r.json()).then(d => { FC_DK[id] = d; delete FC_DK_ESP[id]; return d; }).catch(e => { delete FC_DK_ESP[id]; throw e; });
+  return FC_DK_ESP[id] = fcIndice().then(lst => { const e = lst.find(d => d.id === id); return fetch(e && e.src === "sb" ? SYNC_URL + "?baralho=" + encodeURIComponent(id) : fcBase() + id + ".json?v=" + APP_V); }).then(r => r.json()).then(d => { if (!d || !Array.isArray(d.c)) throw new Error("baralho"); return d; }).then(d => { FC_DK[id] = d; delete FC_DK_ESP[id]; return d; }).catch(e => { delete FC_DK_ESP[id]; throw e; });
 }
 function fcCarregaAtivos(){ const usados = new Set(Object.keys(fcS().dk).filter(k => fcS().dk[k])); for (const id in fcS().p) usados.add(id.split(":")[1]); const ps = [...usados].filter(k => k && !FC_DK[k]).map(k => fcCarrega(k).catch(() => null)); if (ps.length) Promise.all(ps).then(() => { const dl = $("dlg"); if (!dl || !dl.classList.contains("open")) render(); }); }
 function fcTodos(){
@@ -1655,11 +1655,11 @@ async function fcDaAula(id, rev){ // cartões ligados ao assunto da aula: os cri
   const m = x[I_MAT], pal = fcPalAula(x[I_TIT]), cg = cargoAtual(), t = today();
   const meus = fcTodos().filter(c => c.a === id);
   const lst = await fcIndice(), achados = [];
-  for (const d of lst.filter(d => (d.mk || []).includes(m) && (!d.nk || d.nk[cg]))){
+  for (const d of lst.filter(d => ((d.mk || []).includes(m) || d.src === "sb") && (!d.nk || d.nk[cg]))){
     let dk; try { dk = await fcCarrega(d.id); } catch(e){ continue; }
     const notaTop = {}; for (const tp of new Set(dk.c.filter(c => !c.k || c.k.split(",").includes(cg)).map(c => c.t))){ let n = 0; for (const w of fcPalavras(tp)) if (pal.has(w)) n++; notaTop[tp] = n; }
     const melhor = Math.max(0, ...Object.values(notaTop)); for (const tp in notaTop) if (notaTop[tp] < Math.max(1, melhor - 1)) notaTop[tp] = 0;
-    dk.c.forEach((c, i) => { if (c.k && !c.k.split(",").includes(cg)) return; const n = notaTop[c.t]; if (!n) return; const cid = "d:" + d.id + ":" + c.i, p = fcS().p[cid] || {}; if (p.sus) return;
+    dk.c.forEach((c, i) => { if (c.k && !c.k.split(",").includes(cg)) return; const n = c.au ? (c.au.includes(id) ? 99 : 0) : notaTop[c.t]; if (!n) return; const cid = "d:" + d.id + ":" + c.i, p = fcS().p[cid] || {}; if (p.sus) return;
       achados.push(Object.assign({id: cid, f: c.f, v: c.v, t: c.t, m, dk: d.id, cr: i, rp: 0, iv: 0, ef: 2.5, _n: n}, p)); });
   }
   const pri = c => (!c.rp ? 0 : c.due <= t ? 1 : 2), ja = new Set(meus.map(c => c.id));
@@ -2600,7 +2600,7 @@ if (!syncCfg()) paginaInicial();
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 42, PAGES = "https://planotatico.github.io/";
+const APP_V = 43, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
