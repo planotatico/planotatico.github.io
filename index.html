@@ -411,6 +411,7 @@ html[data-tema="prf"]{--navy:#0a2657;--navy2:#123a7a;--navy3:#1b4b98;--navy0:#03
 .fcAula{border:1px dashed #444;border-radius:10px;padding:10px 12px;display:grid;gap:6px;margin:8px 0}
 .fcLin{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid #262626;color:inherit;cursor:pointer}
 .fcRes{background:none;color:#d4a72c;font-weight:700}.fcLac{color:#d4a72c;font-weight:700}
+.fcImg{max-width:100%;height:auto;border-radius:8px;margin:6px 0;display:block}
 </style>
 </head>
 <body>
@@ -709,7 +710,8 @@ function mergeFirst(local, remote){
   if (!m.tm.cur && local.tm.cur) m.tm.cur = local.tm.cur;
   for (const d in (local.q||{})){ m.q = m.q || {}; const ids = new Set((m.q[d]||[]).map(r => r.id)); m.q[d] = (m.q[d]||[]).concat(local.q[d].filter(r => !ids.has(r.id))); }
   for (const w in local.w) if (local.w[w]) m.w[w] = true;
-  if (local.fc){ m.fc = m.fc || {c:{}, l:{}}; m.fc.c = m.fc.c || {}; m.fc.l = m.fc.l || {}; for (const id in (local.fc.c||{})){ const a = local.fc.c[id], b = m.fc.c[id]; if (!b || (a.up||0) > (b.up||0)) m.fc.c[id] = a; } for (const d in (local.fc.l||{})) if (!m.fc.l[d]) m.fc.l[d] = local.fc.l[d]; }
+  if (local.fc){ m.fc = m.fc || {c:{}, l:{}}; m.fc.c = m.fc.c || {}; m.fc.l = m.fc.l || {}; for (const id in (local.fc.c||{})){ const a = local.fc.c[id], b = m.fc.c[id]; if (!b || (a.up||0) > (b.up||0)) m.fc.c[id] = a; } for (const d in (local.fc.l||{})) if (!m.fc.l[d]) m.fc.l[d] = local.fc.l[d];
+    m.fc.p = m.fc.p || {}; for (const id in (local.fc.p||{})){ const a = local.fc.p[id], b = m.fc.p[id]; if (!b || (a.up||0) > (b.up||0)) m.fc.p[id] = a; } m.fc.dk = Object.assign({}, local.fc.dk || {}, m.fc.dk || {}); }
   if (!m.tm.run && local.tm.run) m.tm.run = local.tm.run;
   return m;
 }
@@ -1567,8 +1569,23 @@ function vPlano(boasVindas){
 /* ---------- flashcards com repetição espaçada (estilo Anki) ---------- */
 ATIV._fc = "Flashcards";
 const FC_NOVOS_DIA = 20;
-function fcS(){ const f = (S.fc = S.fc || {}); f.c = f.c || {}; f.l = f.l || {}; return f; }
-function fcTodos(){ return Object.entries(fcS().c).filter(([id,c]) => !c.del).map(([id,c]) => Object.assign({id}, c)); }
+function fcS(){ const f = (S.fc = S.fc || {}); f.c = f.c || {}; f.l = f.l || {}; f.p = f.p || {}; f.dk = f.dk || {}; return f; }
+const FC_DK = {}, FC_DK_ESP = {}; let FC_IDX = null;
+function fcBase(){ return (window.CFO || !/^https?:$/.test(location.protocol) && location.protocol !== "file:" ? "https://planotatico.github.io/" : "") + "baralhos/"; }
+function fcMk(d){ return (d.mk || []).find(k => MAT[k]) || ""; }
+async function fcIndice(){ if (FC_IDX) return FC_IDX; try { FC_IDX = (await (await fetch(fcBase() + "index.json?v=" + APP_V)).json()).baralhos || []; } catch(e){ FC_IDX = []; } return FC_IDX; }
+function fcCarrega(id){
+  if (FC_DK[id] || FC_DK_ESP[id]) return FC_DK_ESP[id];
+  return FC_DK_ESP[id] = fetch(fcBase() + id + ".json?v=" + APP_V).then(r => r.json()).then(d => { FC_DK[id] = d; delete FC_DK_ESP[id]; return d; }).catch(e => { delete FC_DK_ESP[id]; throw e; });
+}
+function fcCarregaAtivos(){ const ps = Object.keys(fcS().dk).filter(k => fcS().dk[k] && !FC_DK[k]).map(k => fcCarrega(k).catch(() => null)); if (ps.length) Promise.all(ps).then(() => { const dl = $("dlg"); if (!dl || !dl.classList.contains("open")) render(); }); }
+function fcTodos(){
+  const out = Object.entries(fcS().c).filter(([id,c]) => !c.del).map(([id,c]) => Object.assign({id}, c));
+  for (const k in fcS().dk){ if (!fcS().dk[k] || !FC_DK[k]) continue; const d = FC_DK[k], mk = fcMk(d);
+    d.c.forEach((x, i) => { const id = "d:" + k + ":" + x.i, p = fcS().p[id]; if (p && p.sus) return; out.push(Object.assign({id, f: x.f, v: x.v, t: x.t, m: mk, dk: k, cr: i, rp: 0, iv: 0, ef: 2.5}, p || {})); }); }
+  return out;
+}
+function fcRec(id){ return id.startsWith("d:") ? (fcS().p[id] = fcS().p[id] || {}) : fcS().c[id]; }
 function fcAddDias(d, n){ const x = new Date(d + "T12:00:00"); x.setDate(x.getDate() + n); return x.toISOString().slice(0,10); }
 function fcNovosHoje(){ return (fcS().l[today()] || {}).nv || 0; }
 function fcFila(filtro){
@@ -1587,15 +1604,15 @@ function fcProx(c, nota){ // nota: 1 errei, 2 difícil, 3 bom, 4 fácil -> {iv (
 }
 function fcTxtIv(n){ return n <= 0 ? "agora" : n === 1 ? "1 dia" : n < 30 ? n + " dias" : n < 365 ? Math.round(n/30) + " m" : (n/365).toFixed(1).replace(".", ",") + " a"; }
 function fcResponde(id, nota){
-  const c = fcS().c[id]; if (!c) return;
+  const c = fcRec(id); if (!c) return;
   const era = !c.rp, p = fcProx(c, nota), t = today();
   c.ef = Math.round(p.ef * 100) / 100; c.iv = p.iv; c.rp = (c.rp || 0) + 1; if (nota === 1 && !era) c.lp = (c.lp || 0) + 1;
   c.due = fcAddDias(t, p.iv); c.up = Date.now();
   const l = (fcS().l[t] = fcS().l[t] || {n:0, ok:0, nv:0}); l.n++; if (nota > 1) l.ok++; if (era) l.nv++;
-  const mt = c.m || "_g", lm = (l.m = l.m || {}), x = (lm[mt] = lm[mt] || [0,0]); x[0]++; if (nota > 1) x[1]++;
+  const mt = (id.startsWith("d:") ? "dk:" + id.split(":")[1] : c.m) || "_g", lm = (l.m = l.m || {}), x = (lm[mt] = lm[mt] || [0,0]); x[0]++; if (nota > 1) x[1]++;
   save();
 }
-function fcTxt(t){ return esc(String(t||"")).replace(/\n/g, "<br>").replace(/⟦(.*?)⟧/g, '<mark class="fcRes">$1</mark>').replace(/\[\.\.\.\]/g, '<span class="fcLac">[...]</span>'); }
+function fcTxt(t){ return esc(String(t||"")).replace(/\n/g, "<br>").replace(/⟦(.*?)⟧/g, '<mark class="fcRes">$1</mark>').replace(/\[\.\.\.\]/g, '<span class="fcLac">[...]</span>').replace(/⟪img:([^⟫]+)⟫/g, (a, f) => `<img class="fcImg" src="${fcBase()}img/${encodeURIComponent(f)}" alt="" loading="lazy">`); }
 function fcCloze(txt, extra){ // nota de omissão do Anki ({{c1::resposta::dica}}) -> um cartão por número
   const ns = [...new Set([...txt.matchAll(/\{\{c(\d+)::/g)].map(m => m[1]))];
   return ns.map(n => {
@@ -1607,6 +1624,7 @@ function fcCloze(txt, extra){ // nota de omissão do Anki ({{c1::resposta::dica}
 }
 function fcOpcoesMat(sel){ return `<option value="">Geral (sem matéria)</option>` + Object.keys(MAT).map(m => `<option value="${m}" ${m === sel ? "selected" : ""}>${esc(nomeAtiv(m))}</option>`).join(""); }
 function fcCardHoje(){
+  fcCarregaAtivos();
   const todos = fcTodos(), fila = fcFila(), l = fcS().l[today()] || {n:0, ok:0};
   return `<section class="card fcHoje"><h2>Flashcards</h2>
     <div class="muted">${todos.length ? `${fila.length ? `<b>${fila.length}</b> para revisar hoje` : "Nada para revisar agora"} · ${todos.length} cart${todos.length === 1 ? "ão" : "ões"} no total${l.n ? ` · hoje: ${l.n} revisado${l.n === 1 ? "" : "s"}, ${Math.round(100 * l.ok / l.n)}% de acerto` : ""}` : "Crie cartões de pergunta e resposta para fixar o que estudou. O app traz cada cartão de volta no dia certo, como no Anki."}</div>
@@ -1651,13 +1669,13 @@ function fcRevisar(filtro, titulo){
   };
   const mostra = (virado) => {
     if (!fila.length) return fim();
-    const id = fila[0], c = fcS().c[id]; if (!c || c.del){ fila.shift(); return mostra(false); }
+    const id = fila[0], mapa = fcTodos(), c = mapa.find(y => y.id === id); if (!c || c.del){ fila.shift(); return mostra(false); }
     const ivs = [1,2,3,4].map(n => fcProx(c, n).iv);
-    sh.innerHTML = `<div class="fcTopo"><span class="muted">${esc(titulo || "Flashcards")} · ${esc(c.m ? nomeAtiv(c.m) : "Geral")}</span><span class="pill">${fila.length} restante${fila.length === 1 ? "" : "s"}</span></div>
+    sh.innerHTML = `<div class="fcTopo"><span class="muted">${esc(titulo || "Flashcards")} · ${esc(c.dk ? (FC_DK[c.dk] || {}).nome || "" : c.m ? nomeAtiv(c.m) : "Geral")}${c.t ? " · " + esc(c.t) : ""}</span><span class="pill">${fila.length} restante${fila.length === 1 ? "" : "s"}</span></div>
       <div class="fcCard" aria-live="polite"><div class="fcF">${fcTxt(c.f)}</div>${virado ? `<hr><div class="fcV">${fcTxt(c.v)}</div>` : ""}</div>
       ${virado ? `<div class="fcNotas" role="group" aria-label="Como foi?">${["Errei","Difícil","Bom","Fácil"].map((t,i) => `<button class="btn small fcN${i+1}" data-nota="${i+1}"><b>${t}</b><small>${i === 0 && !c.rp ? "agora" : fcTxtIv(ivs[i])}</small></button>`).join("")}</div>`
         : `<button class="btn" id="fcVira" style="width:100%">Mostrar resposta</button>`}
-      <div class="row" style="justify-content:space-between;margin-top:6px"><button class="btn small ghost" id="fcEd">Editar</button><button class="btn small ghost" id="fcSai">Parar por aqui</button></div>`;
+      <div class="row" style="justify-content:space-between;margin-top:6px">${c.dk ? `<button class="btn small ghost" id="fcSus">Não mostrar mais</button>` : `<button class="btn small ghost" id="fcEd">Editar</button>`}<button class="btn small ghost" id="fcSai">Parar por aqui</button></div>`;
     const vira = sh.querySelector("#fcVira"); if (vira){ vira.onclick = () => mostra(true); vira.focus(); }
     sh.querySelectorAll("[data-nota]").forEach(b => b.onclick = () => {
       const n = Number(b.dataset.nota), novo = !c.rp;
@@ -1665,7 +1683,8 @@ function fcRevisar(filtro, titulo){
       fila.shift(); if (n === 1 && !repetir.has(id)){ repetir.add(id); if (novo) fila.push(id); }
       mostra(false);
     });
-    sh.querySelector("#fcEd").onclick = () => fcEditar(id, {}, () => mostra(virado));
+    const ed = sh.querySelector("#fcEd"); if (ed) ed.onclick = () => fcEditar(id, {}, () => mostra(virado));
+    const su = sh.querySelector("#fcSus"); if (su) su.onclick = () => { fcRec(id).sus = 1; fcRec(id).up = Date.now(); save(); fila.shift(); toast("Este cartão não aparece mais"); mostra(false); };
     sh.querySelector("#fcSai").onclick = fim;
   };
   sh.onkeydown = e => { if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return; if (e.key === " " && sh.querySelector("#fcVira")){ e.preventDefault(); sh.querySelector("#fcVira").click(); } else if (/^[1-4]$/.test(e.key)){ const b = sh.querySelector(`[data-nota="${e.key}"]`); if (b) b.click(); } };
@@ -1673,21 +1692,30 @@ function fcRevisar(filtro, titulo){
 }
 function fcBaralhos(){
   const sh = $("sheet"), todos = fcTodos(), t = today(), grupos = {};
-  for (const c of todos){ const k = c.m || ""; (grupos[k] = grupos[k] || []).push(c); }
+  for (const c of todos){ const k = c.dk ? "dk:" + c.dk : (c.m || ""); (grupos[k] = grupos[k] || []).push(c); }
+  const nomeG = k => k.startsWith("dk:") ? "Pronto · " + ((FC_DK[k.slice(3)] || {}).nome || k.slice(3)) : k ? nomeAtiv(k) : "Meus cartões (geral)";
+  const filtroG = k => c => (c.dk ? "dk:" + c.dk : (c.m || "")) === k;
   const acerto = k => { let n = 0, ok = 0; for (const d in fcS().l){ const x = ((fcS().l[d].m || {})[k || "_g"]); if (x){ n += x[0]; ok += x[1]; } } return n ? Math.round(100 * ok / n) + "%" : "—"; };
-  const ks = Object.keys(grupos).sort((a,b) => (a ? nomeAtiv(a) : "zz").localeCompare(b ? nomeAtiv(b) : "zz"));
+  const ks = Object.keys(grupos).sort((a,b) => nomeG(a).localeCompare(nomeG(b)));
   sh.innerHTML = `<h2 style="margin:0">Meus baralhos</h2>
     <div class="muted">${todos.length} cart${todos.length === 1 ? "ão" : "ões"}. Até ${FC_NOVOS_DIA} cartões novos entram por dia, como no Anki. Atalhos no computador: espaço vira o cartão; 1 a 4 respondem.</div>
     <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn small" id="fbNovo">Criar cartão</button><button class="btn small ghost" id="fbImp">Importar do Anki</button></div>
-    ${ks.length ? `<div class="fcBars">${ks.map(k => { const cs = grupos[k], due = fcFila(c => (c.m || "") === k).length;
-      return `<div class="item"><div class="txt"><div class="tt">${esc(k ? nomeAtiv(k) : "Geral")}</div><div class="muted">${cs.length} cart${cs.length === 1 ? "ão" : "ões"} · ${cs.filter(c => !c.rp).length} novo${cs.filter(c => !c.rp).length === 1 ? "" : "s"} · acerto ${acerto(k)}</div></div>
-        <div class="row" style="gap:6px">${due ? `<button class="btn small" data-fbrev="${k}">Revisar ${due}</button>` : `<span class="pill done">em dia</span>`}<button class="btn small ghost" data-fbver="${k}">Ver</button></div></div>`; }).join("")}</div>` : `<div class="empty">Nenhum cartão ainda. Crie o primeiro ou importe um baralho do Anki.</div>`}
+    ${ks.length ? `<div class="fcBars">${ks.map(k => { const cs = grupos[k], due = fcFila(filtroG(k)).length;
+      return `<div class="item"><div class="txt"><div class="tt">${esc(nomeG(k))}</div><div class="muted">${cs.length} cart${cs.length === 1 ? "ão" : "ões"} · ${cs.filter(c => !c.rp).length} novo${cs.filter(c => !c.rp).length === 1 ? "" : "s"} · acerto ${acerto(k)}</div></div>
+        <div class="row" style="gap:6px">${due ? `<button class="btn small" data-fbrev="${k}">Revisar ${due}</button>` : `<span class="pill done">em dia</span>`}${k.startsWith("dk:") ? "" : `<button class="btn small ghost" data-fbver="${k}">Ver</button>`}</div></div>`; }).join("")}</div>` : `<div class="empty">Nenhum cartão ainda. Crie o primeiro, ative um baralho pronto ou importe um do Anki.</div>`}
+    <h3 style="margin:14px 0 4px">Baralhos prontos</h3><div class="muted">Cartões de lei seca e conceitos, com a fonte de cada um. Os novos entram aos poucos (até ${FC_NOVOS_DIA} por dia, somando todos).</div>
+    <div id="fbProntos" class="fcBars"><div class="muted">Carregando…</div></div>
     <button class="btn ghost" id="fbFecha">Fechar</button>`;
+  fcIndice().then(lst => { const box = sh.querySelector("#fbProntos"); if (!box) return;
+    box.innerHTML = lst.length ? lst.map(d => `<div class="item"><div class="txt"><div class="tt">${esc(d.nome)}</div><div class="muted">${d.n} cartões · ${d.top} assuntos</div></div>${fcS().dk[d.id] ? `<button class="btn small ghost" data-fbdes="${d.id}">Desativar</button>` : `<button class="btn small" data-fbat="${d.id}">Ativar</button>`}</div>`).join("") : `<div class="muted">Não consegui carregar a lista agora. Confira a internet.</div>`;
+    box.querySelectorAll("[data-fbat]").forEach(b => b.onclick = async () => { b.disabled = true; b.textContent = "Baixando…"; try { await fcCarrega(b.dataset.fbat); fcS().dk[b.dataset.fbat] = 1; save(); toast("Baralho ativado"); fcBaralhos(); } catch(e){ toast("Sem conexão. Tente de novo"); b.disabled = false; b.textContent = "Ativar"; } });
+    box.querySelectorAll("[data-fbdes]").forEach(b => b.onclick = () => { if (b.dataset.ok !== "1"){ b.dataset.ok = "1"; b.textContent = "Toque de novo"; return; } fcS().dk[b.dataset.fbdes] = 0; save(); toast("Baralho desativado. Seu progresso fica guardado"); fcBaralhos(); });
+  });
   $("dlg").classList.add("open");
   sh.querySelector("#fbNovo").onclick = () => fcEditar(null, {}, fcBaralhos);
   sh.querySelector("#fbImp").onclick = fcImportar;
   sh.querySelector("#fbFecha").onclick = () => { closeDlgQuiet(); render(); };
-  sh.querySelectorAll("[data-fbrev]").forEach(b => b.onclick = () => fcRevisar(c => (c.m || "") === b.dataset.fbrev, b.dataset.fbrev ? nomeAtiv(b.dataset.fbrev) : "Geral"));
+  sh.querySelectorAll("[data-fbrev]").forEach(b => b.onclick = () => fcRevisar(filtroG(b.dataset.fbrev), nomeG(b.dataset.fbrev)));
   sh.querySelectorAll("[data-fbver]").forEach(b => b.onclick = () => fcLista(b.dataset.fbver));
 }
 function fcLista(k){
@@ -2481,7 +2509,7 @@ if (!syncCfg()) paginaInicial();
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 38, PAGES = "https://planotatico.github.io/";
+const APP_V = 39, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
