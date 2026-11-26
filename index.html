@@ -620,7 +620,7 @@ function keep(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){
 function save(){ S.u = Date.now(); keep(); syncSoon(); }
 
 /* ---------- sincronização (Google Apps Script) ---------- */
-const SYNC_URL = "https://script.google.com/macros/s/AKfycbzuDgI8GnDJx0n_sX8FIx3QiAbfsIBmLqwCGFSvxJmEz2WbqsT8eQtsmOnXN4HD84_NwA/exec";
+const SYNC_URL = "https://lxecnqpaaqjwsmcfgakd.supabase.co/functions/v1/plano";
 const SKEY = KEY + ".conta";
 try { if (/cfg=/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search); } catch(e){}
 function syncCfg(){ let c = null; try { c = JSON.parse(localStorage.getItem(SKEY) || sessionStorage.getItem(SKEY) || "null"); } catch(e){} return (c && c.t) ? {url:SYNC_URL, t:c.t, u:c.u, nome:c.nome||c.u, email:c.email||""} : null; }
@@ -2119,7 +2119,7 @@ if (syncCfg() && (!S.perfil || cursoLinkPendente())) setTimeout(() => { if (!S.p
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 30, PAGES = "https://planotatico.github.io/";
+const APP_V = 31, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
