@@ -378,6 +378,8 @@ html[data-tema="prf"]{--navy:#0a2657;--navy2:#123a7a;--navy3:#1b4b98;--navy0:#03
 .lpv{font:700 40px var(--display);color:#fff}.lpv small{font:500 14px var(--body);color:rgba(237,230,211,.75);margin-left:4px}
 .lppr p{margin:0;font-size:14px;color:rgba(237,230,211,.8);max-width:480px}
 .lpf{border-top:1px solid #262626;padding:18px 0 4px;text-align:center;font-size:12px;color:rgba(237,230,211,.55)}
+.lpaviso{background:#1b1608;border:1px solid #d4a72c;border-left-width:5px;border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.5;text-align:left;max-width:560px;color:#ede6d3}.lpaviso b{color:#d4a72c;display:block;font-size:15px;margin-bottom:2px}
+.lpnao{margin:14px 0 0;font-size:14px;color:rgba(237,230,211,.75);border-top:1px dashed #333;padding-top:10px}
 </style>
 </head>
 <body>
@@ -2007,6 +2009,7 @@ function paginaInicial(){
       <h1>Seu plano de estudos, montado pelo edital do seu concurso</h1>
       <p>Faça um diagnóstico rápido. O Plano Tático identifica o seu concurso, o seu nível e o tempo até a prova, e monta a sua semana de estudos com as revisões no dia certo.</p>
       ${cl ? `<div class="lpsel">Concurso escolhido: <b>${esc(CONC[cl].nome)}</b></div>` : ""}
+      <div class="lpaviso" role="note"><b>Importante: não vendemos aulas.</b> O Plano Tático não fornece videoaulas, apostilas nem material de cursinho. Ele organiza o seu estudo: diz o que estudar em cada dia, quando revisar e acompanha suas horas e questões. As aulas você assiste no cursinho de sua escolha (por exemplo, Estratégia ou Gran Cursos), com assinatura à parte.</div>
       <button type="button" class="abtn lpcta" data-go="cad">Fazer meu diagnóstico</button>
       <button type="button" class="lpl" data-go="login">Já tenho conta</button>
     </section>
@@ -2023,11 +2026,11 @@ function paginaInicial(){
       <li>Registro de questões com acertos e erros</li>
       <li>Patentes, conquistas e grupo de estudos</li>
       <li>Funciona no celular e no computador, sincronizado</li>
-    </ul></section>
+    </ul><p class="lpnao">Não inclui: videoaulas, apostilas ou cursos. O plano indica onde assistir cada assunto no cursinho que você escolher.</p></section>
     <section class="lps"><h2>Concursos disponíveis</h2><div class="lpcs">
       ${ks.map(k => `<button type="button" class="lpc${k === cl ? " on" : ""}" data-curso="${k}"><b>${esc(CONC[k].nome)}</b><span>${esc(CONC[k].edital.replace("Edital-base: ", "Base: "))} · ${CONC[k].T.length} unidades</span><i>${esc(precoDe(k) || preco)}<small>/mês</small></i></button>`).join("")}
     </div></section>
-    <section class="lps lppr"><div class="lpv">${esc(preco)}<small>/mês por concurso</small></div><p>Pagamento seguro pela Kiwify. Garantia de 7 dias: se não gostar, você pede o reembolso. Cancele quando quiser.</p>
+    <section class="lps lppr"><div class="lpv">${esc(preco)}<small>/mês por concurso</small></div><p>A assinatura é do plano de estudos, sem aulas incluídas. Pagamento seguro pela Kiwify. Garantia de 7 dias: se não gostar, você pede o reembolso. Cancele quando quiser.</p>
       <button type="button" class="abtn lpcta" data-go="cad">Começar agora</button></section>
     <footer class="lpf">Plano Tático · Estudos para concursos · contato: jeasanta@outlook.com</footer>
   </div>`;
@@ -2065,7 +2068,7 @@ function paywall(){
   w.innerHTML = `<div class="in"><div class="crest"><small>${esc(C.kicker)}</small><b>${esc(C.curto.replace(/^Plano /, ""))}</b><span>${a ? "Sua assinatura venceu" : pronto ? "Seu plano está pronto" : "Assinatura necessária"}</span></div><div class="stripe" aria-hidden="true"></div>
     <div class="abox"><div class="apane"><h3>${esc(C.nome)}</h3>
       <p class="lead">${a && a.status === "estornada" ? "O pagamento foi estornado e o acesso foi encerrado." : a ? "Renove para continuar de onde parou: seu progresso, suas horas e suas conquistas estão guardados." : pronto ? `Pelo seu diagnóstico, montamos o plano deste concurso: ${C.T.length} unidades do edital${sem ? ` divididas em ${sem} semana${sem === 1 ? "" : "s"} até a prova (${dProva.toLocaleDateString("pt-BR")})` : ""}, no nível ${esc((NIVEIS[pf.nivel] || {}).nome || "")}. Assine para liberar e começar hoje.` : "Assine para liberar o plano completo deste concurso."}</p>
-      <ul class="vben"><li>Plano por blocos montado pelo seu diagnóstico</li><li>Revisões de 48h, 7 e 30 dias no dia certo</li><li>Cronômetro de horas líquidas e metas</li><li>Níveis, conquistas e grupo de estudos</li><li>Sincronização no celular e no computador</li></ul>
+      <p class="muted" style="font-size:13px;margin:0 0 8px">A assinatura é do plano de estudos. As aulas não estão incluídas: você assiste no cursinho que escolher.</p><ul class="vben"><li>Plano por blocos montado pelo seu diagnóstico</li><li>Revisões de 48h, 7 e 30 dias no dia certo</li><li>Cronômetro de horas líquidas e metas</li><li>Níveis, conquistas e grupo de estudos</li><li>Sincronização no celular e no computador</li></ul>
       ${precoDe(k) ? `<div class="vp big">${esc(precoDe(k))}<small>/mês</small></div>` : ""}
       ${link ? `<a class="abtn" href="${esc(link)}" target="_blank" rel="noopener">Assinar agora</a>` : `<div class="alert on bad">As vendas deste curso ainda não abriram.</div>`}
       <button type="button" class="qback" id="payChk">Já assinei: verificar meu acesso</button>
@@ -2198,7 +2201,7 @@ if (!syncCfg()) paginaInicial();
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 32, PAGES = "https://planotatico.github.io/";
+const APP_V = 33, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
