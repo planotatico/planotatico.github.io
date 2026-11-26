@@ -380,6 +380,24 @@ html[data-tema="prf"]{--navy:#0a2657;--navy2:#123a7a;--navy3:#1b4b98;--navy0:#03
 .lpf{border-top:1px solid #262626;padding:18px 0 4px;text-align:center;font-size:12px;color:rgba(237,230,211,.55)}
 .lpaviso{background:#1b1608;border:1px solid #d4a72c;border-left-width:5px;border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.5;text-align:left;max-width:560px;color:#ede6d3}.lpaviso b{color:#d4a72c;display:block;font-size:15px;margin-bottom:2px}
 .lpnao{margin:14px 0 0;font-size:14px;color:rgba(237,230,211,.75);border-top:1px dashed #333;padding-top:10px}
+
+/* tutorial guiado */
+#tour{position:fixed;inset:0;z-index:60}
+.trLuz{position:fixed;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.72);outline:2px solid #d4a72c;outline-offset:2px;transition:all .25s ease;pointer-events:none}
+.trBal{position:fixed;background:#141414;color:#ede6d3;border:1px solid #d4a72c;border-radius:14px;padding:14px 16px;box-shadow:0 12px 30px rgba(0,0,0,.6);transition:top .25s ease,left .25s ease}
+.trBal small{display:block;font:600 11px var(--body);letter-spacing:.18em;text-transform:uppercase;color:#d4a72c;margin-bottom:4px}
+.trBal b{display:block;font:700 19px var(--display);letter-spacing:.04em;text-transform:uppercase;color:#fff}
+.trBal p{margin:6px 0 12px;font-size:14px;line-height:1.5}
+.trBt{display:flex;align-items:center;justify-content:space-between;gap:8px}.trBt span{display:flex;gap:8px;margin-left:auto}
+.trBt button{height:40px;border-radius:8px;padding:0 14px;font:700 14px var(--body);cursor:pointer}
+.trPula{background:none;border:0;color:rgba(237,230,211,.7);text-decoration:underline;padding:0 4px!important}
+.trVolta{background:none;border:1px solid #444;color:#ede6d3}
+.trProx{background:#d4a72c;border:0;color:#0a0a0a}
+.trBal[data-seta]::before{content:"";position:absolute;left:var(--sx,50%);width:14px;height:14px;background:#141414;border:1px solid #d4a72c;transform:translateX(-50%) rotate(45deg)}
+.trBal[data-seta="cima"]::before{top:-8px;border-right:0;border-bottom:0}
+.trBal[data-seta="baixo"]::before{bottom:-8px;border-left:0;border-top:0}
+.trBal[data-seta=""]::before{display:none}
+@media (prefers-reduced-motion:reduce){.trLuz,.trBal{transition:none}}
 </style>
 </head>
 <body>
@@ -1793,6 +1811,67 @@ document.getElementById("dlg").addEventListener("click", e => { if (e.target.id=
 window.appBack = function(){ const d = document.getElementById("dlg"); if (d.classList.contains("open")){ closeDlg(); return true; } if (tab!=="hoje"){ tab="hoje"; render(); return true; } return false; };
 
 /* ---------- render ---------- */
+
+/* ---------- tutorial guiado (pode pular; aparece uma vez e fica em Minha conta) ---------- */
+const TOUR = [
+  {t:"Bem-vindo ao Plano Tático", x:"Em um minuto você conhece cada parte do app. Se preferir, pode pular: o tutorial fica guardado em Minha conta para ver depois."},
+  {sel:'nav.tabs [data-tab="hoje"]', tab:"hoje", t:"Hoje", x:"Suas missões do dia: a aula nova (no máximo 3 por dia) e as revisões que vencem hoje. Comece sempre por aqui."},
+  {sel:"#tmToggle", tab:"hoje", t:"Cronômetro de horas líquidas", x:"Escolha a matéria e o assunto e toque para começar. Pause quando parar. O tempo vai para o gráfico da aba Horas."},
+  {sel:'nav.tabs [data-tab="aulas"]', tab:"aulas", t:"Aulas", x:"Todo o edital, por matéria. Toque numa aula para abrir o link do curso, marcar como estudada e acompanhar as revisões de 48 horas, 7 e 30 dias."},
+  {sel:'nav.tabs [data-tab="horas"]', tab:"horas", t:"Horas", x:"O gráfico do seu tempo por matéria e por assunto, na semana, no mês ou no período que quiser. Aqui você também registra as questões do TEC, com acertos e erros."},
+  {sel:'nav.tabs [data-tab="crono"]', tab:"crono", t:"Plano", x:"Seu plano semana a semana até a prova, montado pelo diagnóstico. Também mostra o curso indicado na plataforma que você escolheu."},
+  {sel:'nav.tabs [data-tab="rotina"]', tab:"rotina", t:"Rotina", x:"Como organizar o dia de estudo, os filtros do caderno de questões, os seus blocos de matérias e o backup dos dados."},
+  {sel:'nav.tabs [data-tab="grupo"]', tab:"grupo", t:"Grupo", x:"Estude junto: crie um grupo ou entre com um código e acompanhe o progresso dos colegas ou dos seus alunos."},
+  {sel:"#player", t:"Patente e conquistas", x:"Cada aula, revisão e hora estudada dá experiência. Suba de patente, mantenha a sequência de dias e desbloqueie conquistas. Toque aqui para ver."},
+  {sel:"#acct", t:"Minha conta", x:"Seus dados, a troca de senha, refazer o diagnóstico e rever este tutorial quando quiser."},
+  {t:"Tudo pronto!", x:"Agora é com você. Comece pela aba Hoje e siga o plano um dia de cada vez. Bons estudos!", fim:true}
+];
+let TOUR_I = -1;
+function tourAlvo(p){ if (!p.sel) return null; const e = document.querySelector(p.sel); if (!e || e.hidden || !e.getClientRects().length) return null; return e; }
+function tourFim(){ TOUR_I = -1; const w = $("tour"); if (w) w.remove(); window.removeEventListener("resize", tourPos); document.removeEventListener("keydown", tourTecla); S.tour = 1; save(); }
+function tourTecla(e){ if (TOUR_I < 0) return; if (e.key === "Escape") tourFim(); else if (e.key === "ArrowRight") tourIr(TOUR_I + 1, 1); else if (e.key === "ArrowLeft" && TOUR_I > 0) tourIr(TOUR_I - 1, -1); }
+function tourPos(){
+  const w = $("tour"); if (!w || TOUR_I < 0) return;
+  const p = TOUR[TOUR_I], el = tourAlvo(p), luz = w.querySelector(".trLuz"), bal = w.querySelector(".trBal");
+  const vw = innerWidth, vh = innerHeight, bw = Math.min(340, vw - 24);
+  bal.style.width = bw + "px";
+  if (!el){ luz.style.cssText = "left:50%;top:50%;width:0;height:0"; bal.style.left = (vw - bw) / 2 + "px"; bal.style.top = Math.max(16, (vh - bal.offsetHeight) / 2) + "px"; bal.dataset.seta = ""; return; }
+  const r = el.getBoundingClientRect(), m = 6;
+  luz.style.cssText = `left:${r.left - m}px;top:${r.top - m}px;width:${r.width + 2*m}px;height:${r.height + 2*m}px`;
+  const bh = bal.offsetHeight, embaixo = r.bottom + 14 + bh < vh - 8;
+  bal.style.top = (embaixo ? r.bottom + 14 : Math.max(8, r.top - 14 - bh)) + "px";
+  bal.style.left = Math.min(vw - bw - 12, Math.max(12, r.left + r.width / 2 - bw / 2)) + "px";
+  bal.dataset.seta = embaixo ? "cima" : "baixo";
+  bal.style.setProperty("--sx", Math.min(bw - 22, Math.max(14, r.left + r.width / 2 - parseFloat(bal.style.left))) + "px");
+}
+function tourIr(i, dir){
+  dir = dir || 1;
+  while (i > 0 && i < TOUR.length && TOUR[i].sel && !(() => { if (TOUR[i].tab && tab !== TOUR[i].tab){ tab = TOUR[i].tab; render(); } return tourAlvo(TOUR[i]); })()) i += dir;
+  if (i < 0) i = 0; if (i >= TOUR.length){ tourFim(); return; }
+  TOUR_I = i; const p = TOUR[i];
+  if (p.tab && tab !== p.tab){ tab = p.tab; render(); }
+  const el = tourAlvo(p); if (el) try { el.scrollIntoView({block:"nearest"}); } catch(e){}
+  let w = $("tour");
+  if (!w){ w = document.createElement("div"); w.id = "tour"; w.setAttribute("role", "dialog"); w.setAttribute("aria-modal", "true"); w.setAttribute("aria-label", "Tutorial do app");
+    w.innerHTML = `<div class="trLuz"></div><div class="trBal" aria-live="polite"></div>`; document.body.appendChild(w);
+    window.addEventListener("resize", tourPos); document.addEventListener("keydown", tourTecla);
+    w.addEventListener("click", e => { if (e.target === w || e.target.classList.contains("trLuz")) tourIr(TOUR_I + 1, 1); }); }
+  const nPassos = TOUR.length - 2, num = Math.min(nPassos, Math.max(1, i));
+  w.querySelector(".trBal").innerHTML = `${i > 0 && !p.fim ? `<small>${num} de ${nPassos}</small>` : ""}<b>${esc(p.t)}</b><p>${esc(p.x)}</p>
+    <div class="trBt">${p.fim ? "" : `<button type="button" class="trPula">Pular tutorial</button>`}<span>${i > 0 && !p.fim ? `<button type="button" class="trVolta">Voltar</button>` : ""}<button type="button" class="trProx">${i === 0 ? "Começar o tour" : p.fim ? "Começar a estudar" : "Próximo"}</button></span></div>`;
+  const b = w.querySelector(".trBal");
+  b.querySelector(".trProx").onclick = () => { if (p.fim){ tourFim(); tab = "hoje"; render(); } else tourIr(i + 1, 1); };
+  const vb = b.querySelector(".trVolta"); if (vb) vb.onclick = () => tourIr(i - 1, -1);
+  const pb = b.querySelector(".trPula"); if (pb) pb.onclick = () => { tourFim(); toast("Tutorial pulado. Ele fica em Minha conta"); };
+  tourPos(); setTimeout(tourPos, 60);
+  b.querySelector(".trProx").focus({preventScroll:true});
+}
+function abrirTour(){ closeDlgQuiet(); TOUR_I = -1; const w = $("tour"); if (w) w.remove(); tourIr(0); }
+function talvezTour(){
+  if (S.tour || TOUR_I >= 0 || !S.perfil || QZ) return;
+  if (document.querySelector("#quiz.on, #pay.on, #auth.on, #inicio.on, #dlg.open")) return;
+  setTimeout(() => { if (!S.tour && TOUR_I < 0 && S.perfil && !QZ && !document.querySelector("#quiz.on, #pay.on, #auth.on, #inicio.on, #dlg.open")) tourIr(0); }, 900);
+}
 function render(){
   header();
   const v = document.getElementById("view"), main = document.getElementById("main");
@@ -1804,6 +1883,7 @@ function render(){
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===tab));
   bind();
   if (tab==="grupo") bindGrupo(v);
+  if (!S.tour && TOUR_I < 0) talvezTour();
 }
 function bind(){
   const v = document.getElementById("view");
@@ -2176,11 +2256,11 @@ function openConta(){
       <input type="password" id="pNova" placeholder="Nova senha (mínimo 6)" autocomplete="new-password" aria-label="Nova senha">
       <button class="btn small ghost" id="pTroca" style="margin-top:8px">Trocar senha</button></details>
     ${ACC.dono ? `<div class="row"><button class="btn small" id="pVendas">Painel de vendas</button></div>` : ""}
-    <div class="row"><button class="btn small ghost" id="pDiag">${S.perfil ? "Refazer diagnóstico" : "Fazer diagnóstico"}</button></div>
+    <div class="row"><button class="btn small ghost" id="pDiag">${S.perfil ? "Refazer diagnóstico" : "Fazer diagnóstico"}</button><button class="btn small ghost" id="pTour">Ver tutorial do app</button></div>
     <div class="row"><button class="btn small danger" id="pSair">Sair da conta</button><button class="btn small ghost" id="pFechar">Fechar</button></div>
     <div class="muted">Ao sair, o progresso continua salvo na conta e neste aparelho.</div>`;
   $("dlg").classList.add("open");
-  $("pFechar").onclick = closeDlg; $("pSair").onclick = sair; $("pDiag").onclick = () => { closeDlgQuiet(); abrirDiagnostico(); }; if ($("pVendas")) $("pVendas").onclick = abrirAdminVendas;
+  $("pFechar").onclick = closeDlg; $("pSair").onclick = sair; $("pDiag").onclick = () => { closeDlgQuiet(); abrirDiagnostico(); }; $("pTour").onclick = abrirTour; if ($("pVendas")) $("pVendas").onclick = abrirAdminVendas;
   if ($("pCar")) $("pCar").onchange = e => { S.car = e.target.value; G = null; save(); render(); toast("Carreira: " + {pm:"Polícia Militar", bm:"Bombeiro Militar", prf:"Policial Rodoviário Federal"}[S.car]); };
   $("pSalvar").onclick = async () => {
     try { const r = await api({acao:"perfil", t:c.t, nome:$("pNome").value, email:$("pEmail").value}); if (!r.ok){ toast(r.erro); return; } updConta({nome:r.nome, email:r.email}); toast("Dados salvos"); }
@@ -2201,7 +2281,7 @@ if (!syncCfg()) paginaInicial();
 
 syncNow(false);
 /* ---------- atualização automática (GitHub Pages) ---------- */
-const APP_V = 33, PAGES = "https://planotatico.github.io/";
+const APP_V = 34, PAGES = "https://planotatico.github.io/";
 async function checkUpdate(){
   if (!navigator.onLine) return;
   if (!window.CFO){ // no navegador: se saiu versão nova, recarrega já com ela (sem esperar o cache)
